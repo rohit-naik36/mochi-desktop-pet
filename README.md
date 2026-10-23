@@ -116,6 +116,14 @@ Code: `src/main.js` (window, tray, movement), `src/pet.html|css|js` (the pet, it
 
 Every version is tagged automatically (`v0.1.0`, `v0.2.0`, ...) by `.github/workflows/tag-versions.yml` when it lands on `main`. Bump `version` in package.json and push: the new tag gets a Windows build and a GitHub Release.
 
+## Privacy and security
+
+- **Nothing leaves your computer.** Mochi makes no network requests: no accounts, analytics, ads or cloud. Your name, moods, worries (never saved), gratitude notes and points live in one file, `%APPDATA%\Mochi\pet-state.json`.
+- **Locked-down app.** Every window runs sandboxed, with context isolation on and Node.js off, under a strict Content Security Policy that loads only Mochi's own files. Windows can't open links or pop-ups, can't navigate away, and refuse camera, microphone and other permission requests.
+- **Up-to-date dependencies.** Electron 44.7.0, with `npm audit` reporting 0 known vulnerabilities at release.
+- **Open source.** Every line is in this repo, and each release is built by GitHub Actions from the tagged commit.
+- **SmartScreen and antivirus.** The installer isn't code-signed yet, so Windows shows "unknown publisher", and an occasional antivirus may flag unsigned installers. Signing (below) fixes both.
+
 ## Getting rid of the SmartScreen warning
 
 `.github/workflows/build-windows.yml` builds on a real Windows machine. Push a tag (`git tag v0.1.1 && git push --tags`)

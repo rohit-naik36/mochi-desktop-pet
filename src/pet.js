@@ -44,6 +44,9 @@ function float(text, cls = '') {
 }
 
 function say(text, { actions = [], ms = 6000, sticky = false, input = null } = {}) {
+  // A reminder or question is waiting for an answer: small talk (after a
+  // drag, a pat, a nap) must not replace it. Show a sparkle instead.
+  if (bubbleSticky && !sticky && !bubble.classList.contains('hidden')) { float(pick(['✨', '💛'])); return; }
   clearTimeout(bubbleTimer);
   bubbleText.textContent = text;
   bubbleActions.innerHTML = '';

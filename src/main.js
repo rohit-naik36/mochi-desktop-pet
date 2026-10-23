@@ -83,6 +83,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
     },
   });
   win.setAlwaysOnTop(true, 'screen-saver');
@@ -121,6 +122,7 @@ function openPlay(game) {
       preload: path.join(__dirname, 'play-preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
     },
   });
   playWin.setAlwaysOnTop(true, 'screen-saver');
@@ -175,6 +177,7 @@ function openBoard() {
       preload: path.join(__dirname, 'board-preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
     },
   });
   boardWin.setMenu(null);
@@ -419,6 +422,14 @@ ipcMain.on('save-state', (_e, partial) => {
   saveState();
   refreshTrayMenu();
   if (boardWin && !boardWin.isDestroyed()) boardWin.webContents.send('state', state);
+});
+
+// Security: every window shows only Mochi's own local pages. No links open,
+// no navigation away, no pop-ups, no permission prompts (camera, mic...).
+app.on('web-contents-created', (_e, contents) => {
+  contents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  contents.on('will-navigate', (e) => e.preventDefault());
+  contents.session.setPermissionRequestHandler((_wc, _perm, cb) => cb(false));
 });
 
 const gotLock = app.requestSingleInstanceLock();
