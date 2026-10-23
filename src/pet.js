@@ -7,6 +7,7 @@ const bubbleActions = document.getElementById('bubble-actions');
 let S = null;              // persisted state from main
 let mode = 'idle';         // idle | walk | sleep | happy | eat | stretch
 let dir = 1;               // 1 = right, -1 = left
+let vy = 0;                // vertical drift while wandering
 let modeUntil = 0;
 let dragging = null;
 let bubbleTimer = null;
@@ -201,7 +202,9 @@ async function decideNext() {
   if (tired && r < 0.5) return sleep();
   if (S.walking && r < 0.35) {
     bounds = await window.pet.getBounds();
+    // Float off in a random direction, mostly sideways but free to rise or sink.
     dir = Math.random() < 0.5 ? -1 : 1;
+    vy = rand(-0.8, 0.8);
     return setMode('walk', rand(2500, 7000));
   }
   if (r < 0.40) return setMode('stretch', 3200);
@@ -210,16 +213,22 @@ async function decideNext() {
 
 function walkStep() {
   if (!bounds) return;
-  const speed = 1.6;
+  const speed = 1.2;
   const { win, workArea } = bounds;
   const nextX = win.x + dir * speed;
+  const nextY = win.y + vy;
   if (nextX < workArea.x - 30 || nextX + win.width > workArea.x + workArea.width + 30) {
     dir = -dir;
     petEl.classList.toggle('facing-left', dir < 0);
     return;
   }
+  if (nextY < workArea.y - 30 || nextY + win.height > workArea.y + workArea.height) {
+    vy = -vy;
+    return;
+  }
   win.x = nextX;
-  window.pet.moveBy(dir * speed, 0);
+  win.y = nextY;
+  window.pet.moveTo(win.x, win.y);
 }
 
 setInterval(() => {
@@ -273,9 +282,9 @@ window.addEventListener('mouseup', () => {
   window.pet.dragEnd();
   petEl.classList.remove('dragging');
   if (wasDrag) {
-    window.pet.dropToFloor();
+    window.pet.dragDone();
     window.pet.save({});
-    say(pick(['Whoa! New spot!', 'Wheee!', 'Thanks for the lift!']), { ms: 2000 });
+    say(pick(['Ooh, nice view from here!', 'This spot is cozy.', 'Thanks for the lift!']), { ms: 2000 });
     setMode('idle', 3000);
   } else {
     petIt();

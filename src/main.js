@@ -30,6 +30,7 @@ const defaults = {
   eyesEveryMin: 20,
   walking: true,
   x: null,
+  y: null,
   lastSeen: Date.now(),
 };
 
@@ -58,7 +59,7 @@ function createWindow() {
     width: WIN_W,
     height: WIN_H,
     x,
-    y: wa.y + wa.height - WIN_H,
+    y: state.y ?? wa.y + wa.height - WIN_H,
     transparent: true,
     frame: false,
     resizable: false,
@@ -161,10 +162,9 @@ function placeAt(x, y) {
   win.setBounds({ x: nx, y: ny, width: WIN_W, height: WIN_H });
 }
 
-function floorY(x) {
-  const wa = screen.getDisplayNearestPoint({ x: x + WIN_W / 2, y: win.getBounds().y + WIN_H / 2 }).workArea;
-  return wa.y + wa.height - WIN_H;
-}
+
+// Wandering sends absolute positions so slow sub-pixel drift isn't lost to rounding.
+ipcMain.on('move-to', (_e, x, y) => placeAt(x, y));
 
 ipcMain.on('move-by', (_e, dx, dy) => {
   const { x, y } = win.getBounds();
@@ -193,15 +193,16 @@ ipcMain.handle('get-bounds', () => {
   return { win: bounds, workArea: wa };
 });
 
-ipcMain.on('drop-to-floor', () => {
-  const { x } = win.getBounds();
-  placeAt(x, floorY(x));
+// After a drag the pet stays exactly where it was dropped (pulled back on screen if needed).
+ipcMain.on('drag-done', () => {
+  const { x, y } = win.getBounds();
+  placeAt(x, y);
   if (process.env.MOCHI_DEBUG) console.log('dropped at', JSON.stringify(win.getBounds()));
 });
 
 ipcMain.on('save-state', (_e, partial) => {
   Object.assign(state, partial);
-  state.x = win.getPosition()[0];
+  ({ x: state.x, y: state.y } = win.getBounds());
   saveState();
   refreshTrayMenu();
 });
@@ -216,10 +217,10 @@ if (!gotLock) {
     loadState();
     createWindow();
     buildTray();
-    const refloor = () => { const { x } = win.getBounds(); placeAt(x, floorY(x)); };
-    screen.on('display-metrics-changed', refloor);
-    screen.on('display-removed', refloor);
-    refloor(); // also rescues a pet saved somewhere off screen
+    const keepOnScreen = () => { const { x, y } = win.getBounds(); placeAt(x, y); };
+    screen.on('display-metrics-changed', keepOnScreen);
+    screen.on('display-removed', keepOnScreen);
+    keepOnScreen(); // also rescues a pet saved somewhere off screen
     // Tray label shows live stats, so refresh it now and then.
     setInterval(refreshTrayMenu, 60_000);
   });

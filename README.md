@@ -26,7 +26,7 @@ Right-click the pet and open **Choose your buddy**:
 |---|---|
 | Click | Gets petted, hearts, sometimes says something kind |
 | Double-click | Eats a snack |
-| Drag | Gets carried, then lands on the taskbar |
+| Drag | Carry it anywhere on screen; it stays where you drop it |
 | Right-click, or the tray icon | Menu: choose your buddy, feed, play, nap, wander on/off, reminders, start with Windows, quit |
 
 Reminders (each can be turned off from the menu):
