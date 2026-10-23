@@ -1,0 +1,12 @@
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('pet', {
+  onState: (fn) => ipcRenderer.on('state', (_e, s) => fn(s)),
+  onAction: (fn) => ipcRenderer.on('action', (_e, a) => fn(a)),
+  mouseOverPet: (over) => ipcRenderer.send('mouse-over-pet', over),
+  moveBy: (dx, dy) => ipcRenderer.send('move-by', dx, dy),
+  getBounds: () => ipcRenderer.invoke('get-bounds'),
+  dropToFloor: () => ipcRenderer.send('drop-to-floor'),
+  contextMenu: () => ipcRenderer.send('context-menu'),
+  save: (partial) => ipcRenderer.send('save-state', partial),
+});

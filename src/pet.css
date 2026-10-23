@@ -1,0 +1,156 @@
+html, body {
+  margin: 0; padding: 0; width: 100%; height: 100%;
+  background: transparent; overflow: hidden;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  user-select: none; -webkit-user-select: none;
+}
+
+:root, body[data-skin="smoke"] {
+  --smoke: #000;
+  --core-edge: #111;
+  --eye-color: #f4f4f4;
+  --eye-glow: 1;
+  --mouth: rgba(255,255,255,.55);
+  --speck: transparent;
+  --speck-glow: none;
+}
+/* Cinder: warm charcoal smoke with ember eyes and drifting sparks */
+body[data-skin="cinder"] {
+  --smoke: #1a0d08; --core-edge: #3a1a0c;
+  --eye-color: #ffb347; --mouth: rgba(255,170,90,.7);
+  --speck: #ff8a2a; --speck-glow: drop-shadow(0 0 2px #ff6a00);
+}
+/* Mist: pale silver fog with dark sleepy eyes */
+body[data-skin="mist"] {
+  --smoke: #e9eef3; --core-edge: #ffffff;
+  --eye-color: #20262e; --mouth: rgba(30,40,50,.6);
+  --speck: transparent;
+}
+/* Dusk: deep indigo smoke with little twinkling stars */
+body[data-skin="dusk"] {
+  --smoke: #120f2e; --core-edge: #231d55;
+  --eye-color: #e8e6ff; --mouth: rgba(220,215,255,.6);
+  --speck: #fff6c9; --speck-glow: drop-shadow(0 0 2px #fff3a6);
+}
+:root {
+  --fur: #141414;
+  --fur-dark: #2c2c2c;
+  --ink: #3b2a20;
+  --eye: #ffffff;
+  --blush: #ff8fa3;
+}
+
+#stage {
+  position: absolute; left: 50%; bottom: 0;
+  width: 120px; height: 120px; transform: translateX(-50%);
+}
+
+#pet { position: absolute; left: 0; bottom: 6px; width: 120px; height: 110px; cursor: grab; transform-origin: 50% 100%; }
+#pet.dragging { cursor: grabbing; }
+#pet.facing-left svg { transform: scaleX(-1); }
+
+#shadow {
+  position: absolute; left: 25px; bottom: 2px; width: 70px; height: 10px;
+  border-radius: 50%; background: rgba(0,0,0,.18); filter: blur(2px);
+}
+
+.haze { fill: var(--smoke); opacity: .55; }
+.mid { fill: var(--smoke); opacity: .9; }
+.core-a { stop-color: var(--smoke); stop-opacity: 1; }
+.core-b { stop-color: var(--smoke); stop-opacity: .95; }
+.core-c { stop-color: var(--core-edge); stop-opacity: 0; }
+body[data-skin="mist"] #pet svg { filter: drop-shadow(0 0 3px rgba(0,0,0,.25)); }
+.speck { fill: var(--speck); filter: var(--speck-glow); transform-box: fill-box; transform-origin: center; animation: twinkle 3s ease-in-out infinite; }
+.speck.s2 { animation-delay: .6s; } .speck.s3 { animation-delay: 1.2s; } .speck.s4 { animation-delay: 1.8s; } .speck.s5 { animation-delay: 2.4s; }
+@keyframes twinkle { 0%,100% { opacity: .15; transform: translateY(0) scale(.7); } 50% { opacity: 1; transform: translateY(-3px) scale(1.1); } }
+body[data-skin="cinder"] .speck { animation-name: ember; animation-duration: 2.6s; }
+@keyframes ember { 0% { opacity: 0; transform: translateY(4px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-22px); } }
+#pet svg { overflow: visible; }
+.eye ellipse { fill: var(--eye-color); }
+#eyes-closed path, #eyes-happy path { fill: none; stroke: var(--eye-color); stroke-width: 2.6; stroke-linecap: round; }
+#mouth { fill: none; stroke: var(--mouth); stroke-width: 1.6; stroke-linecap: round; }
+#mouth-open { fill: var(--mouth); display: none; }
+
+/* little puffs of smoke rising off the top */
+.wisp { fill: var(--smoke); opacity: 0; transform-box: fill-box; transform-origin: center; animation: rise 4.5s ease-out infinite; }
+.wisp.w2 { animation-delay: 1.5s; }
+.wisp.w3 { animation-delay: 3s; }
+@keyframes rise {
+  0% { opacity: .7; transform: translateY(8px) scale(.6); }
+  100% { opacity: 0; transform: translateY(-34px) scale(1.8); }
+}
+#smoke-body { transform-origin: 60px 60px; animation: churn 3.5s ease-in-out infinite; }
+@keyframes churn { 50% { transform: scale(1.04, .97); } }
+
+/* always hovering, slowly */
+#float-group { animation: hover 4.5s ease-in-out infinite; }
+@keyframes hover { 50% { transform: translateY(-4px); } }
+#shadow { animation: shadowPulse 4.5s ease-in-out infinite; background: rgba(0,0,0,.25); }
+@keyframes shadowPulse { 50% { transform: scaleX(.8); opacity: .6; } }
+
+#eyes-closed, #eyes-happy { display: none; }
+#pet.sleep #eyes, #pet.blink #eyes { display: none; }
+#pet.sleep #eyes-closed, #pet.blink #eyes-closed { display: inline; }
+#pet.happy #eyes, #pet.eat #eyes { display: none; }
+#pet.happy #eyes-happy, #pet.eat #eyes-happy { display: inline; }
+#pet.happy #eyes-closed, #pet.eat #eyes-closed { display: none; }
+#pet.eat #mouth, #pet.talk #mouth { display: none; }
+#pet.eat #mouth-open, #pet.talk #mouth-open { display: inline; }
+#pet.sad #smoke-body { opacity: .75; }
+#pet.sad .eye ellipse { opacity: .6; }
+
+/* idle: gentle breathing */
+#pet.idle #body-group, #pet.talk #body-group { animation: breathe 3s ease-in-out infinite; transform-origin: 60px 56px; }
+@keyframes breathe { 50% { transform: translateY(.6px); } }
+
+/* walk: drift with a lean */
+#pet.walk #float-group { transform: rotate(4deg); transform-origin: 60px 60px; }
+
+/* sleep: slow deep breaths */
+#pet.sleep #body-group { animation: snooze 4s ease-in-out infinite; transform-origin: 60px 56px; }
+@keyframes snooze { 50% { transform: scale(1.04, .95); } }
+
+/* happy: hop */
+#pet.happy { animation: hop .9s ease-in-out 1; }
+@keyframes hop { 40% { transform: translateY(-8px); } }
+
+/* stretch */
+#pet.stretch #smoke-body { animation: stretch 2.4s ease-in-out 1; transform-origin: 60px 60px; }
+@keyframes stretch { 50% { transform: scale(.95, 1.1); } }
+
+#pet.dragging #body-group { transform: rotate(-6deg) scale(.96,1.06); transform-origin: 60px 20px; }
+
+/* floating effects (hearts, zzz, food) */
+#fx { position: absolute; inset: 0; pointer-events: none; }
+.float {
+  position: absolute; font-size: 18px; pointer-events: none;
+  animation: floatUp 1.6s ease-out forwards;
+}
+@keyframes floatUp {
+  0% { opacity: 0; transform: translateY(0) scale(.6); }
+  20% { opacity: 1; transform: translateY(-10px) scale(1); }
+  100% { opacity: 0; transform: translateY(-60px) scale(1.1); }
+}
+.zzz { font-weight: 700; color: #6a7bd1; font-size: 16px; animation-duration: 2.4s; }
+
+/* speech bubble */
+#bubble {
+  position: absolute; left: 8px; right: 8px; bottom: 124px;
+  background: #fff; color: var(--ink); border-radius: 14px;
+  padding: 8px 10px; font-size: 12.5px; line-height: 1.35;
+  box-shadow: 0 3px 12px rgba(0,0,0,.18); border: 1.5px solid #f0d2ad;
+  transition: opacity .2s, transform .2s;
+}
+#bubble::after {
+  content: ""; position: absolute; left: 50%; bottom: -8px; margin-left: -8px;
+  border: 8px solid transparent; border-bottom: 0; border-top-color: #fff;
+}
+#bubble.hidden { opacity: 0; transform: translateY(6px); pointer-events: none; }
+#bubble-actions { display: flex; gap: 6px; margin-top: 6px; }
+#bubble-actions:empty { display: none; }
+#bubble button {
+  flex: 1; border: 0; border-radius: 8px; padding: 4px 6px; font: inherit; font-size: 11.5px;
+  cursor: pointer; background: #ffe7c7; color: var(--ink);
+}
+#bubble button.primary { background: #ffb36b; font-weight: 600; }
+#bubble button:hover { filter: brightness(.95); }
