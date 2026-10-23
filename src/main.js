@@ -82,21 +82,27 @@ function createWindow() {
 }
 
 let playWin = null;
+const PET_CX = WIN_W / 2;   // pet centre inside the pet window
+const PET_CY = WIN_H - 61;
 
+// Play mode: a transparent layer over the whole work area. The desktop pet
+// hides and the same buddy appears in the layer at the same spot.
 function openPlay(game) {
   if (playWin && !playWin.isDestroyed()) { playWin.focus(); return; }
-  const wa = workArea();
-  const W = 560, H = 480;
+  const pb = win.getBounds();
+  const wa = screen.getDisplayMatching(pb).workArea;
   playWin = new BrowserWindow({
-    width: W,
-    height: H,
-    x: Math.round(wa.x + (wa.width - W) / 2),
-    y: Math.round(wa.y + (wa.height - H) / 2),
+    x: wa.x,
+    y: wa.y,
+    width: wa.width,
+    height: wa.height,
     transparent: true,
     frame: false,
     resizable: false,
+    movable: false,
     alwaysOnTop: true,
-    skipTaskbar: false,
+    skipTaskbar: true,
+    hasShadow: false,
     title: `Play with ${state.name}`,
     webPreferences: {
       preload: path.join(__dirname, 'play-preload.js'),
@@ -104,17 +110,36 @@ function openPlay(game) {
       nodeIntegration: false,
     },
   });
-  playWin.loadFile(path.join(__dirname, 'play.html'), game ? { query: { game } } : undefined);
-  if (process.env.MOCHI_DEBUG) playWin.webContents.on('did-finish-load', () => console.log('play room loaded'));
+  playWin.setAlwaysOnTop(true, 'screen-saver');
+  const query = { px: String(pb.x - wa.x + PET_CX), py: String(pb.y - wa.y + PET_CY) };
+  if (game) query.game = game;
+  playWin.loadFile(path.join(__dirname, 'play.html'), { query });
+  playWin.once('ready-to-show', () => playWin.focus());
+  playWin.webContents.once('did-finish-load', () => {
+    win.hide();
+    if (process.env.MOCHI_DEBUG) console.log('play room loaded');
+  });
   playWin.webContents.on('console-message', (_e, level, msg) => process.env.MOCHI_DEBUG && level >= 2 && console.log('play error:', msg));
-  playWin.on('closed', () => { playWin = null; send('action', 'play-closed'); });
-  send('action', 'play-opened');
+  playWin.on('closed', () => {
+    playWin = null;
+    win.showInactive();
+    send('action', 'play-closed');
+  });
+  playWin._wa = wa;
 }
 
 ipcMain.handle('get-state', () => state);
-ipcMain.on('close-play', () => playWin && playWin.close());
+// The buddy comes back to the desktop wherever play left it.
+ipcMain.on('play-done', (_e, x, y) => {
+  if (!playWin) return;
+  const wa = playWin._wa;
+  placeAt(wa.x + x - PET_CX, wa.y + y - PET_CY);
+  state.x = win.getBounds().x; state.y = win.getBounds().y;
+  saveState();
+  playWin.close();
+});
 // Games report happiness gains; the desktop pet applies and saves them.
-ipcMain.on('play-reward', (_e, delta, line) => send('reward', { delta, line }));
+ipcMain.on('play-reward', (_e, delta) => send('reward', { delta }));
 
 function trayIcon() {
   const p = path.join(__dirname, 'icon.png');
@@ -141,7 +166,7 @@ function buildMenu() {
     { type: 'separator' },
     { label: 'Feed', click: () => send('action', 'feed') },
     { label: 'Play', submenu: [
-      { label: 'Open play room', click: () => openPlay() },
+      { label: 'Play time', click: () => openPlay() },
       { type: 'separator' },
       { label: 'Breathe with me', click: () => openPlay('breathe') },
       { label: 'Bubble pop', click: () => openPlay('bubbles') },
@@ -265,7 +290,7 @@ if (!gotLock) {
     screen.on('display-metrics-changed', keepOnScreen);
     screen.on('display-removed', keepOnScreen);
     keepOnScreen(); // also rescues a pet saved somewhere off screen
-    if (process.env.MOCHI_DEBUG) setTimeout(() => openPlay('bubbles'), 3000);
+    if (process.env.MOCHI_DEBUG) setTimeout(() => openPlay(process.env.MOCHI_DEBUG_GAME || 'bubbles'), 3000);
     // Tray label shows live stats, so refresh it now and then.
     setInterval(refreshTrayMenu, 60_000);
   });

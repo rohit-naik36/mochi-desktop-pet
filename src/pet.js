@@ -128,10 +128,7 @@ function sleep() {
 }
 
 // Gains from the play room.
-window.pet.onReward(({ delta, line }) => {
-  change(delta);
-  if (line) float('💛');
-});
+window.pet.onReward(({ delta }) => change(delta));
 
 window.pet.onAction((a) => {
   if (a === 'feed') feed();

@@ -7,56 +7,60 @@
 <link rel="stylesheet" href="play.css">
 </head>
 <body>
-  <div id="room">
-    <header>
-      <div id="title">Play time</div>
-      <div class="header-actions">
-        <button id="sound" title="Sound on/off">🔊</button>
-        <button id="close" title="Close (Esc)">✕</button>
-      </div>
-    </header>
+  <div id="veil"></div>
+  <div id="bubble-field"></div>
+  <div id="fx"></div>
+  <div id="orb" class="hidden"></div>
 
+  <div id="pet-wrap"><div id="pet" class="idle" data-pet-svg></div></div>
+
+  <div id="toolbar">
+    <span id="title">Play time</span>
     <nav id="tabs">
-      <button data-game="breathe" class="active">🌬️ Breathe</button>
-      <button data-game="bubbles">🫧 Bubble pop</button>
-      <button data-game="chase">✨ Chase the light</button>
+      <button data-game="breathe">🌬️ Breathe</button>
+      <button data-game="bubbles">🫧 Bubbles</button>
+      <button data-game="chase">✨ Chase</button>
       <button data-game="worry">🍃 Feed a worry</button>
     </nav>
-
-    <main id="arena">
-      <div id="fx"></div>
-      <div id="orb" class="hidden"></div>
-      <div id="pet-wrap"><div id="pet" class="idle" data-pet-svg></div></div>
-
-      <section id="breathe" class="panel">
-        <div id="breathe-cue">Ready when you are</div>
-        <div id="breathe-count"></div>
-        <div id="breathe-dots"></div>
-        <button id="breathe-start" class="cta">Start (1 min)</button>
-      </section>
-
-      <section id="bubbles" class="panel hidden">
-        <div class="hint">Pop as many or as few as you like. There's no timer.</div>
-        <div id="pop-count">0 popped</div>
-        <div id="bubble-field"></div>
-      </section>
-
-      <section id="chase" class="panel hidden">
-        <div class="hint">Move your mouse slowly. Your buddy follows the light.</div>
-        <div id="catch-count"></div>
-      </section>
-
-      <section id="worry" class="panel hidden">
-        <div class="hint">Type what's weighing on you. Your buddy will eat it. Nothing is saved.</div>
-        <textarea id="worry-text" maxlength="240" placeholder="e.g. the deadline on Friday"></textarea>
-        <button id="worry-feed" class="cta">Feed it</button>
-        <div id="worry-letters"></div>
-      </section>
-
-      <div id="speech" class="hidden"></div>
-    </main>
+    <button id="sound" class="icon" title="Sound on/off">🔊</button>
+    <button id="close" class="icon" title="Done playing (Esc)">✕</button>
   </div>
+
+  <!-- floats next to the pet -->
+  <div id="card" class="hidden">
+    <section id="breathe" class="panel">
+      <div id="breathe-cue">Breathe with me</div>
+      <div id="breathe-count"></div>
+      <div id="breathe-dots"></div>
+      <button id="breathe-start" class="cta">Start (about a minute)</button>
+    </section>
+    <section id="bubbles" class="panel">
+      <div class="hint">Pop as many or as few as you like. No timer.</div>
+      <div id="pop-count" class="counter">0 popped</div>
+    </section>
+    <section id="chase" class="panel">
+      <div class="hint">Move your mouse slowly. I'll follow the light.</div>
+      <div id="catch-count" class="counter"></div>
+    </section>
+    <section id="worry" class="panel">
+      <div class="hint" id="worry-hint">What's weighing on you? I'll eat it. Nothing is saved.</div>
+      <textarea id="worry-text" maxlength="280" placeholder="e.g. the deadline on Friday"></textarea>
+      <button id="worry-feed" class="cta">Feed it</button>
+      <div id="worry-reply" class="hidden">
+        <div id="reply-opener"></div>
+        <div id="reply-reflect"></div>
+        <div id="reply-comfort"></div>
+        <div id="reply-step"></div>
+        <div id="reply-actions"></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="worry-letters"></div>
+  <div id="speech" class="hidden"></div>
+
   <script src="pet-svg.js"></script>
+  <script src="worry.js"></script>
   <script src="play.js"></script>
 </body>
 </html>
