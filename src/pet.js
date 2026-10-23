@@ -51,7 +51,7 @@ function say(text, { actions = [], ms = 6000, sticky = false, input = null } = {
   if (input) {
     const field = document.createElement('input');
     field.placeholder = input.placeholder || '';
-    field.maxLength = 30;
+    field.maxLength = input.maxLength || 30;
     field.value = input.value || '';
     field.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && field.value.trim()) { hideBubble(true); input.onSubmit(field.value.trim()); }
@@ -105,6 +105,8 @@ function minuteTick() {
     happiness: S.hunger > 70 ? -0.6 : -0.2,
     energy: sleeping ? 4 : -0.3,
   });
+  dailyCheckIns();
+  if (focusUntil > Date.now()) return; // no tummy grumbles while you focus
   if (S.hunger > 75 && !bubbleSticky && Math.random() < 0.15) {
     say(T('hungry'), { actions: [{ label: T('feedBtn'), primary: true, run: feed }, { label: T('laterBtn') }], sticky: true });
   }
@@ -116,6 +118,7 @@ function feed() {
   setMode('eat', 2200);
   for (let i = 0; i < 3; i++) setTimeout(() => float(pick(['🍙', '🍓', '🐟', '🍪'])), i * 350);
   change({ hunger: -35, happiness: 6 });
+  window.pet.track('feed');
   setTimeout(() => say(T('fed')), 1200);
 }
 
@@ -132,9 +135,11 @@ function petIt() {
     float('💤', 'zzz');
     return;
   }
+  if (focusUntil > Date.now()) { float('🤫'); say(T('focusShh'), { ms: 2500 }); return; }
   setMode('happy', 1000);
   float('❤️'); setTimeout(() => float('💕'), 200);
   change({ happiness: 4 });
+  window.pet.track('pet');
   if (Math.random() < 0.35) say(T('petted'), { ms: 3500 });
 }
 
@@ -156,6 +161,10 @@ window.pet.onAction((a) => {
   else if (a === 'switched') { setMode('happy', 900); say(T('switched'), { ms: 3500 }); }
   else if (a === 'back-from-hiding') { setMode('idle', 3000); say(T('backFromHiding'), { ms: 6000 }); }
   else if (a === 'ask-name') askName(true);
+  else if (a === 'focus-25' || a === 'focus-50') startFocus(+a.slice(6));
+  else if (a === 'focus-stop') stopFocus();
+  else if (a === 'mood') askMood();
+  else if (a === 'gratitude') askGratitude();
   else if (a === 'gender-changed') { setMode('happy', 1200); float('💛'); say(T('genderSaved.' + S.petGender), { ms: 4000 }); }
 });
 
@@ -188,6 +197,7 @@ function fireNudge(key) {
   const nd = NUDGES[key];
   if (!S.nudges[key]) return scheduleNudge(key, nd.every());
   if (bubbleSticky || upsetKey) return scheduleNudge(key, 2); // don't stack reminders
+  if (focusUntil > Date.now()) return scheduleNudge(key, (focusUntil - Date.now()) / MIN + 1); // wait for the break
   if (mode === 'sleep') setMode('idle', 0);
   if (nd.anim) setMode(nd.anim, 3200);
   say(T(key + '.lines'), { sticky: true, actions: nudgeButtons(key) });
@@ -220,6 +230,7 @@ function nudgeDone(key) {
   setMode('happy', 2000);
   for (let i = 0; i < 6; i++) setTimeout(() => float(pick(['🎉', '✨', '🌟', '💛'])), i * 160);
   change({ happiness: 8 });
+  window.pet.track(key);
   say(T(key + '.done'), { ms: 3500 });
 }
 
@@ -230,6 +241,142 @@ function nudgeSnoozed(key) {
   if (wasUpset) say(T('snoozedGrumpy'), { ms: 2500 });
   scheduleNudge(key, 10);
 }
+
+// ---------- focus with me ----------
+
+// A Pomodoro-style timer. Mochi stays quiet (no chatter, reminders wait),
+// shows the time left under itself, and celebrates when it's break time.
+let focusUntil = 0;
+let focusMin = 0;
+let breakUntil = 0;
+const pill = document.getElementById('focus-pill');
+
+function startFocus(min, resumeUntil = 0) {
+  focusMin = min;
+  focusUntil = resumeUntil || Date.now() + min * MIN;
+  breakUntil = 0;
+  window.pet.save({ focusUntil, focusMin });
+  if (!resumeUntil) {
+    setMode('happy', 1200);
+    float('🛡️');
+    say(T('focusStart', { count: min }), { ms: 4000 });
+  }
+}
+
+function stopFocus() {
+  focusUntil = 0;
+  breakUntil = 0;
+  window.pet.save({ focusUntil: 0 });
+  say(T('focusStopped'), { ms: 3500 });
+}
+
+function endFocus() {
+  focusUntil = 0;
+  window.pet.save({ focusUntil: 0 });
+  window.pet.track('focus');
+  change({ happiness: 10 });
+  setMode('happy', 2500);
+  for (let i = 0; i < 8; i++) setTimeout(() => float(pick(['🎉', '✨', '🌟', '🏆', '💛'])), i * 150);
+  say(T('focusDone', { count: focusMin }), {
+    sticky: true,
+    actions: [
+      { label: T('breakBtn'), primary: true, run: () => { breakUntil = Date.now() + 5 * MIN; say(T('breakStart'), { ms: 4000 }); } },
+      { label: T('keepGoing'), run: () => startFocus(focusMin) },
+    ],
+  });
+}
+
+function mmss(ms) {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+setInterval(() => {
+  const now = Date.now();
+  if (focusUntil && now >= focusUntil) endFocus();
+  if (breakUntil && now >= breakUntil) {
+    breakUntil = 0;
+    say(T('breakOver'), { sticky: true, actions: [{ label: T('focusAgain'), primary: true, run: () => startFocus(25) }, { label: T('notNow') }] });
+  }
+  const text = focusUntil ? '🛡️ ' + mmss(focusUntil - now) : breakUntil ? '☕ ' + mmss(breakUntil - now) : '';
+  pill.textContent = text;
+  pill.classList.toggle('hidden', !text);
+}, 500);
+
+// ---------- mood and gratitude ----------
+
+const today = () => window.Progress.dayKey();
+
+// Once a day Mochi asks how you feel (late morning onwards), and in the
+// evening asks for one good thing. Both can also be opened from the menu.
+let startedAt = Date.now();
+function dailyCheckIns() {
+  if (bubbleSticky || upsetKey || focusUntil > Date.now() || mode === 'sleep') return;
+  if (Date.now() - startedAt < 10 * MIN) return; // let them settle in first
+  const h = new Date().getHours();
+  const moods = S.moods || {};
+  const jar = S.gratitude || [];
+  if (h >= 10 && h < 21 && !moods[today()]) askMood();
+  else if (h >= 18 && h < 23 && !jar.some((g) => g.d === today()) && moods[today()]) askGratitude();
+}
+
+function askMood() {
+  const faces = ['😞', '🙁', '😐', '🙂', '😄'];
+  say(T('moodAsk'), {
+    sticky: true,
+    actions: faces.map((f, i) => ({ label: f, run: () => saveMood(i + 1) })),
+  });
+}
+
+function saveMood(score) {
+  S.moods = { ...(S.moods || {}), [today()]: score };
+  window.pet.save({ moods: S.moods });
+  window.pet.track('mood');
+  setMode(score >= 4 ? 'happy' : 'idle', 1500);
+  if (score >= 4) float(pick(['☀️', '💛', '✨']));
+  const jar = S.gratitude || [];
+  if (score <= 2) {
+    say(T('moodReply.' + score), {
+      sticky: true,
+      actions: [
+        { label: T('menu.worry'), primary: true, run: () => window.pet.openPlay('worry') },
+        { label: T('breatheWithMe'), run: () => window.pet.openPlay('breathe') },
+        { label: T('okay') },
+      ],
+    });
+    // On a rough day, give back one good thing they saved before.
+    if (jar.length) setTimeout(() => { if (!bubbleSticky) say(T('gratitudeBack', { text: pick(jar).t }), { ms: 8000 }); }, 9000);
+  } else {
+    say(T('moodReply.' + score), { ms: 5000 });
+  }
+}
+
+function askGratitude() {
+  say(T('gratitudeAsk'), {
+    sticky: true,
+    input: { placeholder: T('gratitudePlaceholder'), button: T('save'), maxLength: 120, onSubmit: (text) => {
+      S.gratitude = [...(S.gratitude || []), { d: today(), t: text }].slice(-365);
+      window.pet.save({ gratitude: S.gratitude });
+      window.pet.track('gratitude');
+      setMode('happy', 1500);
+      float('🫙'); setTimeout(() => float('💛'), 250);
+      say(T('gratitudeSaved', { count: S.gratitude.length }), { ms: 4500 });
+    } },
+    actions: [{ label: T('notNow') }],
+  });
+}
+
+// ---------- achievements ----------
+
+window.pet.onAchievement((id) => {
+  const a = window.Progress.ACHIEVEMENTS.find((x) => x.id === id);
+  if (!a) return;
+  setMode('happy', 2000);
+  for (let i = 0; i < 6; i++) setTimeout(() => float(pick([a.emoji, '🏆', '✨'])), i * 170);
+  // Wait for any open question to be answered first.
+  const show = () => (bubbleSticky ? setTimeout(show, 3000) : say(T('achievement', { badge: a.emoji + ' ' + T('badges.' + id + '.name') }), { ms: 6000 }));
+  setTimeout(show, 600);
+});
 
 // ---------- your name ----------
 
@@ -296,7 +443,7 @@ async function reactToSpot(distance) {
 
 function scheduleChatter() {
   setTimeout(() => {
-    if (!bubbleSticky && mode !== 'sleep') {
+    if (!bubbleSticky && mode !== 'sleep' && !(focusUntil > Date.now())) {
       const h = new Date().getHours();
       let line;
       if (h >= 23 || h < 5) line = T('lateNight');
@@ -443,4 +590,5 @@ window.pet.onState((s) => {
   scheduleNudge('eyes', S.eyesEveryMin);
   scheduleChatter();
   setInterval(minuteTick, MIN);
+  if (S.focusUntil > Date.now()) startFocus(S.focusMin || 25, S.focusUntil); // pick up where we left off
 });

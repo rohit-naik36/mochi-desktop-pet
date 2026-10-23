@@ -3,6 +3,7 @@ const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeImage } = require
 const path = require('path');
 const fs = require('fs');
 const I18N = require('./i18n');
+const Progress = require('./progress');
 
 const MIN_MS = 60_000;
 const WIN_W = 220;
@@ -38,6 +39,10 @@ const defaults = {
   x: null,
   y: null,
   lastSeen: Date.now(),
+  stats: null, // points, counts, streak days, badges (see progress.js)
+  moods: {}, // 'YYYY-MM-DD' -> 1..5
+  gratitude: [], // [{ d: 'YYYY-MM-DD', t: 'text' }]
+  focusUntil: 0, // end of the current focus session, if any
 };
 
 function loadState() {
@@ -47,6 +52,7 @@ function loadState() {
   } catch {
     state = { ...defaults };
   }
+  state.stats = { ...Progress.fresh(), ...(state.stats || {}) };
 }
 
 function saveState() {
@@ -138,6 +144,48 @@ function openPlay(game) {
 
 ipcMain.handle('get-state', () => state);
 
+// ---------- points and badges ----------
+
+// Any window reports an activity here; new badges are announced by the pet
+// (or in the play layer if it's open) and the board refreshes.
+ipcMain.on('track', (_e, event, n = 1) => {
+  const unlocked = Progress.record(state.stats, event, n);
+  saveState();
+  for (const id of unlocked) {
+    send('achievement', id);
+    if (playWin && !playWin.isDestroyed()) playWin.webContents.send('achievement', id);
+  }
+  if (boardWin && !boardWin.isDestroyed()) boardWin.webContents.send('state', state);
+  if (unlocked.length) refreshTrayMenu();
+});
+
+let boardWin = null;
+function openBoard() {
+  if (boardWin && !boardWin.isDestroyed()) { boardWin.show(); boardWin.focus(); return; }
+  boardWin = new BrowserWindow({
+    width: 560,
+    height: 720,
+    minWidth: 420,
+    minHeight: 500,
+    title: I18N.t(state.lang, 'board.title', { pet: state.name }),
+    backgroundColor: '#17171f',
+    autoHideMenuBar: true,
+    icon: path.join(__dirname, 'icon.png'),
+    webPreferences: {
+      preload: path.join(__dirname, 'board-preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  boardWin.setMenu(null);
+  boardWin.loadFile(path.join(__dirname, 'board.html'));
+  boardWin.on('closed', () => { boardWin = null; });
+  if (process.env.MOCHI_DEBUG) {
+    boardWin.webContents.once('did-finish-load', () => console.log('board loaded'));
+    boardWin.webContents.on('console-message', (_e, level, msg) => level >= 2 && console.log('board error:', msg));
+  }
+}
+
 // Swearing at the pet: count strikes (forgotten after a day); the third one sends it into hiding.
 const HIDE_MIN = 5;
 let hidingUntil = 0;
@@ -207,7 +255,14 @@ function buildMenu() {
     ]);
   }
   return Menu.buildFromTemplate([
-    { label: `${state.name}  ❤ ${Math.round(state.happiness)}  🍙 ${Math.round(100 - state.hunger)}`, enabled: false },
+    { label: `${state.name}  ❤ ${Math.round(state.happiness)}  🍙 ${Math.round(100 - state.hunger)}  ⭐ ${state.stats.points}`, enabled: false },
+    { label: M('board'), click: openBoard },
+    { type: 'separator' },
+    state.focusUntil > Date.now()
+      ? { label: M('focusStop', Math.ceil((state.focusUntil - Date.now()) / MIN_MS)), click: () => send('action', 'focus-stop') }
+      : { label: M('focus'), submenu: [25, 50].map((m) => ({ label: M('focusMin', m), click: () => send('action', 'focus-' + m) })) },
+    { label: M('mood'), click: () => send('action', 'mood') },
+    { label: M('gratitude'), click: () => send('action', 'gratitude') },
     { type: 'separator' },
     { label: M('feed'), click: () => send('action', 'feed') },
     { label: M('play'), submenu: [
@@ -363,6 +418,7 @@ ipcMain.on('save-state', (_e, partial) => {
   if (!upsetHome) ({ x: state.x, y: state.y } = win.getBounds()); // not the temporary centre spot
   saveState();
   refreshTrayMenu();
+  if (boardWin && !boardWin.isDestroyed()) boardWin.webContents.send('state', state);
 });
 
 const gotLock = app.requestSingleInstanceLock();
@@ -380,6 +436,7 @@ if (!gotLock) {
     screen.on('display-removed', keepOnScreen);
     keepOnScreen(); // also rescues a pet saved somewhere off screen
     if (process.env.MOCHI_DEBUG) setTimeout(() => openPlay(process.env.MOCHI_DEBUG_GAME || 'bubbles'), 3000);
+    if (process.env.MOCHI_DEBUG_BOARD) setTimeout(openBoard, 2000);
     // Tray label shows live stats, so refresh it now and then.
     setInterval(refreshTrayMenu, 60_000);
   });

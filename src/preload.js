@@ -18,4 +18,6 @@ contextBridge.exposeInMainWorld('pet', {
   glideCenter: () => ipcRenderer.send('glide-center'),
   glideHome: () => ipcRenderer.send('glide-home'),
   save: (partial) => ipcRenderer.send('save-state', partial),
+  track: (event, n) => ipcRenderer.send('track', event, n),
+  onAchievement: (fn) => ipcRenderer.on('achievement', (_e, id) => fn(id)),
 });

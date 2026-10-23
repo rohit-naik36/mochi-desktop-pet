@@ -183,6 +183,7 @@ function Breathe() {
     chime();
     say(T('breatheAfter'));
     window.play.reward({ happiness: 10 });
+    window.play.track('breathe');
   }
   btn.onclick = () => {
     if (running) return;
@@ -237,6 +238,7 @@ function Bubbles() {
     b.remove();
     popSound();
     popped++;
+    window.play.track('bubble');
     counter.textContent = T('popped', { count: popped });
     // The buddy glances toward each pop.
     petEl.classList.toggle('facing-left', cx < pos.x);
@@ -287,6 +289,7 @@ function Chase() {
         lastCatch = Date.now();
         catches++;
         counter.textContent = catches === 1 ? T('caughtOne') : T('caught', { count: catches });
+        window.play.track('chase');
         happy(900);
         float('💛', pos.x - 10, pos.y - 70);
         tone(880, 0.25, 'triangle', 0.04, 1.3);
@@ -424,6 +427,7 @@ function Worry() {
       setTimeout(() => mood('idle'), 1400);
       showReply(r);
       window.play.reward({ happiness: 6, hunger: -5 });
+      window.play.track('worry');
     }, total);
   }
 
@@ -466,6 +470,15 @@ function Worry() {
     stop() { letters.innerHTML = ''; },
   };
 }
+
+// New badges earned while playing show up here.
+window.play.onAchievement((id) => {
+  const a = window.Progress.ACHIEVEMENTS.find((x) => x.id === id);
+  if (!a) return;
+  happy(1500);
+  for (let i = 0; i < 5; i++) setTimeout(() => float(pick([a.emoji, '🏆', '✨']), pos.x + rand(-40, 40), pos.y - 50 - rand(0, 30)), i * 170);
+  setTimeout(() => say(T('achievement', { badge: a.emoji + ' ' + T('badges.' + id + '.name') }), 4500), 400);
+});
 
 // ---------- boot ----------
 

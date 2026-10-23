@@ -16,6 +16,20 @@ Click **More info → Run anyway**. See *Getting rid of the SmartScreen warning*
 
 Its own space, separate from the games: right-click → **Feed me a worry**. Type what's bothering you and your buddy eats it, letter by letter. It reflects back what you wrote, offers comfort that fits the topic (deadlines, work, study, money, people, health, self-doubt, the future), and suggests one tiny next step. If a worry mentions self-harm, it gently points to people who can help. It runs fully offline and nothing is saved.
 
+## Focus with me
+
+Right-click → **Focus with me** → 25 or 50 minutes. A small 🛡️ timer appears under your buddy. While you focus it stays quiet: no chatter, no hunger, and reminders wait until the break. Petting it gets a whispered "shh". When time's up it celebrates and offers a 5-minute break (☕ timer), then asks if you want another round.
+
+## Mood check-in and gratitude jar
+
+Once a day (from late morning) your buddy asks how you feel with five faces. On a rough day it offers to eat a worry or breathe with you, and gives back one good thing from your gratitude jar. Each evening it asks for one good thing that happened today and keeps it in the jar. Both are also in the right-click menu. Everything stays on your computer.
+
+## Points, badges and the achievement board
+
+Every activity earns points: snacks, pats, water/stretch/eye breaks, breathing, bubbles, chasing the light, worries, focus sessions, mood check-ins and good things in the jar (with a daily cap per activity, so spamming doesn't count). Points raise your level, and doing anything on a day keeps your streak going. There are 26 badges, from **First Snack** to **Focus Legend** and a 30-day streak, and your buddy announces each one.
+
+Right-click → **🏆 Achievement board** shows your level, points, streak, all badges with progress bars, your mood for the week, everything you've done (all time and today), and the gratitude jar (shake it for a random good memory).
+
 ## Lots to say
 
 Every moment has plenty of lines (about 950 across English, Hindi and Hinglish), and Mochi never repeats the same line twice in a row. Drop it somewhere and it reacts to the spot: a cozy corner, up in the sky at the top, by the taskbar, centre stage, a long "wheee" flight, or dizzy if you keep moving it around.

@@ -1,0 +1,55 @@
+/* Achievement board: a regular window, dark and calm like the play layer. */
+html, body {
+  background: #17171f; color: #ecebf5; overflow: auto; height: auto; min-height: 100%;
+  font-family: "Segoe UI", system-ui, sans-serif; user-select: none;
+}
+body { padding: 20px 22px 28px; box-sizing: border-box; }
+.muted { color: #9a98ad; font-size: 12.5px; }
+h1 { font-size: 18px; margin: 0 0 6px; font-weight: 650; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: #b9b7d0; margin: 0 0 10px; font-weight: 650; }
+section { background: #20202b; border-radius: 14px; padding: 14px 16px; margin-top: 14px; }
+
+header { display: flex; gap: 14px; align-items: center; background: linear-gradient(135deg, #262640, #1f2a3a); border-radius: 16px; padding: 14px 16px; }
+.avatar { position: relative; width: 84px; height: 84px; flex: none; border-radius: 50%; background: radial-gradient(circle, #d9e6f5 0 55%, #b8cbe3 100%); overflow: hidden; }
+.avatar #pet { width: 120px; height: 110px; left: 50%; top: 50%; bottom: auto; cursor: default; transform: translate(-50%, -46%) scale(.72); }
+.who { flex: 1; min-width: 0; }
+.level-row { display: flex; gap: 10px; align-items: baseline; font-size: 14px; }
+#level { font-weight: 700; color: #ffd36b; }
+.bar { height: 8px; border-radius: 6px; background: #343447; margin: 6px 0 4px; overflow: hidden; }
+#bar-fill { height: 100%; width: 0; border-radius: 6px; background: linear-gradient(90deg, #8fa2ff, #ffb36b); transition: width .6s; }
+.streak { text-align: center; flex: none; padding-left: 6px; }
+#streak-n { font-size: 26px; font-weight: 750; }
+#streak-n::before { content: '🔥 '; font-size: 20px; }
+
+.badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; }
+.badge { background: #2a2a38; border-radius: 12px; padding: 10px 8px; text-align: center; }
+.badge .e { font-size: 26px; line-height: 32px; }
+.badge .n { font-size: 12.5px; font-weight: 650; margin-top: 2px; }
+.badge .d { font-size: 11px; color: #9a98ad; margin-top: 2px; }
+.badge .p { height: 4px; border-radius: 3px; background: #3a3a4c; margin-top: 6px; overflow: hidden; }
+.badge .p i { display: block; height: 100%; background: #8fa2ff; }
+.badge.locked .e { filter: grayscale(1); opacity: .35; }
+.badge.locked .n { color: #8d8ba2; }
+.badge.earned { background: linear-gradient(160deg, #3a3252, #2a2a38); box-shadow: inset 0 0 0 1px rgba(255, 211, 107, .35); }
+
+.mood-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; align-items: end; height: 120px; }
+.mood-day { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; font-size: 11px; color: #9a98ad; }
+.mood-day .col { width: 70%; border-radius: 8px 8px 4px 4px; background: #3a3a4c; min-height: 4px; }
+.mood-day .face { font-size: 18px; height: 22px; }
+.mood-day.today { color: #ecebf5; font-weight: 650; }
+
+.activity { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 18px; }
+.act { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 4px 0; }
+.act .e { width: 22px; text-align: center; }
+.act .l { flex: 1; color: #c9c7dc; }
+.act .v { font-weight: 700; }
+.act .t { color: #9a98ad; font-size: 11px; margin-left: 4px; }
+
+.jar-row { display: flex; align-items: center; gap: 12px; }
+.jar { font-size: 38px; }
+.jar.shaking { animation: shake .5s; }
+@keyframes shake { 20% { transform: rotate(-14deg); } 40% { transform: rotate(12deg); } 60% { transform: rotate(-8deg); } 80% { transform: rotate(5deg); } }
+.jar-text { flex: 1; font-size: 13.5px; }
+.note { margin-top: 4px; color: #ffd9a8; font-style: italic; }
+button { border: 0; border-radius: 10px; padding: 8px 12px; font: inherit; font-size: 13px; cursor: pointer; background: #8fa2ff; color: #121220; font-weight: 650; }
+button:disabled { opacity: .4; cursor: default; }

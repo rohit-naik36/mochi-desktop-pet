@@ -6,4 +6,6 @@ contextBridge.exposeInMainWorld('play', {
   strike: () => ipcRenderer.invoke('profanity-strike'),
   hide: () => ipcRenderer.send('pet-hide'),
   done: (x, y) => ipcRenderer.send('play-done', x, y),
+  track: (event, n) => ipcRenderer.send('track', event, n),
+  onAchievement: (fn) => ipcRenderer.on('achievement', (_e, id) => fn(id)),
 });
