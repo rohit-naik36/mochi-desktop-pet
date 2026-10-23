@@ -20,22 +20,34 @@ jobs:
         with:
           fetch-depth: 0
       - id: tags
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          set +e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Last commit carrying each version.
           declare -A last
           for c in $(git rev-list --reverse HEAD); do
             v=$(git show "$c:package.json" 2>/dev/null | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).version||"")}catch{console.log("")}})')
-            [ -n "$v" ] && last[$v]=$c
+            if [ -n "$v" ]; then last[$v]=$c; fi
           done
-          head_v=$(node -p 'require("./package.json").version')
           for v in "${!last[@]}"; do
             if git rev-parse -q --verify "refs/tags/v$v" >/dev/null; then continue; fi
             git tag -a "v$v" "${last[$v]}" -m "Mochi v$v"
-            echo "Tagged v$v at ${last[$v]}"
-            [ "$v" = "$head_v" ] && echo "new_tag=v$v" >> "$GITHUB_OUTPUT"
+            if out=$(git push origin "refs/tags/v$v" 2>&1); then
+              echo "::notice::Tagged v$v at ${last[$v]}"
+            else
+              echo "::error::Could not push v$v: $(echo "$out" | tr '\n' ' ' | tail -c 400)"
+            fi
           done
-          git push origin --tags
+          # Release the current version if it has no GitHub Release yet.
+          head_v=$(node -p 'require("./package.json").version')
+          if ! gh release view "v$head_v" >/dev/null 2>&1; then
+            echo "new_tag=v$head_v" >> "$GITHUB_OUTPUT"
+            echo "::notice::Releasing v$head_v"
+          fi
+          exit 0
 
   release:
     needs: tag
