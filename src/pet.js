@@ -127,11 +127,19 @@ function sleep() {
   say('Nap time... 💤', { ms: 2500 });
 }
 
+// Gains from the play room.
+window.pet.onReward(({ delta, line }) => {
+  change(delta);
+  if (line) float('💛');
+});
+
 window.pet.onAction((a) => {
   if (a === 'feed') feed();
   else if (a === 'play') play();
   else if (a === 'sleep') sleep();
   else if (a === 'pet') petIt();
+  else if (a === 'play-opened') { setMode('happy', 900); hideBubble(true); }
+  else if (a === 'play-closed') say(pick(['That was fun! Come play again soon.', 'Thanks for playing with me!']), 3500);
   else if (a === 'switched') { setMode('happy', 900); say(`Hi! I'm ${S.name}. Nice to meet you!`, { ms: 3500 }); }
 });
 
@@ -181,6 +189,16 @@ function scheduleChatter() {
       let line;
       if (h >= 23 || h < 5) line = "It's getting late. Maybe wrap up soon? 🌙";
       else if (h >= 12 && h < 14 && Math.random() < 0.5) line = 'Have you had lunch? 🍜';
+      else if (Math.random() < 0.3) {
+        say(pick(['Feeling tense? Want to play for a minute?', "Let's take a tiny break together?", 'I found some bubbles. Want to pop them?']), {
+          sticky: true,
+          actions: [
+            { label: "Let's play", primary: true, run: () => window.pet.openPlay() },
+            { label: 'Not now' },
+          ],
+        });
+        return scheduleChatter();
+      }
       else line = pick([
         'Just checking in. How is it going?', "I believe in you.", 'Remember to unclench your jaw :)',
         "Small progress is still progress.", "I'm right here if you need a smile.", 'Psst... posture check!',

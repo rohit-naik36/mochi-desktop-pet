@@ -12,6 +12,16 @@ drink water, stretch, and rest your eyes.
 Until the app is signed, Windows SmartScreen says "Windows protected your PC".
 Click **More info → Run anyway**. See *Getting rid of the SmartScreen warning* below.
 
+## Play room
+
+Right-click → **Play** opens a calm play room with your buddy. Every game makes your buddy happier.
+- **Breathe with me**: your buddy swells as you breathe in and shrinks as you breathe out (4s in, 4s hold, 6s out, 6 rounds).
+- **Bubble pop**: soft bubbles float up. Pop them with gentle sounds. No timer, no score pressure.
+- **Chase the light**: a warm light follows your mouse and your buddy floats after it.
+- **Feed it a worry**: type what's bothering you and your buddy eats it, letter by letter. Nothing is saved.
+
+Your buddy also sometimes asks if you want a quick play break. The 🔊 button turns sounds off.
+
 ## Pick your buddy
 
 Right-click the pet and open **Choose your buddy**:

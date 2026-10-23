@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+<link rel="stylesheet" href="pet.css">
+<link rel="stylesheet" href="play.css">
+</head>
+<body>
+  <div id="room">
+    <header>
+      <div id="title">Play time</div>
+      <div class="header-actions">
+        <button id="sound" title="Sound on/off">🔊</button>
+        <button id="close" title="Close (Esc)">✕</button>
+      </div>
+    </header>
+
+    <nav id="tabs">
+      <button data-game="breathe" class="active">🌬️ Breathe</button>
+      <button data-game="bubbles">🫧 Bubble pop</button>
+      <button data-game="chase">✨ Chase the light</button>
+      <button data-game="worry">🍃 Feed a worry</button>
+    </nav>
+
+    <main id="arena">
+      <div id="fx"></div>
+      <div id="orb" class="hidden"></div>
+      <div id="pet-wrap"><div id="pet" class="idle" data-pet-svg></div></div>
+
+      <section id="breathe" class="panel">
+        <div id="breathe-cue">Ready when you are</div>
+        <div id="breathe-count"></div>
+        <div id="breathe-dots"></div>
+        <button id="breathe-start" class="cta">Start (1 min)</button>
+      </section>
+
+      <section id="bubbles" class="panel hidden">
+        <div class="hint">Pop as many or as few as you like. There's no timer.</div>
+        <div id="pop-count">0 popped</div>
+        <div id="bubble-field"></div>
+      </section>
+
+      <section id="chase" class="panel hidden">
+        <div class="hint">Move your mouse slowly. Your buddy follows the light.</div>
+        <div id="catch-count"></div>
+      </section>
+
+      <section id="worry" class="panel hidden">
+        <div class="hint">Type what's weighing on you. Your buddy will eat it. Nothing is saved.</div>
+        <textarea id="worry-text" maxlength="240" placeholder="e.g. the deadline on Friday"></textarea>
+        <button id="worry-feed" class="cta">Feed it</button>
+        <div id="worry-letters"></div>
+      </section>
+
+      <div id="speech" class="hidden"></div>
+    </main>
+  </div>
+  <script src="pet-svg.js"></script>
+  <script src="play.js"></script>
+</body>
+</html>

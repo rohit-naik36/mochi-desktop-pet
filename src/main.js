@@ -81,6 +81,41 @@ function createWindow() {
   win.webContents.on('did-finish-load', () => win.webContents.send('state', state));
 }
 
+let playWin = null;
+
+function openPlay(game) {
+  if (playWin && !playWin.isDestroyed()) { playWin.focus(); return; }
+  const wa = workArea();
+  const W = 560, H = 480;
+  playWin = new BrowserWindow({
+    width: W,
+    height: H,
+    x: Math.round(wa.x + (wa.width - W) / 2),
+    y: Math.round(wa.y + (wa.height - H) / 2),
+    transparent: true,
+    frame: false,
+    resizable: false,
+    alwaysOnTop: true,
+    skipTaskbar: false,
+    title: `Play with ${state.name}`,
+    webPreferences: {
+      preload: path.join(__dirname, 'play-preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  playWin.loadFile(path.join(__dirname, 'play.html'), game ? { query: { game } } : undefined);
+  if (process.env.MOCHI_DEBUG) playWin.webContents.on('did-finish-load', () => console.log('play room loaded'));
+  playWin.webContents.on('console-message', (_e, level, msg) => process.env.MOCHI_DEBUG && level >= 2 && console.log('play error:', msg));
+  playWin.on('closed', () => { playWin = null; send('action', 'play-closed'); });
+  send('action', 'play-opened');
+}
+
+ipcMain.handle('get-state', () => state);
+ipcMain.on('close-play', () => playWin && playWin.close());
+// Games report happiness gains; the desktop pet applies and saves them.
+ipcMain.on('play-reward', (_e, delta, line) => send('reward', { delta, line }));
+
 function trayIcon() {
   const p = path.join(__dirname, 'icon.png');
   const img = nativeImage.createFromPath(p);
@@ -105,7 +140,14 @@ function buildMenu() {
     { label: `${state.name}  ❤ ${Math.round(state.happiness)}  🍙 ${Math.round(100 - state.hunger)}`, enabled: false },
     { type: 'separator' },
     { label: 'Feed', click: () => send('action', 'feed') },
-    { label: 'Play', click: () => send('action', 'play') },
+    { label: 'Play', submenu: [
+      { label: 'Open play room', click: () => openPlay() },
+      { type: 'separator' },
+      { label: 'Breathe with me', click: () => openPlay('breathe') },
+      { label: 'Bubble pop', click: () => openPlay('bubbles') },
+      { label: 'Chase the light', click: () => openPlay('chase') },
+      { label: 'Feed it a worry', click: () => openPlay('worry') },
+    ] },
     { label: 'Nap time', click: () => send('action', 'sleep') },
     { label: 'Choose your buddy', submenu: SKINS.map((sk) => ({
       label: sk.label,
@@ -185,6 +227,8 @@ ipcMain.on('drag-move', () => {
 });
 ipcMain.on('drag-end', () => { dragOffset = null; });
 
+ipcMain.on('open-play', (_e, game) => openPlay(game));
+
 ipcMain.on('context-menu', () => buildMenu().popup({ window: win }));
 
 ipcMain.handle('get-bounds', () => {
@@ -221,6 +265,7 @@ if (!gotLock) {
     screen.on('display-metrics-changed', keepOnScreen);
     screen.on('display-removed', keepOnScreen);
     keepOnScreen(); // also rescues a pet saved somewhere off screen
+    if (process.env.MOCHI_DEBUG) setTimeout(() => openPlay('bubbles'), 3000);
     // Tray label shows live stats, so refresh it now and then.
     setInterval(refreshTrayMenu, 60_000);
   });

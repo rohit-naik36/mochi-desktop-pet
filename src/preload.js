@@ -2,6 +2,8 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('pet', {
   onState: (fn) => ipcRenderer.on('state', (_e, s) => fn(s)),
+  onReward: (fn) => ipcRenderer.on('reward', (_e, r) => fn(r)),
+  openPlay: (game) => ipcRenderer.send('open-play', game),
   onAction: (fn) => ipcRenderer.on('action', (_e, a) => fn(a)),
   mouseOverPet: (over) => ipcRenderer.send('mouse-over-pet', over),
   dragStart: () => ipcRenderer.send('drag-start'),
