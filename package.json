@@ -1,6 +1,6 @@
 {
   "name": "mochi-desktop-pet",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "A tiny desktop pet that keeps you company and reminds you to drink water and stretch.",
   "main": "src/main.js",
   "scripts": {

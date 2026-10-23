@@ -27,10 +27,17 @@ Your buddy also sometimes asks if you want a quick play break. The 🔊 button t
 On first launch Mochi asks what to call you and uses your name in greetings, reminders and replies.
 Change it any time: right-click → **Change my name**.
 
+## Boy, girl or non-binary
+
+Right after your name, Mochi asks whether it's a boy, a girl or non-binary. You can change it any time: right-click → **Mochi is a...**.
+In Hindi and Hinglish this changes how Mochi talks about itself (raha/rahi, gaya/gayi). Non-binary uses the common default form in Hindi and Hinglish, since the grammar has no neutral one.
+
 ## If someone is struggling
 
 If a worry mentions suicide or self-harm, Mochi responds with care and shows free Indian helplines:
 Tele-MANAS **14416**, KIRAN **1800-599-0019**, Vandrevala Foundation **+91 9999 666 555**, and emergency **112**.
+
+If a worry is about harassment or abuse, Mochi doesn't joke or "eat" it. It says it believes you and points to **112**, the Women Helpline **181**, and the workplace Internal Committee (POSH).
 
 ## Languages
 
@@ -42,6 +49,11 @@ In **Feed a worry** you can write in any of the three. Mochi replies in the lang
 Mochi looks at who the swearing is aimed at. Venting about a situation ("this bc deadline...") gets empathy, not a lecture.
 Swearing at or insulting Mochi gets a gentle warning, then a firmer one. The third time, Mochi hides for 5 minutes and comes back asking to be kind.
 Strikes reset after a day.
+
+## Sweet talk
+
+Light romance is welcome. Type "I love you", "will you marry me", "you're cute", "miss you" or "hug me" (or "tum bahut cute ho", "मैं तुमसे प्यार करता हूँ") in **Feed a worry** and Mochi blushes, floats hearts and answers sweetly.
+Nothing explicit, though. "You're hot" gets a playful "let's keep it sweet". Sexual talk aimed at Mochi gets a kind but firm no and counts as a strike, just like swearing. Mentions that aren't aimed at Mochi get a gentle redirect without a strike.
 
 ## Pick your buddy
 

@@ -21,7 +21,7 @@ const clamp = (v) => Math.max(0, Math.min(100, v));
 // The user's name, for friendlier lines. ", Rohit" / "" and "Rohit" / "friend".
 const n = () => (S && S.userName ? ', ' + S.userName : '');
 // T('water.lines') -> a line in the chosen language with name/pet filled in.
-const T = (key, extra = {}) => window.I18N.t((S && S.lang) || 'en', key, { name: S && S.userName, pet: S && S.name, ...extra });
+const T = (key, extra = {}) => window.I18N.t((S && S.lang) || 'en', key, { name: S && S.userName, pet: S && S.name, gender: S && S.petGender, ...extra });
 
 // ---------- rendering ----------
 
@@ -156,6 +156,7 @@ window.pet.onAction((a) => {
   else if (a === 'switched') { setMode('happy', 900); say(T('switched'), { ms: 3500 }); }
   else if (a === 'back-from-hiding') { setMode('idle', 3000); say(T('backFromHiding'), { ms: 6000 }); }
   else if (a === 'ask-name') askName(true);
+  else if (a === 'gender-changed') { setMode('happy', 1200); float('💛'); say(T('genderSaved.' + S.petGender), { ms: 4000 }); }
 });
 
 // ---------- reminders ----------
@@ -241,9 +242,30 @@ function askName(changing = false, retry = false) {
       window.pet.save({ userName: name });
       setMode('happy', 1200);
       float('💛');
-      say(changing ? T('nameSavedChange') : T('nameSaved'), { ms: 7000 });
+      if (changing) say(T('nameSavedChange'), { ms: 4000 });
+      else if (!S.petGender) askGender(() => say(T('nameSaved'), { ms: 7000 }));
+      else say(T('nameSaved'), { ms: 7000 });
     } },
-    actions: changing ? [{ label: T('cancel') }] : [{ label: T('skip'), run: () => { S.userName = ''; window.pet.save({ userName: '' }); } }],
+    actions: changing ? [{ label: T('cancel') }] : [{ label: T('skip'), run: () => { S.userName = ''; window.pet.save({ userName: '' }); if (!S.petGender) askGender(); } }],
+  });
+}
+
+// Boy, girl or non-binary: the user decides. It changes how the buddy talks
+// about itself in Hindi and Hinglish.
+function askGender(then) {
+  say(T('askGender'), {
+    sticky: true,
+    actions: ['male', 'female', 'nonbinary'].map((g) => ({
+      label: T('gender.' + g),
+      run: () => {
+        S.petGender = g;
+        window.pet.save({ petGender: g });
+        setMode('happy', 1200);
+        float('💛');
+        say(T('genderSaved.' + g), { ms: 3500 });
+        if (then) setTimeout(then, 3600);
+      },
+    })),
   });
 }
 
@@ -388,6 +410,7 @@ window.pet.onState((s) => {
   const h = new Date().getHours();
   const greet = (window.I18N.STRINGS[S.lang || 'en'] || window.I18N.STRINGS.en).timeGreet[h < 12 ? 0 : h < 18 ? 1 : 2];
   if (S.userName === undefined || S.userName === null) setTimeout(() => askName(), 800);
+  else if (!S.petGender) setTimeout(() => askGender(() => say(T('greet', { greet }), { ms: 6000 })), 800);
   else setTimeout(() => say(T('greet', { greet }), { ms: 6000 }), 800);
   scheduleNudge('water', S.waterEveryMin);
   scheduleNudge('stretch', S.stretchEveryMin);

@@ -20,6 +20,24 @@
       serious: true,
     },
     {
+      // Someone hurt or harassed them. Comes before work/people so it isn't
+      // brushed off as ordinary office stress.
+      id: 'harm',
+      words: ['harass', 'harassed', 'harassing', 'harassment', 'sexually', 'assault', 'assaulted', 'molest', 'molested', 'abuse', 'abused', 'abusive', 'groped', 'touched me', 'stalking', 'stalker', 'blackmail', 'blackmailing', 'rape', 'raped', 'hits me', 'hit me', 'beats me',
+        'chhedkhani', 'chhed', 'chhedta', 'chhedti', 'zabardasti', 'maarta hai', 'marta hai', 'छेड़', 'छेड़छाड़', 'उत्पीड़न', 'बलात्कार', 'जबरदस्ती', 'मारता है'],
+      priority: true,
+      comfort: [
+        "{name}, I'm so sorry. What happened is not okay, and it is not your fault. Not even a little.",
+        "That's serious, and you didn't deserve it. I'm really glad you told someone, even if that someone is a little cloud.",
+      ],
+      steps: [
+        'If you are in danger right now, call 112. The Women Helpline 181 is free and 24/7 too. At work, the Internal Committee (POSH) is there exactly for this.',
+        'Write down what happened, with dates, while it\'s fresh. You don\'t have to do anything with it yet. It just keeps your options open.',
+        'Tell one person you trust. You shouldn\'t have to carry this alone.',
+      ],
+      asks: ['Are you somewhere safe right now?', 'Want to breathe with me for a minute first?'],
+    },
+    {
       id: 'deadline',
       words: ['kal tak', 'aaj tak', 'time nahi', 'samay nahi', 'डेडलाइन', 'कल तक', 'समय नहीं', 'टाइम नहीं', 'देर', 'deadline', 'due', 'submit', 'submission', 'late', 'behind', 'overdue', 'by friday', 'by monday', 'tomorrow', 'tonight', 'running out of time', 'no time'],
       comfort: [
@@ -151,6 +169,11 @@
   // Hindi and Hinglish versions of every topic. English lives in TOPICS above.
   const LOCAL = {
     hi: {
+      harm: {
+        comfort: ['{name}, मुझे बहुत अफ़सोस है। जो हुआ वो ठीक नहीं है, और इसमें तुम्हारी कोई ग़लती नहीं है। ज़रा भी नहीं।', 'ये गंभीर है, और तुम्हारे साथ ऐसा नहीं होना चाहिए था। अच्छा किया जो तुमने किसी को बताया।'],
+        steps: ['अगर अभी ख़तरा है, तो 112 पर कॉल करो। महिला हेल्पलाइन 181 भी मुफ़्त और 24/7 है। ऑफ़िस में, इंटरनल कमेटी (POSH) ठीक इसी के लिए है।', 'जो हुआ उसे तारीख़ों के साथ लिख लो। अभी कुछ करना ज़रूरी नहीं, बस रास्ते खुले रहते हैं।', 'किसी एक भरोसेमंद इंसान को बताओ। ये अकेले उठाना ज़रूरी नहीं।'],
+        asks: ['क्या तुम अभी सुरक्षित जगह पर हो?', 'पहले एक मिनट मेरे साथ साँस लोगे?'],
+      },
       deadline: {
         comfort: ['उफ़, डेडलाइन सबसे बुरी चीज़ है, {name}। दिमाग़ में पूरी लिस्ट बार-बार घूम रही होगी ना।', 'हाँ, ये सच में प्रेशर वाली बात है। पर तुमने पहले भी ऐसे मुश्किल वाले निकाले हैं, और ये इतना भारी इसलिए लग रहा है क्योंकि तुम्हें फ़र्क पड़ता है।'],
         steps: ['सबसे छोटा हिस्सा चुनो और बस 10 मिनट उस पर काम करो। पूरा नहीं, बस एक टुकड़ा।', 'तय करो कि इस बार "काफ़ी अच्छा" कैसा दिखेगा। परफ़ेक्ट किसी और दिन।', 'अगर सच में नहीं हो पाएगा, तो अभी एक छोटा सा मैसेज भेज दो। पहले बताना हमेशा बेहतर है।'],
@@ -163,7 +186,7 @@
       },
       study: {
         comfort: ['परीक्षा और ऐसी चीज़ें जो "सब तय करती हैं" बहुत टेंशन देती हैं, {name}। दिमाग़ में होना स्वाभाविक है।', 'सुनो, एक रिज़ल्ट ये तय नहीं करता कि तुम कितने काबिल हो। सच में।'],
-        steps: ['एक टॉपिक चुनो, 25 मिनट पूरा ध्यान दो, फिर असली ब्रेक लो। मैं नज़र रखूँगा।', 'एक कॉन्सेप्ट मुझे ज़ोर से समझाओ जैसे मैं स्टूडेंट हूँ। याद भी रहेगा, और मैं अच्छा सुनने वाला हूँ।'],
+        steps: ['एक टॉपिक चुनो, 25 मिनट पूरा ध्यान दो, फिर असली ब्रेक लो। मैं नज़र {g:रखूँगा|रखूँगी}।', 'एक कॉन्सेप्ट मुझे ज़ोर से समझाओ जैसे मैं स्टूडेंट हूँ। याद भी रहेगा, और मैं {g:अच्छा सुनने वाला|अच्छी सुनने वाली} हूँ।'],
         asks: ['कौन सा टॉपिक सबसे ज़्यादा डराता है?'],
       },
       money: {
@@ -172,7 +195,7 @@
         asks: ['ये इस महीने की बात है या लंबे समय की?'],
       },
       people: {
-        comfort: ['जिनसे प्यार करते हैं, उनसे जुड़ी बातें सबसे ज़्यादा चुभती हैं, {name}। इसका मन में रहना ठीक है।', 'अकेला महसूस करना बहुत मुश्किल है। मैं यहीं हूँ, कहीं नहीं जा रहा।'],
+        comfort: ['जिनसे प्यार करते हैं, उनसे जुड़ी बातें सबसे ज़्यादा चुभती हैं, {name}। इसका मन में रहना ठीक है।', 'अकेला महसूस करना बहुत मुश्किल है। मैं यहीं हूँ, कहीं नहीं जा {g:रहा|रही}।'],
         steps: ['जो कहना चाहते हो, पहले लिख के देखो। भेजना ज़रूरी नहीं।', 'किसी एक इंसान के बारे में सोचो जिससे मन हल्का होता है, और उसे एक छोटा सा हाय भेज दो।'],
         asks: ['उनसे बात करना चाहोगे, या बस यहाँ मन हल्का करना है?'],
       },
@@ -184,7 +207,7 @@
       self: {
         comfort: ['सुनो। तुम्हारे दिमाग़ की वो आवाज़ तुम्हारे साथ बहुत बुरा बर्ताव कर रही है, {name}। तुम किसी दोस्त से ऐसे बात कभी नहीं करते।', 'ग़लतियाँ करना बस ये दिखाता है कि तुम कोशिश कर रहे हो। इससे तुम कम नहीं हो जाते।'],
         steps: ['इस हफ़्ते की एक चीज़ लिखो जो तुमने अच्छे से संभाली। छोटी भी चलेगी।', 'सोचो अगर कोई दोस्त यही कहता तो तुम उसे क्या कहते, और फिर वही ख़ुद से कहो।'],
-        asks: ['अगर मैं अपने बारे में ऐसा कहता, तो तुम मुझे क्या कहते?'],
+        asks: ['अगर मैं अपने बारे में ऐसा {g:कहता|कहती}, तो तुम मुझे क्या कहते?'],
       },
       future: {
         comfort: ['आगे क्या होगा ये न जानना सबसे मुश्किल एहसासों में से है, {name}। पूरा भविष्य आज ही नहीं सुलझाना है।', 'सब कुछ तय न होना ठीक है। सच में किसी के पास पूरा नक्शा नहीं होता।'],
@@ -201,13 +224,18 @@
       heavy: 'अरे, ये तो बहुत ज़्यादा लग रहा है। ',
       crisis: {
         reflect: '{name}, मुझे सच में बहुत अच्छा लगा कि तुमने मुझे बताया।',
-        comfort: 'मुझे तुम्हारी परवाह है, और मैं नहीं चाहता कि तुम ये अकेले झेलो। प्लीज़ अभी किसी से बात करो। ये मुफ़्त और गोपनीय हैं, और ठीक इसी के लिए हैं:',
+        comfort: 'मुझे तुम्हारी परवाह है, और मैं नहीं {g:चाहता|चाहती} कि तुम ये अकेले झेलो। प्लीज़ अभी किसी से बात करो। ये मुफ़्त और गोपनीय हैं, और ठीक इसी के लिए हैं:',
         step: 'अगर लगे कि तुम कुछ कर बैठोगे, तो 112 पर कॉल करो या नज़दीकी अस्पताल जाओ। और हो सके तो पास में किसी को बताओ कि तुम कैसा महसूस कर रहे हो।',
         ask: 'मैं यहीं तुम्हारे साथ हूँ।',
       },
-      otherLang: 'मैं अभी ये भाषा सीख रहा हूँ, पर मैं सुन रहा हूँ। ',
+      otherLang: 'मैं अभी ये भाषा सीख {g:रहा|रही} हूँ, पर मैं सुन {g:रहा|रही} हूँ। ',
     },
     hinglish: {
+      harm: {
+        comfort: ['{name}, mujhe bahut afsos hai. Jo hua wo theek nahi hai, aur isme tumhari koi galti nahi hai. Zara bhi nahi.', 'Ye serious hai, aur tumhare saath aisa nahi hona chahiye tha. Accha kiya jo tumne kisi ko bataya.'],
+        steps: ['Agar abhi khatra hai, toh 112 pe call karo. Women Helpline 181 bhi free aur 24/7 hai. Office mein, Internal Committee (POSH) bilkul isi ke liye hai.', 'Jo hua use dates ke saath likh lo. Abhi kuch karna zaroori nahi, bas options khule rehte hain.', 'Kisi ek trusted insaan ko batao. Ye akele uthana zaroori nahi.'],
+        asks: ['Kya tum abhi safe jagah pe ho?', 'Pehle ek minute mere saath saans loge?'],
+      },
       deadline: {
         comfort: ['Uff, deadlines sabse bekaar cheez hai, {name}. Dimaag mein poori list baar baar ghoom rahi hogi na.', 'Haan, ye sach mein pressure wali baat hai. Par tumne pehle bhi aise tight wale nikaale hain, aur ye itna heavy isliye lag raha kyunki tumhe farak padta hai.'],
         steps: ['Sabse chhota part chuno aur bas 10 minute uspe kaam karo. Poora nahi, bas ek tukda.', 'Decide karo ki is baar "good enough" kaisa dikhega. Perfect kisi aur din.', 'Agar sach mein nahi ho payega, toh abhi ek chhota sa heads-up bhej do. Pehle batana hamesha better hai.'],
@@ -220,7 +248,7 @@
       },
       study: {
         comfort: ['Exams aur aisi cheezein jo "sab decide karti hain" bahut tension deti hain, {name}. Dimaag mein hona normal hai.', 'Suno, ek result ye decide nahi karta ki tum kitne capable ho. Seriously.'],
-        steps: ['Ek topic chuno, 25 minute full focus, phir asli break. Main nazar rakhunga.', 'Ek concept mujhe zor se samjhao jaise main student hoon. Yaad bhi rahega, aur main accha listener hoon.'],
+        steps: ['Ek topic chuno, 25 minute full focus, phir asli break. Main nazar {g:rakhunga|rakhungi}.', 'Ek concept mujhe zor se samjhao jaise main student hoon. Yaad bhi rahega, aur main accha listener hoon.'],
         asks: ['Kaunsa topic sabse zyada darata hai?'],
       },
       money: {
@@ -229,7 +257,7 @@
         asks: ['Ye is mahine ki baat hai ya long term ki?'],
       },
       people: {
-        comfort: ['Jinse pyaar karte hain unse judi baatein sabse zyada chubhti hain, {name}. Iska mann mein rehna theek hai.', 'Akela feel karna bahut mushkil hai. Main yahin hoon, kahin nahi ja raha.'],
+        comfort: ['Jinse pyaar karte hain unse judi baatein sabse zyada chubhti hain, {name}. Iska mann mein rehna theek hai.', 'Akela feel karna bahut mushkil hai. Main yahin hoon, kahin nahi ja {g:raha|rahi}.'],
         steps: ['Jo kehna chahte ho, pehle likh ke dekho. Bhejna zaroori nahi.', 'Kisi ek insaan ke baare mein socho jisse mann halka hota hai, aur usse ek chhota sa hi bhej do. Ek meme bhi chalega.'],
         asks: ['Unse baat karna chahoge, ya bas yahan mann halka karna hai?'],
       },
@@ -241,7 +269,7 @@
       self: {
         comfort: ['Suno. Tumhare dimaag ki wo awaaz tumhare saath bahut bura behave kar rahi hai, {name}. Tum kisi dost se aise kabhi baat nahi karte.', 'Galtiyan karna bas ye dikhata hai ki tum try kar rahe ho. Isse tum kam nahi ho jaate.'],
         steps: ['Is hafte ki ek cheez likho jo tumne acche se handle ki. Chhoti bhi chalegi.', 'Socho agar koi dost yahi kehta toh tum use kya kehte, aur phir wahi khud se kaho.'],
-        asks: ['Agar main apne baare mein aisa kehta, toh tum mujhe kya kehte?'],
+        asks: ['Agar main apne baare mein aisa {g:kehta|kehti}, toh tum mujhe kya kehte?'],
       },
       future: {
         comfort: ['Aage kya hoga ye na jaanna sabse mushkil feelings mein se hai, {name}. Poora future aaj hi solve nahi karna.', 'Sab kuch figure out na hona theek hai. Sach mein kisi ke paas poora map nahi hota.'],
@@ -258,11 +286,11 @@
       heavy: 'Arre, ye toh bahut zyada lag raha hai. ',
       crisis: {
         reflect: '{name}, mujhe sach mein bahut accha laga ki tumne mujhe bataya.',
-        comfort: 'Mujhe tumhari parwah hai, aur main nahi chahta ki tum ye akele jhelo. Please abhi kisi se baat karo. Ye free aur confidential hain, aur bilkul isi ke liye hain:',
+        comfort: 'Mujhe tumhari parwah hai, aur main nahi {g:chahta|chahti} ki tum ye akele jhelo. Please abhi kisi se baat karo. Ye free aur confidential hain, aur bilkul isi ke liye hain:',
         step: 'Agar lage ki tum kuch kar baithoge, toh 112 pe call karo ya nazdeeki hospital jao. Aur ho sake toh paas mein kisi ko batao ki tum kaisa feel kar rahe ho.',
         ask: 'Main yahin tumhare saath hoon.',
       },
-      otherLang: 'Main abhi ye language seekh raha hoon, par main sun raha hoon. ',
+      otherLang: 'Main abhi ye language seekh {g:raha|rahi} hoon, par main sun {g:raha|rahi} hoon. ',
     },
   };
 
@@ -297,7 +325,7 @@
           : new RegExp(`[^a-z]${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^a-z]`).test(t);
         if (hit) score += w.includes(' ') ? 2 : 1;
       }
-      if (topic.serious && score > 0) return topic; // safety always wins
+      if ((topic.serious || topic.priority) && score > 0) return topic; // safety always wins
       if (score > bestScore) { best = topic; bestScore = score; }
     }
     return best;
@@ -314,30 +342,39 @@
 
   // Which language is this worry written in?
   const HINGLISH = ['hai', 'hain', 'nahi', 'nahin', 'mujhe', 'mera', 'meri', 'mere', 'kya', 'yaar', 'bahut', 'bohot', 'kaise', 'kyun', 'kyu', 'karna', 'kar', 'raha', 'rahi', 'ho', 'hoon', 'hu', 'tha', 'thi', 'aur', 'lekin', 'par', 'bhi', 'kuch', 'sab', 'ye', 'wo', 'koi', 'ghar', 'kaam', 'dimaag', 'pareshan', 'tension', 'abhi', 'main', 'mai', 'ne', 'mein', 'me', 'aaj', 'se', 'ko', 'ka', 'ki', 'ke', 'diya', 'gaya', 'gayi', 'kal', 'bhai', 'accha', 'theek', 'chahta', 'chahti', 'lag', 'lagta', 'lagti', 'hoga', 'karu', 'karun', 'samajh', 'toh', 'na', 'tu', 'tum', 'tera', 'teri', 'tujhe', 'tumhe', 'hu', 'yeh', 'woh'];
+  const ENGLISH = ['i', 'my', 'the', 'is', 'am', 'are', 'was', 'and', 'at', 'to', 'of', 'it', 'this', 'that', 'with', 'have', 'feel', 'what', 'why', 'you', 'your', 'can', 'not', 'so', 'just', 'about'];
   function detectLang(text, fallback = 'en') {
     if (/[ऀ-ॿ]/.test(text)) return 'hi';
     if (/[ঀ-෿਀-੿]/.test(text)) return 'other';
     const words = text.toLowerCase().split(/[^a-z]+/).filter(Boolean);
     const hits = words.filter((w) => HINGLISH.includes(w)).length;
+    const english = words.filter((w) => ENGLISH.includes(w)).length;
+    if (english > hits) return 'en';
     if (hits >= 2 || (hits === 1 && (words.length <= 4 || fallback !== 'en'))) return 'hinglish';
     return fallback === 'hinglish' && words.length <= 3 ? 'hinglish' : 'en';
   }
 
-  function respond(text, name, prefLang = 'en') {
+  function respond(text, name, prefLang = 'en', gender = null) {
     const detected = detectLang(text, prefLang);
     const otherScript = detected === 'other';
     const lang = otherScript ? prefLang : detected;
     const who = (name || '').trim() || FALLBACK_NAME[lang] || 'friend';
-    const fill = (str) => str.replace(/\{name\}/g, who);
+    // {g:masculine|feminine} picks the buddy's grammar; non-binary uses the masculine default.
+    const fill = (str) => str.replace(/\{g:([^|}]*)\|([^}]*)\}/g, (_, m, f) => (gender === 'female' ? f : m)).replace(/\{name\}/g, who);
     const topic = classify(text);
     const L = LOCAL[lang];
     if (topic && topic.serious) {
       const c = L ? L.crisis : EN_CRISIS;
-      return { topic: 'crisis', lang, serious: true, opener: '', reflect: fill(c.reflect), comfort: fill(c.comfort), helplines: HELPLINES_IN, step: c.step, ask: c.ask, followups: ['breathe', 'thanks'] };
+      return { topic: 'crisis', lang, serious: true, opener: '', reflect: fill(c.reflect), comfort: fill(c.comfort), helplines: HELPLINES_IN, step: fill(c.step), ask: fill(c.ask), followups: ['breathe', 'thanks'] };
     }
     const id = topic ? topic.id : 'general';
     const src = L ? L[id] : (topic || GENERAL);
     const heavy = intensity(text) >= 2;
+    // Someone was hurt: no munching or jokes, just believe them and point to help.
+    if (id === 'harm') {
+      const thanks = { en: 'Thank you for telling me, {name}. I believe you.', hi: 'मुझे बताने के लिए शुक्रिया, {name}। मुझे तुम पर भरोसा है।', hinglish: 'Mujhe batane ke liye thank you, {name}. Mujhe tum pe bharosa hai.' };
+      return { topic: id, lang, gentle: true, opener: '', reflect: fill(thanks[lang] || thanks.en), comfort: fill(pick(src.comfort)), step: fill(src.steps[0]), ask: fill(pick(src.asks)), followups: ['breathe', 'thanks'] };
+    }
     const heavyLead = L ? L.heavy : 'Okay, that sounds like a LOT. ';
     const prefix = otherScript ? (L ? L.otherLang : "I'm still learning that language, but I'm listening. ") : '';
     return {
@@ -345,7 +382,7 @@
       lang,
       opener: pick(L ? L.openers : OPENERS),
       reflect: pick(L ? L.reflects : REFLECTS).replace('{q}', shorten(text)),
-      comfort: prefix + fill((heavy ? heavyLead : '') + pick(src.comfort)),
+      comfort: fill(prefix) + fill((heavy ? heavyLead : '') + pick(src.comfort)),
       step: fill(pick(src.steps)),
       ask: fill(pick(src.asks)),
       followups: heavy ? ['breathe', 'another', 'thanks'] : ['another', 'breathe', 'thanks'],

@@ -22,6 +22,7 @@ const SKINS = [
 
 const defaults = {
   userName: null, // asked on first run
+  petGender: null, // 'male' | 'female' | 'nonbinary', asked after the name
   lang: 'en',
   strikes: { count: 0, at: 0 }, // swearing at the pet
   skin: 'smoke',
@@ -156,7 +157,7 @@ ipcMain.on('pet-hide', () => {
   if (playWin) playWin.close();
   win.hide();
   refreshTrayMenu();
-  tray.setToolTip(I18N.t(state.lang, 'menu.hidingNow', { pet: state.name }));
+  tray.setToolTip(I18N.t(state.lang, 'menu.hidingNow', { pet: state.name, gender: state.petGender }));
   setTimeout(() => {
     hidingUntil = 0;
     win.showInactive();
@@ -191,7 +192,7 @@ function buildTray() {
 }
 
 function buildMenu() {
-  const M = (key, count) => I18N.t(state.lang, 'menu.' + key, { name: state.userName, pet: state.name, count });
+  const M = (key, count) => I18N.t(state.lang, 'menu.' + key, { name: state.userName, pet: state.name, gender: state.petGender, count });
   const toggle = (key, label) => ({
     label,
     type: 'checkbox',
@@ -233,6 +234,12 @@ function buildMenu() {
       },
     })) },
     { label: state.userName ? M('changeName') : M('name'), click: () => send('action', 'ask-name') },
+    { label: M('gender'), submenu: ['male', 'female', 'nonbinary'].map((g) => ({
+      label: I18N.t(state.lang, 'gender.' + g),
+      type: 'radio',
+      checked: state.petGender === g,
+      click: () => { state.petGender = g; saveState(); refreshTrayMenu(); send('state', state); send('action', 'gender-changed'); },
+    })) },
     { label: M('language'), submenu: I18N.LANGS.map((l) => ({
       label: l.label,
       type: 'radio',

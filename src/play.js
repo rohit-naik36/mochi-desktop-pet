@@ -11,7 +11,7 @@ const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const params = new URLSearchParams(location.search);
 let S = { name: 'Mochi' };
 // T('breatheIn') in the chosen language; L(lang, key) for a specific language.
-const L = (lang, key, extra = {}) => window.I18N.t(lang, key, { name: S.userName, pet: S.name, ...extra });
+const L = (lang, key, extra = {}) => window.I18N.t(lang, key, { name: S.userName, pet: S.name, gender: S.petGender, ...extra });
 const T = (key, extra) => L(S.lang || 'en', key, extra);
 let current = null;
 let soundOn = true;
@@ -387,7 +387,10 @@ function Worry() {
     const said = window.WorryEater.detectLang(words, S.lang || 'en');
     const lang = said === 'other' ? S.lang || 'en' : said;
     const rude = window.Profanity.analyse(words, S.name);
-    if (rude.atPet) return refuse(words, lang);
+    if (rude.atPet) return refuse(lang);
+    const heart = window.Affection.analyse(words, S.name);
+    if (heart.kind === 'explicit' && heart.atPet) return refuse(lang, 'explicit');
+    if (heart.kind) return sweetTalk(heart, lang);
     const tr = text.getBoundingClientRect();
     mood('eat');
     [...words].forEach((ch, i) => {
@@ -410,22 +413,41 @@ function Worry() {
     const total = 1500 + Math.min(words.length, 280) * 16;
     setTimeout(() => tone(220, 0.25, 'sine', 0.06, 0.6), total - 200);
     setTimeout(() => {
-      const r = window.WorryEater.respond(words, S.userName, S.lang || 'en');
+      const r = window.WorryEater.respond(words, S.userName, S.lang || 'en', S.petGender);
       // Swearing about a situation is just venting: acknowledge the feeling.
       if (rude.profane && !r.serious) r.comfort = L(r.lang, 'ventNote') + ' ' + r.comfort;
-      mood(r.serious ? 'idle' : 'happy');
+      mood(r.serious || r.gentle ? 'idle' : 'happy');
       setTimeout(() => mood('idle'), 1400);
       showReply(r);
       window.play.reward({ happiness: 6, hunger: -5 });
     }, total);
   }
 
-  // Swearing at Mochi: no eating. Two warnings, then Mochi goes to hide.
-  async function refuse(words, lang) {
+  // Sweet talk gets blushes and hearts. "You're hot" and sexual talk that
+  // isn't aimed at Mochi get a kind no, without a strike.
+  function sweetTalk(heart, lang) {
     text.value = '';
-    mood('upset');
+    if (heart.kind === 'romantic') {
+      mood('happy');
+      for (let i = 0; i < 5; i++) setTimeout(() => float(pick(['💛', '💕', '🥰', '✨']), pos.x + rand(-40, 40), pos.y - 40 - rand(0, 30)), i * 160);
+      tone(660, 0.18, 'sine', 0.05, 1.3);
+      say(L(lang, 'romance.' + heart.mood), 5500);
+      window.play.reward({ happiness: 4 });
+    } else {
+      mood('idle');
+      say(L(lang, heart.kind === 'flirty' ? 'flirtyNo' : 'explicitSoft'), 6000);
+    }
+    setTimeout(() => { mood('idle'); askMode(); }, 2600);
+  }
+
+  // Swearing at Mochi or sexual talk aimed at Mochi: no eating. Two
+  // warnings, then Mochi goes to hide.
+  async function refuse(lang, why = 'rude') {
+    text.value = '';
+    mood(why === 'explicit' ? 'idle' : 'upset');
     const strikes = await window.play.strike();
-    const key = strikes >= 3 ? 'hiding' : strikes === 2 ? 'warn2' : 'warn1';
+    const warn = why === 'explicit' ? ['explicit1', 'explicit2'] : ['warn1', 'warn2'];
+    const key = strikes >= 3 ? 'hiding' : warn[strikes === 2 ? 1 : 0];
     say(L(lang, key), strikes >= 3 ? 4000 : 5000);
     window.play.reward({ happiness: -6 });
     if (strikes >= 3) { setTimeout(() => window.play.hide(), 2800); return; }
