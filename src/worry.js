@@ -308,6 +308,97 @@
   };
   const FALLBACK_NAME = { en: 'friend', hi: 'दोस्त', hinglish: 'dost' };
 
+
+  // Extra replies for every topic, so feeding Mochi never feels repetitive.
+  const MORE = {
+    en: {
+      deadline: {
+        comfort: [
+          "Deadlines are just dates someone typed into a calendar, {name}. You're a whole person. You'll outlast this one.",
+          "The panic is loud, but it's not in charge. You are. And you've got more time than the panic says.",
+        ],
+        steps: ["Set a 25-minute timer and only work on the part that scares you least. Momentum first, bravery later.", "Write the three things that actually HAVE to be done. Cross off anything that's just 'nice to have'."],
+        asks: ['Is it the amount of work, or not knowing where to start?', "What would 'done for today' look like?"],
+      },
+      work: {
+        comfort: ["You give that job a lot of yourself, {name}. Make sure you're keeping some for you too.", "Some days work feels like pushing a cloud uphill. Trust me, I'd know. It's not you, it's the hill."],
+        steps: ["Pick the one task you've been avoiding and just open it. Opening counts. Then close your eyes for five seconds.", 'Step away from the desk for 3 minutes. Literally walk. Problems shrink a little when you come back.'],
+        asks: ['If a friend told you this about their job, what would you tell them?'],
+      },
+      study: {
+        comfort: ["Your brain isn't a hard drive, {name}. It's allowed to need breaks to save things.", "Studying is just future-you collecting tiny gifts from present-you. And you're doing it."],
+        steps: ['Explain one topic out loud to me in under a minute. Whatever you can explain, you know.', 'Do a practice question you can definitely get right first. Warm-up wins count.'],
+        asks: ['How long have you been studying without a real break?'],
+      },
+      money: {
+        comfort: ["Money stress makes everything feel urgent, {name}. But one step at a time still gets you there.", "Your worth isn't your bank balance. Not even a little bit."],
+        steps: ["Open your banking app, look at the real number, then close it. Facing it is half the battle.", 'Pick one small expense you can pause this month. Little leaks matter.'],
+        asks: ['Is there someone you trust you could talk this through with?'],
+      },
+      people: {
+        comfort: ["People can be complicated, {name}. Caring about them is what makes it hurt, and that's a good thing about you.", "You can't control how they act. But you get to decide how much space they get in your head today."],
+        steps: ["Write the message you wish you could send, then sleep on it before sending anything.", 'Do one kind thing for yourself tonight. Exactly what you would do for a friend going through this.'],
+        asks: ['What do you need from them that you\'re not getting?'],
+      },
+      health: {
+        comfort: ["Your body has been carrying you through all of this, {name}. It's okay if it's asking for a break.", "Rest isn't lazy. Rest is maintenance. Even clouds need to drift sometimes."],
+        steps: ['Breathe in for 4, hold for 4, out for 6. Three times. I\'ll do it with you.', 'Close your eyes for 60 seconds. No phone, no screen. Just dark and quiet.'],
+        asks: ['When did you last sleep properly?'],
+      },
+      self: {
+        comfort: ["Imagine I said that about myself. You'd hug me and tell me to stop. Let me do the same for you, {name}.", "You're judging your behind-the-scenes against everyone else's highlight reel. That's not a fair fight."],
+        steps: ['Write down one compliment someone gave you that you secretly kept. Read it twice.', 'Swap "I should have" for "next time I\'ll try". Same lesson, way less weight.'],
+        asks: ['What would you say if your best friend felt this way about themselves?'],
+      },
+      future: {
+        comfort: ["The future is a fog, {name}. And hey, I'm basically fog. It's not as scary up close.", "You've survived every single hard day so far. That's a 100% record."],
+        steps: ['Write the worst case, the best case, and the most likely case. The most likely one is usually pretty okay.', 'Do one thing today that future-you will thank you for. Even something tiny.'],
+        asks: ['What part of the future do you actually get to shape this week?'],
+      },
+      general: {
+        comfort: ["You don't have to have it all figured out, {name}. You just have to get through today, and you're doing it.", "That sounds heavy. Thanks for handing a bit of it to me. I've got room."],
+        steps: ['Put on one song you love and do nothing else for its whole length.', 'Write it down in one sentence. Problems in one sentence look smaller than problems in your head.'],
+        asks: ['Is this a today-worry or a someday-worry?'],
+      },
+      openers: ['*slurp*', '*om nom nom*', '*crunch*', '*gobble gobble*', '*chews thoughtfully*'],
+      reflects: ['"{q}"? Delicious. Spicy, but delicious.', 'Mmm, "{q}". Tastes like stress. Gone now.', 'I took "{q}" off your plate. Literally. Into my tummy.', '"{q}"... chewed, swallowed, filed under "not your problem right now".'],
+    },
+    hi: {
+      deadline: { comfort: ['डेडलाइन बस कैलेंडर की एक तारीख़ है, {name}। तुम पूरे इंसान हो। तुम इससे आगे निकल जाओगे।'], steps: ['25 मिनट का टाइमर लगाओ और सबसे कम डरावने हिस्से पर काम करो। पहले रफ़्तार, हिम्मत बाद में।'], asks: ['काम ज़्यादा है, या समझ नहीं आ रहा कहाँ से शुरू करें?'] },
+      work: { comfort: ['तुम इस काम को अपना बहुत कुछ देते हो, {name}। थोड़ा अपने लिए भी बचा के रखना।'], steps: ['3 मिनट के लिए डेस्क से उठ जाओ। सच में चलो। वापस आओगे तो मुश्किल थोड़ी छोटी लगेगी।'], asks: ['अगर दोस्त अपने काम के बारे में ये कहता, तो तुम उसे क्या कहते?'] },
+      study: { comfort: ['तुम्हारा दिमाग़ हार्ड ड्राइव नहीं है, {name}। उसे भी सेव करने के लिए ब्रेक चाहिए।'], steps: ['एक टॉपिक मुझे एक मिनट में समझाओ। जो समझा सको, वो आता है।'], asks: ['कब से बिना ब्रेक के पढ़ रहे हो?'] },
+      money: { comfort: ['तुम्हारी क़ीमत तुम्हारे बैंक बैलेंस से नहीं है। ज़रा भी नहीं।'], steps: ['इस महीने एक छोटा ख़र्चा चुनो जिसे रोक सकते हो। छोटे रिसाव मायने रखते हैं।'], asks: ['कोई भरोसेमंद है जिससे इस बारे में बात कर सको?'] },
+      people: { comfort: ['लोग उलझे हुए होते हैं, {name}। तुम्हें फ़र्क पड़ता है, इसीलिए दुखता है, और ये तुम्हारी अच्छी बात है।'], steps: ['जो मैसेज भेजना चाहते हो वो लिखो, और भेजने से पहले एक रात सो जाओ।'], asks: ['उनसे तुम्हें क्या चाहिए जो मिल नहीं रहा?'] },
+      health: { comfort: ['आराम आलस नहीं है। आराम देखभाल है। बादलों को भी कभी-कभी बहना पड़ता है।'], steps: ['4 गिनती साँस अंदर, 4 रोको, 6 में बाहर। तीन बार। मैं साथ हूँ।'], asks: ['आख़िरी बार ठीक से कब सोए थे?'] },
+      self: { comfort: ['तुम अपने पर्दे के पीछे की ज़िंदगी को दूसरों की हाइलाइट रील से तौल रहे हो। ये बराबर की लड़ाई नहीं है।'], steps: ['"मुझे करना चाहिए था" को "अगली बार कोशिश करूँगा" से बदलो। वही सीख, बहुत कम बोझ।'], asks: ['अगर तुम्हारा सबसे अच्छा दोस्त ख़ुद के बारे में ऐसा सोचता, तो तुम क्या कहते?'] },
+      future: { comfort: ['भविष्य एक कोहरा है, {name}। और मैं तो ख़ुद कोहरा हूँ। पास से इतना डरावना नहीं।', 'तुम अब तक हर मुश्किल दिन से निकले हो। सौ प्रतिशत रिकॉर्ड।'], steps: ['सबसे बुरा, सबसे अच्छा और सबसे मुमकिन नतीजा लिखो। सबसे मुमकिन वाला अक्सर ठीक-ठाक होता है।'], asks: ['इस हफ़्ते भविष्य का कौन सा हिस्सा तुम्हारे हाथ में है?'] },
+      general: { comfort: ['सब कुछ आज ही सुलझाना ज़रूरी नहीं, {name}। बस आज निकालना है, और तुम निकाल रहे हो।'], steps: ['अपना पसंदीदा एक गाना लगाओ और उसके ख़त्म होने तक कुछ मत करो।'], asks: ['ये आज की चिंता है या किसी दिन की?'] },
+      openers: ['*सुड़प*', '*गटक*', '*चबा-चबा के*'],
+      reflects: ['"{q}"? स्वादिष्ट। तीखा, पर स्वादिष्ट।', 'म्म्म, "{q}"। टेंशन जैसा स्वाद। अब गायब।', '"{q}" तुम्हारी प्लेट से हटा दिया। सीधा मेरे पेट में।'],
+    },
+    hinglish: {
+      deadline: { comfort: ['Deadline bas calendar ki ek date hai, {name}. Tum poore insaan ho. Tum isse aage nikal jaoge.'], steps: ['25 minute ka timer lagao aur sabse kam scary part pe kaam karo. Pehle momentum, himmat baad mein.'], asks: ['Kaam zyada hai, ya samajh nahi aa raha kahan se shuru karein?'] },
+      work: { comfort: ['Tum is kaam ko apna bahut kuch dete ho, {name}. Thoda apne liye bhi bacha ke rakhna.'], steps: ['3 minute ke liye desk se uth jao. Sach mein chalo. Wapas aaoge toh problem thodi chhoti lagegi.'], asks: ['Agar dost apne kaam ke baare mein ye kehta, toh tum use kya kehte?'] },
+      study: { comfort: ['Tumhara dimaag hard drive nahi hai, {name}. Use bhi save karne ke liye break chahiye.'], steps: ['Ek topic mujhe ek minute mein samjhao. Jo samjha sako, wo aata hai.'], asks: ['Kab se bina break ke padh rahe ho?'] },
+      money: { comfort: ['Tumhari value tumhare bank balance se nahi hai. Zara bhi nahi.'], steps: ['Is mahine ek chhota kharcha chuno jo rok sakte ho. Chhote leaks matter karte hain.'], asks: ['Koi trusted hai jisse is baare mein baat kar sako?'] },
+      people: { comfort: ['Log complicated hote hain, {name}. Tumhe farak padta hai, isliye dukhta hai, aur ye tumhari acchi baat hai.'], steps: ['Jo message bhejna chahte ho wo likho, aur bhejne se pehle ek raat so jao.'], asks: ['Unse tumhe kya chahiye jo mil nahi raha?'] },
+      health: { comfort: ['Aaram aalas nahi hai. Aaram maintenance hai. Clouds ko bhi kabhi kabhi behna padta hai.'], steps: ['4 count saans andar, 4 roko, 6 mein bahar. Teen baar. Main saath hoon.'], asks: ['Last time theek se kab soye the?'] },
+      self: { comfort: ['Tum apni behind-the-scenes life ko doosron ki highlight reel se compare kar rahe ho. Ye fair fight nahi hai.'], steps: ['"Mujhe karna chahiye tha" ko "agli baar try karunga" se badlo. Wahi seekh, bahut kam bojh.'], asks: ['Agar tumhara best friend khud ke baare mein aisa sochta, toh tum kya kehte?'] },
+      future: { comfort: ['Future ek kohra hai, {name}. Aur main toh khud kohra hoon. Paas se itna scary nahi.', 'Tum ab tak har mushkil din se nikle ho. 100% record.'], steps: ['Worst case, best case aur most likely case likho. Most likely wala aksar theek-thaak hota hai.'], asks: ['Is hafte future ka kaunsa part tumhare haath mein hai?'] },
+      general: { comfort: ['Sab kuch aaj hi solve karna zaroori nahi, {name}. Bas aaj nikalna hai, aur tum nikal rahe ho.'], steps: ['Apna favourite ek gaana lagao aur uske khatam hone tak kuch mat karo.'], asks: ['Ye aaj ki tension hai ya kisi din ki?'] },
+      openers: ['*slurp*', '*gatak*', '*chaba chaba ke*'],
+      reflects: ['"{q}"? Tasty. Teekha, par tasty.', 'Mmm, "{q}". Tension jaisa taste. Ab gayab.', '"{q}" tumhari plate se hata diya. Seedha mere pet mein.'],
+    },
+  };
+  for (const t of TOPICS) if (MORE.en[t.id]) for (const k of ['comfort', 'steps', 'asks']) t[k] = [...t[k], ...MORE.en[t.id][k]];
+  for (const k of ['comfort', 'steps', 'asks']) GENERAL[k] = [...GENERAL[k], ...MORE.en.general[k]];
+  for (const lang of ['hi', 'hinglish']) {
+    for (const [id, extra] of Object.entries(MORE[lang])) {
+      if (Array.isArray(extra)) LOCAL[lang][id] = [...LOCAL[lang][id], ...extra];
+      else for (const k of ['comfort', 'steps', 'asks']) LOCAL[lang][id][k] = [...LOCAL[lang][id][k], ...extra[k]];
+    }
+  }
+
   function shorten(text) {
     const t = text.trim().replace(/\s+/g, ' ').replace(/[.!?।]+$/, '');
     return t.length > 60 ? t.slice(0, 57).trimEnd() + '...' : t;
@@ -342,7 +433,7 @@
 
   // Which language is this worry written in?
   const HINGLISH = ['hai', 'hain', 'nahi', 'nahin', 'mujhe', 'mera', 'meri', 'mere', 'kya', 'yaar', 'bahut', 'bohot', 'kaise', 'kyun', 'kyu', 'karna', 'kar', 'raha', 'rahi', 'ho', 'hoon', 'hu', 'tha', 'thi', 'aur', 'lekin', 'par', 'bhi', 'kuch', 'sab', 'ye', 'wo', 'koi', 'ghar', 'kaam', 'dimaag', 'pareshan', 'tension', 'abhi', 'main', 'mai', 'ne', 'mein', 'me', 'aaj', 'se', 'ko', 'ka', 'ki', 'ke', 'diya', 'gaya', 'gayi', 'kal', 'bhai', 'accha', 'theek', 'chahta', 'chahti', 'lag', 'lagta', 'lagti', 'hoga', 'karu', 'karun', 'samajh', 'toh', 'na', 'tu', 'tum', 'tera', 'teri', 'tujhe', 'tumhe', 'hu', 'yeh', 'woh'];
-  const ENGLISH = ['i', 'my', 'the', 'is', 'am', 'are', 'was', 'and', 'at', 'to', 'of', 'it', 'this', 'that', 'with', 'have', 'feel', 'what', 'why', 'you', 'your', 'can', 'not', 'so', 'just', 'about'];
+  const ENGLISH = ['i', 'my', 'the', 'is', 'am', 'are', 'was', 'and', 'at', 'to', 'of', 'it', 'this', 'that', 'with', 'have', 'feel', 'what', 'why', 'you', 'your', 'can', 'not', 'so', 'just', 'about', 'me', 'scared', 'scares', 'worried', 'tired', 'sad', 'stressed', 'anxious', 'exam', 'future', 'life', 'today', 'tomorrow', 'love', 'miss', 'hug'];
   function detectLang(text, fallback = 'en') {
     if (/[ऀ-ॿ]/.test(text)) return 'hi';
     if (/[ঀ-෿਀-੿]/.test(text)) return 'other';
@@ -380,8 +471,8 @@
     return {
       topic: id,
       lang,
-      opener: pick(L ? L.openers : OPENERS),
-      reflect: pick(L ? L.reflects : REFLECTS).replace('{q}', shorten(text)),
+      opener: pick(L ? L.openers : [...OPENERS, ...MORE.en.openers]),
+      reflect: pick(L ? L.reflects : [...REFLECTS, ...MORE.en.reflects]).replace('{q}', shorten(text)),
       comfort: fill(prefix) + fill((heavy ? heavyLead : '') + pick(src.comfort)),
       step: fill(pick(src.steps)),
       ask: fill(pick(src.asks)),

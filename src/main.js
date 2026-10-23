@@ -216,8 +216,8 @@ function buildMenu() {
       { label: M('breathe'), click: () => openPlay('breathe') },
       { label: M('bubbles'), click: () => openPlay('bubbles') },
       { label: M('chase'), click: () => openPlay('chase') },
-      { label: M('worry'), click: () => openPlay('worry') },
     ] },
+    { label: M('worry'), click: () => openPlay('worry') },
     { label: M('nap'), click: () => send('action', 'sleep') },
     { label: M('buddy'), submenu: SKINS.map((sk) => ({
       label: sk.label,

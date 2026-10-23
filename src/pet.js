@@ -269,6 +269,31 @@ function askGender(then) {
   });
 }
 
+// After a move, say something about where it landed: a corner, the top,
+// an edge, the middle, a long flight, or "I'm dizzy" after lots of moves.
+const recentDrops = [];
+async function reactToSpot(distance) {
+  const now = Date.now();
+  recentDrops.push(now);
+  while (recentDrops.length && now - recentDrops[0] > 60_000) recentDrops.shift();
+  const { win, workArea: wa } = await window.pet.getBounds();
+  const cx = (win.x + win.width / 2 - wa.x) / wa.width;
+  const cy = (win.y + win.height / 2 - wa.y) / wa.height;
+  const nearX = cx < 0.15 ? 'left' : cx > 0.85 ? 'right' : null;
+  const nearY = cy < 0.2 ? 'top' : cy > 0.8 ? 'bottom' : null;
+  const h = new Date().getHours();
+  let key;
+  if (recentDrops.length >= 4) key = 'dizzy';
+  else if (distance > 900 && Math.random() < 0.6) key = 'far';
+  else if (nearX && nearY) key = 'corner';
+  else if (Math.abs(cx - 0.5) < 0.15 && Math.abs(cy - 0.5) < 0.2) key = 'middle';
+  else if ((h >= 21 || h < 5) && Math.random() < 0.3) key = 'night';
+  else key = Math.random() < 0.75 ? nearY || nearX || 'any' : 'any';
+  // Now and then just a little sparkle instead of words, so it never gets old.
+  if (key === 'any' && Math.random() < 0.25) return float(pick(['✨', '💛', '☁️']));
+  say(T('drop.' + key), { ms: 2600 });
+}
+
 function scheduleChatter() {
   setTimeout(() => {
     if (!bubbleSticky && mode !== 'sleep') {
@@ -381,13 +406,14 @@ window.addEventListener('mousemove', (e) => {
 window.addEventListener('mouseup', () => {
   if (!dragging) return;
   const wasDrag = dragging.moved > 4;
+  const distance = dragging.moved;
   dragging = null;
   window.pet.dragEnd();
   petEl.classList.remove('dragging');
   if (wasDrag) {
     window.pet.dragDone();
     window.pet.save({});
-    say(T('dragged'), { ms: 2000 });
+    reactToSpot(distance);
     setMode('idle', 3000);
   } else {
     petIt();

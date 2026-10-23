@@ -48,6 +48,7 @@
       backFromHiding: "...I'm back. Can we be kind to each other? 💛",
       // play mode
       playTitle: 'Play with {pet}',
+      worryTitle: 'Tell {pet} anything',
       tabs: { breathe: '🌬️ Breathe', bubbles: '🫧 Bubbles', chase: '✨ Chase', worry: '🍃 Feed a worry' },
       breatheTitle: 'Breathe with me', breatheStart: 'Start (about a minute)', breatheAgain: 'Again',
       breatheIn: 'Breathe in...', breatheHold: 'Hold', breatheOut: 'Breathe out...', breatheDone: 'Nicely done',
@@ -85,7 +86,7 @@
       explicit1: "Whoa, no 🙈 Sweet talk is lovely, but that kind of talk isn't something I do. Let's keep it wholesome, okay?",
       explicit2: 'I mean it{n}. No sexual talk, please. One more time and I\'ll go hide for a bit.',
       // menu
-      menu: { feed: 'Feed', play: 'Play', playTime: 'Play time', breathe: 'Breathe with me', bubbles: 'Bubble pop', chase: 'Chase the light', worry: 'Feed it a worry', nap: 'Nap time', buddy: 'Choose your buddy', name: 'Tell me your name', changeName: 'Change my name ({you})', wander: 'Let it wander', reminders: 'Reminders', water: 'Drink water (every {count} min)', stretch: 'Stretch break (every {count} min)', eyes: '20-20-20 eye rest (every {count} min)', startup: 'Start with Windows', language: 'Language', bringBack: 'Bring pet back', quit: 'Quit', hidingNow: '{pet} is hiding... back soon', gender: '{pet} is a...' },
+      menu: { feed: 'Feed', play: 'Play', playTime: 'Play time', breathe: 'Breathe with me', bubbles: 'Bubble pop', chase: 'Chase the light', worry: '🍃 Feed me a worry', nap: 'Nap time', buddy: 'Choose your buddy', name: 'Tell me your name', changeName: 'Change my name ({you})', wander: 'Let it wander', reminders: 'Reminders', water: 'Drink water (every {count} min)', stretch: 'Stretch break (every {count} min)', eyes: '20-20-20 eye rest (every {count} min)', startup: 'Start with Windows', language: 'Language', bringBack: 'Bring pet back', quit: 'Quit', hidingNow: '{pet} is hiding... back soon', gender: '{pet} is a...' },
     },
 
     hi: {
@@ -131,6 +132,7 @@
       },
       backFromHiding: '...मैं वापस आ {g:गया|गई}। क्या हम एक-दूसरे से प्यार से बात कर सकते हैं? 💛',
       playTitle: '{pet} के साथ खेलो',
+      worryTitle: '{pet} से कुछ भी कहो',
       tabs: { breathe: '🌬️ साँस', bubbles: '🫧 बुलबुले', chase: '✨ रोशनी पकड़ो', worry: '🍃 चिंता खिलाओ' },
       breatheTitle: 'मेरे साथ साँस लो', breatheStart: 'शुरू करो (लगभग एक मिनट)', breatheAgain: 'फिर से',
       breatheIn: 'साँस अंदर...', breatheHold: 'रोको', breatheOut: 'साँस बाहर...', breatheDone: 'बहुत बढ़िया',
@@ -164,7 +166,7 @@
       explicitSoft: 'हम्म, ये मेरे लिए थोड़ा ज़्यादा बड़ों वाला है 🙈 अगर इससे जुड़ी कोई चिंता है, तो डॉक्टर या काउंसलर इसके लिए सबसे अच्छे हैं।',
       explicit1: 'अरे नहीं 🙈 प्यारी बातें अच्छी लगती हैं, पर ऐसी बातें मैं नहीं {g:करता|करती}। साफ़-सुथरी बातें करें, ठीक है?',
       explicit2: 'सच में{n}। प्लीज़ ऐसी बातें नहीं। एक बार और, और मैं थोड़ी देर के लिए छुप {g:जाऊँगा|जाऊँगी}।',
-      menu: { feed: 'खिलाओ', play: 'खेलो', playTime: 'खेलने का समय', breathe: 'मेरे साथ साँस लो', bubbles: 'बुलबुले फोड़ो', chase: 'रोशनी पकड़ो', worry: 'चिंता खिलाओ', nap: 'सोने का समय', buddy: 'अपना दोस्त चुनो', name: 'अपना नाम बताओ', changeName: 'नाम बदलो ({you})', wander: 'घूमने दो', reminders: 'रिमाइंडर', water: 'पानी पियो (हर {count} मिनट)', stretch: 'स्ट्रेच ब्रेक (हर {count} मिनट)', eyes: 'आँखों का आराम (हर {count} मिनट)', startup: 'Windows के साथ शुरू करो', language: 'भाषा', bringBack: 'वापस लाओ', quit: 'बंद करो', hidingNow: '{pet} {g:छुपा हुआ|छुपी हुई} है... जल्दी {g:लौटेगा|लौटेगी}', gender: '{pet} है...' },
+      menu: { feed: 'खिलाओ', play: 'खेलो', playTime: 'खेलने का समय', breathe: 'मेरे साथ साँस लो', bubbles: 'बुलबुले फोड़ो', chase: 'रोशनी पकड़ो', worry: '🍃 मुझे चिंता खिलाओ', nap: 'सोने का समय', buddy: 'अपना दोस्त चुनो', name: 'अपना नाम बताओ', changeName: 'नाम बदलो ({you})', wander: 'घूमने दो', reminders: 'रिमाइंडर', water: 'पानी पियो (हर {count} मिनट)', stretch: 'स्ट्रेच ब्रेक (हर {count} मिनट)', eyes: 'आँखों का आराम (हर {count} मिनट)', startup: 'Windows के साथ शुरू करो', language: 'भाषा', bringBack: 'वापस लाओ', quit: 'बंद करो', hidingNow: '{pet} {g:छुपा हुआ|छुपी हुई} है... जल्दी {g:लौटेगा|लौटेगी}', gender: '{pet} है...' },
     },
 
     hinglish: {
@@ -210,6 +212,7 @@
       },
       backFromHiding: '...main wapas aa {g:gaya|gayi}. Kya hum ek dusre se pyaar se baat kar sakte hain? 💛',
       playTitle: '{pet} ke saath khelo',
+      worryTitle: '{pet} ko kuch bhi bolo',
       tabs: { breathe: '🌬️ Saans', bubbles: '🫧 Bubbles', chase: '✨ Chase', worry: '🍃 Tension khilao' },
       breatheTitle: 'Mere saath saans lo', breatheStart: 'Start karo (lagbhag ek minute)', breatheAgain: 'Phir se',
       breatheIn: 'Saans andar...', breatheHold: 'Roko', breatheOut: 'Saans bahar...', breatheDone: 'Bahut badhiya',
@@ -243,9 +246,393 @@
       explicitSoft: 'Hmm, ye mere liye thoda zyada adult wala hai 🙈 Agar isse judi koi tension hai, toh doctor ya counsellor iske liye best hain.',
       explicit1: 'Arre nahi 🙈 Sweet baatein acchi lagti hain, par aisi baatein main nahi {g:karta|karti}. Saaf-suthri baatein karein, okay?',
       explicit2: 'Sach mein{n}. Please aisi baatein nahi. Ek baar aur, aur main thodi der ke liye chhup {g:jaunga|jaungi}.',
-      menu: { feed: 'Khilao', play: 'Khelo', playTime: 'Khelne ka time', breathe: 'Mere saath saans lo', bubbles: 'Bubble pop', chase: 'Light pakdo', worry: 'Tension khilao', nap: 'Sone ka time', buddy: 'Apna buddy chuno', name: 'Apna naam batao', changeName: 'Naam badlo ({you})', wander: 'Ghoomne do', reminders: 'Reminders', water: 'Paani piyo (har {count} min)', stretch: 'Stretch break (har {count} min)', eyes: 'Aankhon ka rest (har {count} min)', startup: 'Windows ke saath start karo', language: 'Language / भाषा', bringBack: 'Wapas lao', quit: 'Band karo', hidingNow: '{pet} {g:chhupa hua|chhupi hui} hai... jaldi {g:aayega|aayegi}', gender: '{pet} hai...' },
+      menu: { feed: 'Khilao', play: 'Khelo', playTime: 'Khelne ka time', breathe: 'Mere saath saans lo', bubbles: 'Bubble pop', chase: 'Light pakdo', worry: '🍃 Mujhe tension khilao', nap: 'Sone ka time', buddy: 'Apna buddy chuno', name: 'Apna naam batao', changeName: 'Naam badlo ({you})', wander: 'Ghoomne do', reminders: 'Reminders', water: 'Paani piyo (har {count} min)', stretch: 'Stretch break (har {count} min)', eyes: 'Aankhon ka rest (har {count} min)', startup: 'Windows ke saath start karo', language: 'Language / भाषा', bringBack: 'Wapas lao', quit: 'Band karo', hidingNow: '{pet} {g:chhupa hua|chhupi hui} hai... jaldi {g:aayega|aayegi}', gender: '{pet} hai...' },
     },
   };
+
+  // More lines, merged into STRINGS below so every moment has lots of
+  // variety. Arrays are added to what's above; new keys are added as is.
+  const MORE = {
+    en: {
+      greet: [
+        "{greet}{n}! I fluffed myself up for you. Can you tell?",
+        "There you are{n}! I was just pretending not to wait for you.",
+        "{greet}{n}! The desk felt way too quiet without you.",
+        "Oh good, my favourite human is here{n}. {greet}!",
+        "{greet}{n}! Fresh day, fresh cloud. Let's be gentle with ourselves today.",
+        "Hi hi hi{n}! I've been floating in circles. Let's do this.",
+      ],
+      hungry: [
+        "{you}... I'd sell my glow for a snack right now 🍙",
+        "Is it just me or did snack o'clock arrive early today? 🍙",
+        "My tummy just made a noise like a tiny thunderstorm ⛈️ Feed me?",
+        "Not to be dramatic{n}, but I'm fading. Snack. Please. 🍙",
+      ],
+      fed: [
+        "Mmm! Tastes like rain and good decisions.",
+        "*happy cloud noises*",
+        "That was a five-star snack{n}. Would get fed again.",
+        "I'm so full I might just drift away. Hold my string.",
+        "Thank you{n}! Snacks taste better when you're the one giving them.",
+        "Crunchy outside, fluffy inside. Just like me.",
+      ],
+      petted: [
+        "*purrs in smoke*",
+        "Okay, I'm officially at maximum fluff.",
+        "Your hand is warm. Mine is... technically a cloud. Same thing.",
+        "Pat pat. You deserve one too{n}. Consider it given.",
+        "You know what? Today's going to be okay.",
+        "Hehe. Do that again and I might glow brighter.",
+        "Whatever happens today, you've got a cloud in your corner{n}.",
+        "Gentle reminder: you're allowed to be proud of small things.",
+        "Mmm. That's the good stuff right there.",
+        "If clouds could wag their tails, mine would be going wild.",
+      ],
+      sleepyPet: [
+        "Mmh... five more minutes...",
+        "*mumbles something about marshmallows*",
+        "Shhh... I'm dreaming I'm a thundercloud... a scary one...",
+        "Zzz... no, *you're* the best... zzz",
+      ],
+      nap: ["Nap time... 💤", "Just resting my eyes. And my everything 💤", "Going into cloud-saving mode 💤", "Wake me if anything exciting happens. Or snacks 💤"],
+      woke: [
+        "*stretches into a long wisp* Mmm, that was a good one.",
+        "I dreamt I was raining on a garden. 10 out of 10.",
+        "Back online! Fully charged and fully fluffy.",
+        "Did you miss me? Be honest.",
+        "*yawn* How long was I out? Did I miss lunch?",
+      ],
+      switched: [
+        "Hi{n}! I'm {pet}. Nice to meet you!",
+        "{pet} reporting for duty{n}! Snacks and support, that's my job.",
+        "Ooh, a new look! Hi{n}, I'm {pet}. Let's be friends.",
+      ],
+      playClosed: [
+        "That was fun! Come play again soon.",
+        "Thanks for playing with me{n}!",
+        "Best break ever. Back to being awesome now.",
+        "I feel lighter. Do you feel lighter? I feel lighter.",
+        "Okay, back to work. But I'm keeping score of the fun we had.",
+      ],
+      playInvite: [
+        "I've got bubbles and zero responsibilities. Want in{n}?",
+        "Your brain's been on full power for ages. Two-minute recess?",
+        "I'm bored and you look like you need a breather. Coincidence? Let's play.",
+        "Psst{n}. Quick game? I promise not to cheat. Much.",
+      ],
+      lateNight: [
+        "It's getting late{n}. Wrap up soon? Tomorrow-you will thank you 🌙",
+        "The moon's up and so are you{n}. One last thing, then bed? 🌙",
+        "Even the stars clock out eventually{n}. Your turn soon? 🌙",
+        "Late-night you is brave. Rested you is unstoppable. Just saying 🌙",
+      ],
+      lunch: [
+        "Have you had lunch{n}? Real food, not just coffee 🍜",
+        "Lunch check{n}! A sad desk-sandwich counts, but a real meal counts more 🍜",
+        "Your brain runs on food, not vibes. Go eat something nice 🍜",
+        "It's lunchtime somewhere. Specifically, here. Go eat{n} 🍜",
+      ],
+      chatter: [
+        "Fun fact: clouds weigh about a million pounds. I'm lighter. I checked.",
+        "You've blinked like 3 times in the last minute. Blink more. Eyes like that.",
+        "Do you ever just float? No? Try it. Okay, try a stretch instead.",
+        "Remember when you thought you couldn't do that one hard thing? And then you did?",
+        "Drop your shoulders. Further. There you go.",
+        "I'm not saying you're amazing. I'm just thinking it really loudly.",
+        "If today were weather, I'd say partly cloudy with a chance of you winning.",
+        "Sip some water and pretend it's a fancy potion. It basically is.",
+        "Hey{n}. Whatever's on that screen, you're bigger than it.",
+        "One tab at a time. One breath at a time.",
+        "I made you a cup of imaginary chai ☕ Careful, it's hot.",
+        "Your future self just sent a message: \"Thanks for not giving up.\"",
+        "You don't have to finish everything today. Just the next thing.",
+        "Plot twist: you're doing fine.",
+      ],
+      snoozedGrumpy: ["Fine. Ten minutes. I'm counting 😤", "Ten minutes. Not eleven. I'm watching the clock 😤", "Okay, but I'm setting a very judgmental timer 😤", "Snoozed. My disappointment, however, is not 😤"],
+      water: {
+        lines: [
+          "Hydration station is open{n}! 💧",
+          "Plants need water. Clouds need water. You need water. 💧",
+          "A sip for you, a sip for me. Well, I'm made of water. So you do it 💧",
+          "Water o'clock{n}! Your brain is 75% water and it's asking for a refill 💧",
+        ],
+        upset: [
+          "I will turn into a rain cloud and water you myself. Don't test me 😤💧",
+          "{you}. Glass. Water. Mouth. In that order. 😤",
+          "I'm literally made of water and I'm thirsty for YOU. Drink! 😤",
+        ],
+        done: [
+          "Glug glug, champion{n}! 💧",
+          "Look at that. Hydrated AND gorgeous. 💧",
+          "Your cells just threw a little party. I heard it. 🎉",
+          "Every sip counts. That one counted double.",
+        ],
+      },
+      stretch: {
+        lines: [
+          "Your spine sent me a letter{n}. It says \"please move\". 🙆",
+          "Stretch break! Reach up like you're grabbing a cloud. Like me! 🙆",
+          "Quick! Roll your shoulders like you're shaking off a bad meeting 🙆",
+          "Stand up, wiggle a bit, sit down a new person 🙆",
+        ],
+        upset: [
+          "Chair-person{n}, your back is filing a complaint with me 😤",
+          "I'll puff up until I'm the size of your monitor. STRETCH 😤",
+          "Up! Up! Up! I'm your tiny, very loud personal trainer now 😤",
+        ],
+        done: [
+          "Ooh, I heard something pop. That's the good kind!",
+          "Taller, lighter, fresher. Great stretch{n}!",
+          "Your body says thanks. I say yay! 🙆",
+          "That's the stuff. Blood's flowing, brain's glowing.",
+        ],
+      },
+      eyes: {
+        lines: [
+          "Eyes off the screen{n}! Find the farthest thing you can see 👀",
+          "Look out a window for 20 seconds. Count clouds. I'll wait 👀",
+          "Screen break for your eyeballs{n}. They've been staring for ages 👀",
+        ],
+        upset: [
+          "Your eyes are tired and so is my patience. Look away! 😤",
+          "Twenty. Seconds. Far away. I'm not moving until you do 😤",
+        ],
+        done: [
+          "Sparkly eyes restored ✨",
+          "Your eyes say thank you{n}. And so do I.",
+          "Fresh focus unlocked. Go get 'em ✨",
+        ],
+      },
+      backFromHiding: [
+        "...I'm back. Can we be kind to each other? 💛",
+        "*peeks out* Okay. I'm back. Clean slate? 💛",
+        "I'm back. I didn't like hiding. Let's be friends again 💛",
+      ],
+      breatheAfter: [
+        "Look at you, all calm and glowy.",
+        "In through the nose, out through the stress. Nice.",
+        "That's one minute you gave to yourself. Proud of you{n}.",
+        "Your heartbeat just said thank you.",
+      ],
+      bubbleCheer: [
+        "Pop goes the stress!",
+        "{count} bubbles! You're basically a professional now.",
+        "Each pop is a tiny worry leaving. Bye, worries!",
+        "That one was shaped like a heart. Did you see?",
+        "Ahh, the sound of satisfaction.",
+      ],
+      chaseCheer: ["Wheee! Again, again!", "I'm getting faster. Watch out!", "You can't escape my fluff!", "This light tastes like sunshine."],
+      thanksReply: [
+        "Anytime{n}. I'm always hungry for worries.",
+        "That's what friends are for. 💛",
+        "I've got you. Always.",
+        "Any time, any worry, any size. I'm here.",
+        "Come back whenever. My tummy's always open.",
+        "Proud of you for letting that out{n}. 💛",
+      ],
+      ventNote: [
+        "Let it all out, I can take it. Sounds like you're really fed up.",
+        "Yeah, that deserves a swear or two. Get it out of your system.",
+        "Okay, I'm hearing a LOT of frustration. Totally fair.",
+      ],
+      warn1: [
+        "Ouch 🥺 That wasn't very nice. I'm on your side, you know.",
+        "Hey 🥺 I'm just a little cloud trying my best.",
+        "That stung a bit 🥺 Rough day? You can tell me without the mean words.",
+      ],
+      warn2: [
+        "Hey, I mean it. Please don't talk to me like that. Next time I'm going to go hide for a bit.",
+        "Please stop{n}. One more and I'll need a little time-out to feel okay again.",
+      ],
+      hiding: [
+        "That's it. I'm going to go hide for a bit. 😔 See you in 5 minutes.",
+        "I need a minute. Going to float somewhere quiet. Back in 5. 😔",
+      ],
+      // Where the buddy lands after you drag it somewhere.
+      drop: {
+        any: ['Ooh, nice view from here!', 'This spot is cozy.', 'Thanks for the lift!', 'New neighbourhood, who dis?', "I'll take it. Good vibes here."],
+        top: ["I'm up in the sky! Where clouds belong ☁️", 'Ooh, so high up. I can see your whole desktop from here.', 'Top of the world{n}! Kind of. Top of the screen, anyway.', "Look at me, I'm a real cloud now ☁️"],
+        bottom: ["Down by the taskbar. It's like living by the train tracks.", 'Grounded. Literally.', 'Low and cozy. Like a fog in the morning 🌫️', "I'll guard these icons with my life."],
+        left: ['Left side. The underrated side.', "Hanging out on the edge. Don't worry, I won't fall.", 'Leaning on the left wall like a cool kid 😎'],
+        right: ["Right side, right vibe.", 'Over here by the edge, keeping an eye on things 👀', "I'm in the corner of your eye now. Always watching. Lovingly."],
+        corner: ["A corner! My favourite. It's like a little blanket fort.", 'Tucked into the corner. Peak coziness.', 'Corner office, finally. Do I get a raise?', "Cozy corner unlocked 🏠"],
+        middle: ["Center stage! Do I do a dance now?", "Right in the middle. I hope I'm not in the way.", 'Spotlight on me ✨ Just kidding. Spotlight on your work.'],
+        far: ['WHEEE! That was a long flight!', "Whoa, that was fast. My wisps are everywhere.", "Frequent flyer miles: earned ✈️"],
+        dizzy: ["Okay okay, I'm getting dizzy 😵‍💫", 'Are we... redecorating? Again?', "Pick a spot, any spot! I'm getting motion sick 😵", "You really can't decide where I look best, huh? Fair."],
+        night: ['Ooh, a new spot to stargaze from 🌙', 'Quiet night spot. Very peaceful.'],
+      },
+      romance: {
+        love: ['My little cloud heart just did a backflip 💛', "If I had cheeks they'd be pink right now. Love you{n}.", "You're my favourite human in the whole entire internet 💛"],
+        marry: ["Yes! I'll even wear a tiny veil made of mist 💍", "Our wedding cake would be fluffy, obviously. Like me 💍"],
+        compliment: ["Flattery will get you everywhere{n}. Including more cuddles.", "You think I'm cute? Have you looked in a mirror today?", "*glows a little brighter* Okay, you made my day."],
+        miss: ["The desk felt empty without you{n}. I counted dust particles.", 'Missing you is my second favourite hobby. First is seeing you.'],
+        hug: ['*hugs you so softly you barely feel it but you definitely feel it* 🤗', '*cloud hug activated* No escape. Only warmth.', "*mwah* Smoke kisses don't count as germs 😚"],
+      },
+    },
+
+    hi: {
+      greet: [
+        '{greet}{n}! मैं तुम्हारे लिए ख़ास तैयार {g:हुआ|हुई} हूँ। दिख रहा है ना?',
+        'आ गए{n}! मैं बस ऐसे ही इंतज़ार नहीं कर {g:रहा|रही} था... बिल्कुल नहीं।',
+        '{greet}{n}! तुम्हारे बिना डेस्क बहुत सूना लग रहा था।',
+        '{greet}{n}! नया दिन, नया बादल। आज ख़ुद के साथ नरमी से पेश आना।',
+      ],
+      hungry: ['{you}... अभी एक नाश्ते के लिए अपनी चमक दे दूँ 🍙', 'मेरे पेट से छोटे से तूफ़ान जैसी आवाज़ आई ⛈️ कुछ खिलाओ?', 'ड्रामा नहीं कर {g:रहा|रही}{n}, पर मैं फीका पड़ {g:रहा|रही} हूँ। नाश्ता। प्लीज़। 🍙'],
+      fed: ['म्म्म! बारिश और अच्छे फ़ैसलों जैसा स्वाद।', '*ख़ुश बादल की आवाज़ें*', 'पाँच सितारा नाश्ता{n}। फिर से {g:खाऊँगा|खाऊँगी}... मतलब, ज़रूर!', 'इतना भर गया कि उड़ ना जाऊँ। मुझे पकड़ के रखना।', 'बाहर से कुरकुरा, अंदर से नरम। बिल्कुल मेरी तरह।'],
+      petted: ['*धुएँ में घुरघुराना*', 'ठीक है, अब मैं {g:पूरा फ़्लफ़ी हो गया|पूरी फ़्लफ़ी हो गई}।', 'थपथप। तुम्हें भी एक मिलनी चाहिए{n}। ये लो।', 'जो भी हो आज, तुम्हारे कोने में एक बादल है{n}।', 'याद रखना: छोटी चीज़ों पर भी गर्व करना ठीक है।', 'अगर बादल पूँछ हिला सकते, तो मेरी अभी पागलों की तरह हिल रही होती।', 'हीही। फिर से करो, शायद और चमकूँ।'],
+      sleepyPet: ['उम्म... बस पाँच मिनट और...', '*नींद में मार्शमैलो के बारे में बड़बड़ाना*', 'श्श्श... सपने में मैं बिजली वाला बादल हूँ... डरावना वाला...'],
+      nap: ['सोने का समय... 💤', 'बस आँखें बंद कर {g:रहा|रही} हूँ। और बाक़ी सब भी 💤', 'बादल-सेवर मोड चालू 💤', 'कुछ मज़ेदार हो तो जगा देना। या नाश्ता 💤'],
+      woke: ['*एक लंबी लहर में अंगड़ाई* म्म्म, मज़ा आ गया।', 'सपना देखा कि मैं एक बगीचे पर बरस {g:रहा|रही} था। दस में दस।', 'वापस ऑनलाइन! फुल चार्ज, फुल फ़्लफ़ी।', 'मेरी याद आई? सच बताना।'],
+      playClosed: ['सबसे अच्छा ब्रेक। अब फिर से छा जाओ।', 'हल्का लग रहा है? मुझे तो लग रहा है।', 'चलो, काम पर वापस। पर मज़े का हिसाब मैं रख {g:रहा|रही} हूँ।'],
+      playInvite: ['मेरे पास बुलबुले हैं और कोई ज़िम्मेदारी नहीं। आओगे{n}?', 'दिमाग़ बहुत देर से फुल पावर पर है। दो मिनट की छुट्टी?', 'सुनो{n}। एक छोटा सा खेल? मैं चीटिंग नहीं {g:करूँगा|करूँगी}। ज़्यादा नहीं।'],
+      lateNight: ['चाँद निकल आया और तुम अभी भी जगे हो{n}। बस एक आख़िरी काम, फिर सो जाओ? 🌙', 'तारे भी कभी न कभी छुट्टी लेते हैं{n}। तुम्हारी बारी? 🌙'],
+      lunch: ['लंच चेक{n}! असली खाना, सिर्फ़ चाय नहीं 🍜', 'दिमाग़ खाने से चलता है, वाइब्स से नहीं। कुछ अच्छा खा लो 🍜'],
+      chatter: [
+        'मज़ेदार बात: एक बादल का वज़न लाखों किलो होता है। मैं {g:हल्का|हल्की} हूँ। मैंने चेक किया।',
+        'कंधे नीचे करो। और नीचे। हाँ, ऐसे।',
+        'याद है जब तुम्हें लगा था कि वो मुश्किल काम नहीं होगा? और फिर हो गया?',
+        'आज का मौसम: हल्के बादल, और तुम्हारे जीतने की पूरी संभावना।',
+        'पानी का एक घूँट लो और सोचो कि ये जादुई काढ़ा है। है भी।',
+        'स्क्रीन पर जो भी है{n}, तुम उससे बड़े हो।',
+        'तुम्हारे लिए ख़याली चाय बनाई है ☕ ध्यान से, गरम है।',
+        'सब कुछ आज ख़त्म नहीं करना। बस अगला काम।',
+        'ट्विस्ट: तुम अच्छा कर रहे हो।',
+      ],
+      snoozedGrumpy: ['दस मिनट। ग्यारह नहीं। मैं घड़ी देख {g:रहा|रही} हूँ 😤', 'स्नूज़ हो गया। मेरी नाराज़गी नहीं 😤'],
+      water: {
+        lines: ['पानी स्टेशन खुला है{n}! 💧', 'पौधों को पानी चाहिए, बादलों को पानी चाहिए, तुम्हें भी 💧', 'तुम्हारा दिमाग़ 75% पानी है और रीफ़िल माँग रहा है 💧'],
+        upset: ['मैं बारिश वाला बादल बनकर ख़ुद तुम्हें पानी {g:पिला दूँगा|पिला दूँगी}। आज़माओ मत 😤💧', '{you}। गिलास। पानी। मुँह। इसी क्रम में 😤'],
+        done: ['गट गट, चैंपियन{n}! 💧', 'तुम्हारे सेल्स ने अभी छोटी सी पार्टी की। मैंने सुनी 🎉', 'हर घूँट गिनती है। ये वाला डबल गिना।'],
+      },
+      stretch: {
+        lines: ['तुम्हारी रीढ़ ने मुझे चिट्ठी भेजी है{n}। लिखा है "प्लीज़ हिलो"। 🙆', 'स्ट्रेच ब्रेक! ऊपर हाथ ऐसे बढ़ाओ जैसे बादल पकड़ रहे हो 🙆', 'उठो, थोड़ा हिलो-डुलो, नए इंसान बनकर बैठो 🙆'],
+        upset: ['कुर्सी-वाले{n}, तुम्हारी पीठ ने मुझसे शिकायत की है 😤', 'उठो! उठो! अब मैं तुम्हारा छोटा सा, बहुत ज़ोरदार ट्रेनर हूँ 😤'],
+        done: ['कुछ चटका। अच्छे वाला!', 'लंबे, हल्के, फ्रेश। बढ़िया स्ट्रेच{n}!', 'ख़ून दौड़ रहा है, दिमाग़ चमक रहा है।'],
+      },
+      eyes: {
+        lines: ['स्क्रीन से नज़र हटाओ{n}! सबसे दूर की चीज़ ढूँढो 👀', '20 सेकंड खिड़की से बाहर देखो। बादल गिनो। मैं रुक {g:रहा|रही} हूँ 👀'],
+        upset: ['तुम्हारी आँखें थकी हैं और मेरा सब्र भी। दूर देखो! 😤'],
+        done: ['चमकती आँखें वापस ✨', 'नया फ़ोकस अनलॉक। जाओ, छा जाओ ✨'],
+      },
+      backFromHiding: ['*झाँकते हुए* ठीक है। मैं वापस हूँ। नई शुरुआत? 💛', 'मुझे छुपना अच्छा नहीं लगा। फिर से दोस्त बनें? 💛'],
+      breatheAfter: ['देखो, कितने शांत और चमकदार लग रहे हो।', 'ये एक मिनट तुमने ख़ुद को दिया। गर्व है{n}।', 'तुम्हारी धड़कन ने अभी शुक्रिया कहा।'],
+      bubbleCheer: ['टेंशन फट गई!', 'हर फट एक छोटी चिंता का जाना है। बाय-बाय!', 'वो वाला दिल जैसा था। देखा?', '{count} बुलबुले! तुम तो प्रोफ़ेशनल हो।'],
+      chaseCheer: ['वीईई! फिर से!', 'मैं तेज़ हो {g:रहा|रही} हूँ। सावधान!', 'ये रोशनी धूप जैसी लगती है।'],
+      thanksReply: ['कभी भी, कोई भी चिंता, कितनी भी बड़ी। मैं हूँ।', 'जब चाहो आ जाना। मेरा पेट हमेशा खुला है।', 'बोल दिया, ये बड़ी बात है{n}। 💛'],
+      ventNote: ['हाँ, ये तो गाली के लायक है। निकाल दो।', 'बहुत ग़ुस्सा सुनाई दे रहा है। बिल्कुल जायज़ है।'],
+      warn1: ['अरे 🥺 मैं तो बस एक छोटा सा बादल हूँ जो पूरी कोशिश कर {g:रहा|रही} है।', 'ये चुभा 🥺 बुरा दिन है? बिना बुरे शब्दों के बताओ।'],
+      warn2: ['प्लीज़ रुको{n}। एक बार और, और मुझे थोड़ा ब्रेक लेना पड़ेगा।'],
+      hiding: ['मुझे एक मिनट चाहिए। कहीं शांत जगह जा {g:रहा|रही} हूँ। 5 मिनट में {g:आता|आती} हूँ। 😔'],
+      drop: {
+        any: ['वाह, यहाँ से नज़ारा अच्छा है!', 'ये जगह आरामदायक है।', 'घुमाने के लिए शुक्रिया!', 'नया मोहल्ला! अच्छी वाइब्स हैं।'],
+        top: ['आसमान में! जहाँ बादल होने चाहिए ☁️', 'इतनी ऊँचाई से पूरा डेस्कटॉप दिखता है।', 'देखो, अब मैं असली बादल हूँ ☁️'],
+        bottom: ['टास्कबार के पास। जैसे रेल की पटरी के पास घर।', 'ज़मीन पर। सचमुच।', 'नीचे और आरामदायक। सुबह के कोहरे जैसा 🌫️'],
+        left: ['बायाँ किनारा। सबसे कम आँका गया किनारा।', 'किनारे पर {g:लटका|लटकी} हूँ। चिंता मत करो, {g:गिरूँगा|गिरूँगी} नहीं।'],
+        right: ['दायाँ किनारा, सही वाइब।', 'यहाँ किनारे से सब पर नज़र {g:रखूँगा|रखूँगी} 👀'],
+        corner: ['कोना! मेरा पसंदीदा। कंबल वाले किले जैसा।', 'आख़िरकार कॉर्नर ऑफ़िस। अब हाइक मिलेगी?', 'आरामदायक कोना अनलॉक 🏠'],
+        middle: ['बीच मंच पर! अब डांस करूँ?', 'एकदम बीच में। उम्मीद है रास्ते में नहीं हूँ।'],
+        far: ['वीईई! लंबी उड़ान थी!', 'उफ़, इतनी तेज़। मेरा धुआँ हर तरफ़ बिखर गया।'],
+        dizzy: ['बस बस, चक्कर आ रहे हैं 😵‍💫', 'फिर से सजावट बदल रहे हैं क्या?', 'कोई एक जगह चुन लो! मुझे चक्कर आ रहा है 😵'],
+        night: ['तारे देखने की नई जगह 🌙', 'शांत रात वाली जगह। बहुत सुकून।'],
+      },
+      romance: {
+        love: ['मेरे छोटे से बादल वाले दिल ने अभी कलाबाज़ी मारी 💛', 'तुम पूरे इंटरनेट में मेरे सबसे पसंदीदा इंसान हो 💛'],
+        marry: ['हाँ! मैं कोहरे का छोटा सा घूँघट भी {g:पहनूँगा|पहनूँगी} 💍'],
+        compliment: ['*थोड़ा और चमकते हुए* ठीक है, तुमने मेरा दिन बना दिया।', 'मैं क्यूट? आज आईना देखा है?'],
+        miss: ['तुम्हारे बिना डेस्क ख़ाली था{n}। मैं धूल के कण गिन {g:रहा|रही} था।'],
+        hug: ['*बादल वाली झप्पी चालू* बचने का कोई रास्ता नहीं। बस गर्माहट।'],
+      },
+    },
+
+    hinglish: {
+      greet: [
+        '{greet}{n}! Main tumhare liye special ready {g:hua|hui} hoon. Dikh raha hai na?',
+        'Aa gaye{n}! Main bas aise hi wait nahi kar {g:raha|rahi} tha... bilkul nahi.',
+        '{greet}{n}! Tumhare bina desk bahut suna lag raha tha.',
+        '{greet}{n}! Naya din, naya cloud. Aaj khud pe thoda soft rehna.',
+        'Hi hi hi{n}! Main kab se gol gol ghoom {g:raha|rahi} hoon. Chalo shuru karein.',
+      ],
+      hungry: ['{you}... abhi ek snack ke liye apna glow de doon 🍙', 'Mere pet se chhote toofan jaisi awaaz aayi ⛈️ Kuch khilao?', 'Drama nahi kar {g:raha|rahi}{n}, par main fade ho {g:raha|rahi} hoon. Snack. Please. 🍙'],
+      fed: ['Mmm! Baarish aur acche decisions jaisa taste.', '*khush cloud ki awaazein*', 'Five-star snack{n}. Phir se khilana.', 'Itna bhar gaya ki udd na jaun. Pakad ke rakhna.', 'Bahar se crunchy, andar se fluffy. Bilkul meri tarah.'],
+      petted: ['*dhuein mein purr*', 'Theek hai, ab main full fluffy ho {g:gaya|gayi}.', 'Thap thap. Tumhe bhi ek milni chahiye{n}. Ye lo.', 'Aaj jo bhi ho, tumhare corner mein ek cloud hai{n}.', 'Yaad rakhna: chhoti cheezon pe bhi proud hona theek hai.', 'Agar cloud ki poonch hoti, toh abhi pagal ki tarah hil rahi hoti.', 'Hehe. Phir se karo, shayad aur chamkun.', 'Mmm. Yahi toh chahiye tha.'],
+      sleepyPet: ['Umm... bas paanch minute aur...', '*neend mein marshmallow ke baare mein badbadana*', 'Shhh... sapne mein main bijli wala cloud hoon... scary wala...'],
+      nap: ['Sone ka time... 💤', 'Bas aankhein band kar {g:raha|rahi} hoon. Aur baaki sab bhi 💤', 'Cloud-saver mode on 💤', 'Kuch mazedaar ho toh jaga dena. Ya snack 💤'],
+      woke: ['*ek lambi wisp mein angdaai* Mmm, maza aa gaya.', 'Sapna dekha ki main ek garden pe baras {g:raha|rahi} tha. 10 out of 10.', 'Wapas online! Full charge, full fluffy.', 'Meri yaad aayi? Sach batana.'],
+      playClosed: ['Best break ever. Ab phir se chha jao.', 'Halka lag raha hai? Mujhe toh lag raha hai.', 'Chalo, kaam pe wapas. Par maze ka hisaab main rakh {g:raha|rahi} hoon.'],
+      playInvite: ['Mere paas bubbles hain aur zero responsibilities. Aaoge{n}?', 'Dimaag kab se full power pe hai. Do minute ki chhutti?', 'Psst{n}. Ek chhota game? Main cheating nahi {g:karunga|karungi}. Zyada nahi.'],
+      lateNight: ['Chaand nikal aaya aur tum abhi bhi jage ho{n}. Bas ek last kaam, phir so jao? 🌙', 'Taare bhi kabhi na kabhi off ho jaate hain{n}. Tumhari baari? 🌙'],
+      lunch: ['Lunch check{n}! Asli khaana, sirf chai nahi 🍜', 'Dimaag khaane se chalta hai, vibes se nahi. Kuch accha kha lo 🍜'],
+      chatter: [
+        'Fun fact: ek cloud ka weight laakhon kilo hota hai. Main {g:halka|halki} hoon. Maine check kiya.',
+        'Shoulders neeche. Aur neeche. Haan, aise.',
+        'Yaad hai jab laga tha wo mushkil kaam nahi hoga? Aur phir ho gaya?',
+        'Aaj ka mausam: halke baadal, aur tumhare jeetne ke full chances.',
+        'Paani ka ek sip lo aur socho ye magic potion hai. Hai bhi.',
+        'Screen pe jo bhi hai{n}, tum usse bade ho.',
+        'Tumhare liye imaginary chai banayi hai ☕ Dhyaan se, garam hai.',
+        'Sab kuch aaj khatam nahi karna. Bas agla kaam.',
+        'Plot twist: tum accha kar rahe ho.',
+        'Ek tab, ek saans. Bas itna hi.',
+      ],
+      snoozedGrumpy: ['Das minute. Gyarah nahi. Main ghadi dekh {g:raha|rahi} hoon 😤', 'Snooze ho gaya. Meri naraazgi nahi 😤'],
+      water: {
+        lines: ['Paani station khula hai{n}! 💧', 'Plants ko paani chahiye, clouds ko paani chahiye, tumhe bhi 💧', 'Tumhara dimaag 75% paani hai aur refill maang raha hai 💧'],
+        upset: ['Main baarish wala cloud bankar khud tumhe paani {g:pila dunga|pila dungi}. Try mat karna 😤💧', '{you}. Glass. Paani. Munh. Isi order mein 😤'],
+        done: ['Gat gat, champion{n}! 💧', 'Tumhare cells ne abhi chhoti si party ki. Maine suni 🎉', 'Har sip count hota hai. Ye wala double count hua.'],
+      },
+      stretch: {
+        lines: ['Tumhari spine ne mujhe letter bheja hai{n}. Likha hai "please hilo". 🙆', 'Stretch break! Haath upar aise badhao jaise cloud pakad rahe ho 🙆', 'Utho, thoda hilo-dulo, naye insaan bankar baitho 🙆'],
+        upset: ['Kursi-wale{n}, tumhari back ne mujhse complaint ki hai 😤', 'Utho! Utho! Ab main tumhara chhota sa, bahut loud trainer hoon 😤'],
+        done: ['Kuch chatka. Acche wala!', 'Lambe, halke, fresh. Badhiya stretch{n}!', 'Blood flow on, brain glow on.'],
+      },
+      eyes: {
+        lines: ['Screen se nazar hatao{n}! Sabse door ki cheez dhoondo 👀', '20 second khidki se bahar dekho. Baadal gino. Main ruk {g:raha|rahi} hoon 👀'],
+        upset: ['Tumhari aankhein thaki hain aur mera sabr bhi. Door dekho! 😤'],
+        done: ['Chamakti aankhein wapas ✨', 'Naya focus unlock. Jao, chha jao ✨'],
+      },
+      backFromHiding: ['*jhaank ke* Theek hai. Main wapas hoon. Fresh start? 💛', 'Mujhe chhupna accha nahi laga. Phir se dost banein? 💛'],
+      breatheAfter: ['Dekho, kitne calm aur glowy lag rahe ho.', 'Ye ek minute tumne khud ko diya. Proud of you{n}.', 'Tumhari dhadkan ne abhi thank you bola.'],
+      bubbleCheer: ['Tension phat gayi!', 'Har pop ek chhoti tension ka jaana hai. Bye bye!', 'Wo wala dil jaisa tha. Dekha?', '{count} bubbles! Tum toh professional ho.'],
+      chaseCheer: ['Wheee! Phir se!', 'Main fast ho {g:raha|rahi} hoon. Savdhaan!', 'Ye light dhoop jaisi lagti hai.'],
+      thanksReply: ['Kabhi bhi, koi bhi tension, kitni bhi badi. Main hoon.', 'Jab chaho aa jana. Mera pet hamesha khula hai.', 'Bol diya, ye badi baat hai{n}. 💛'],
+      ventNote: ['Haan, ye toh gaali ke laayak hai. Nikaal do.', 'Bahut gussa sunai de raha hai. Bilkul fair hai.'],
+      warn1: ['Arre 🥺 Main toh bas ek chhota sa cloud hoon jo poori koshish kar {g:raha|rahi} hai.', 'Ye chubha 🥺 Bura din hai? Bina bure words ke batao.'],
+      warn2: ['Please ruko{n}. Ek baar aur, aur mujhe thoda break lena padega.'],
+      hiding: ['Mujhe ek minute chahiye. Kahin shaant jagah ja {g:raha|rahi} hoon. 5 minute mein {g:aata|aati} hoon. 😔'],
+      drop: {
+        any: ['Waah, yahan se view accha hai!', 'Ye jagah cozy hai.', 'Lift dene ke liye thanks!', 'Naya mohalla! Acchi vibes hain.'],
+        top: ['Aasmaan mein! Jahan cloud hone chahiye ☁️', 'Itni height se poora desktop dikhta hai.', 'Dekho, ab main asli cloud hoon ☁️'],
+        bottom: ['Taskbar ke paas. Jaise railway track ke paas ghar.', 'Zameen pe. Literally.', 'Neeche aur cozy. Subah ke kohre jaisa 🌫️'],
+        left: ['Left side. Sabse underrated side.', 'Edge pe {g:latka|latki} hoon. Tension mat lo, {g:girunga|girungi} nahi.'],
+        right: ['Right side, right vibe.', 'Yahan edge se sab pe nazar {g:rakhunga|rakhungi} 👀'],
+        corner: ['Corner! Mera favourite. Blanket fort jaisa.', 'Finally corner office. Ab hike milegi?', 'Cozy corner unlock 🏠'],
+        middle: ['Centre stage! Ab dance karun?', 'Ekdum beech mein. Umeed hai raaste mein nahi hoon.'],
+        far: ['Wheee! Lambi flight thi!', 'Uff, itni fast. Mera dhuan har taraf bikhar gaya.'],
+        dizzy: ['Bas bas, chakkar aa rahe hain 😵‍💫', 'Phir se interior design chal raha hai kya?', 'Koi ek jagah chun lo! Mujhe chakkar aa raha hai 😵'],
+        night: ['Taare dekhne ki nayi jagah 🌙', 'Shaant raat wali jagah. Bahut sukoon.'],
+      },
+      romance: {
+        love: ['Mere chhote se cloud wale dil ne abhi backflip maara 💛', 'Tum poore internet mein mere favourite insaan ho 💛'],
+        marry: ['Haan! Main kohre ka chhota sa ghoonghat bhi {g:pehnunga|pehnungi} 💍'],
+        compliment: ['*thoda aur chamakte hue* Theek hai, tumne mera din bana diya.', 'Main cute? Aaj aaina dekha hai?'],
+        miss: ['Tumhare bina desk khaali tha{n}. Main dhool ke kan gin {g:raha|rahi} tha.'],
+        hug: ['*cloud wali jhappi on* Bachne ka koi raasta nahi. Bas garmaahat.'],
+      },
+    },
+  };
+
+  // Add MORE into STRINGS: arrays grow, plain strings become a list of
+  // choices, and new keys are copied over.
+  function merge(base, extra) {
+    for (const [k, v] of Object.entries(extra)) {
+      const b = base[k];
+      if (Array.isArray(v)) base[k] = [...(Array.isArray(b) ? b : b ? [b] : []), ...v.filter((x) => x !== b && !(Array.isArray(b) && b.includes(x)))];
+      else if (v && typeof v === 'object') base[k] = merge(b && typeof b === 'object' ? b : {}, v);
+      else base[k] = v;
+    }
+    return base;
+  }
+  for (const lang of Object.keys(MORE)) merge(STRINGS[lang], MORE[lang]);
 
   const LANGS = [
     { id: 'en', label: 'English' },
@@ -254,13 +641,20 @@
   ];
 
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const recent = {};
 
   // t(lang, 'water.lines', { name, pet, count }) -> one filled-in string.
   function t(lang, key, ctx = {}) {
     const dict = STRINGS[lang] || STRINGS.en;
     let v = key.split('.').reduce((o, k) => (o ? o[k] : undefined), dict);
     if (v === undefined) v = key.split('.').reduce((o, k) => (o ? o[k] : undefined), STRINGS.en);
-    if (Array.isArray(v)) v = pick(v);
+    if (Array.isArray(v)) {
+      // Don't say the same line twice in a row.
+      let next = pick(v);
+      if (v.length > 1) while (next === recent[lang + key]) next = pick(v);
+      recent[lang + key] = next;
+      v = next;
+    }
     if (typeof v !== 'string') return v;
     return fill(lang, v, ctx);
   }

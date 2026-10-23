@@ -12,13 +12,20 @@ drink water, stretch, and rest your eyes.
 Until the app is signed, Windows SmartScreen says "Windows protected your PC".
 Click **More info → Run anyway**. See *Getting rid of the SmartScreen warning* below.
 
+## Feed me a worry
+
+Its own space, separate from the games: right-click → **Feed me a worry**. Type what's bothering you and your buddy eats it, letter by letter. It reflects back what you wrote, offers comfort that fits the topic (deadlines, work, study, money, people, health, self-doubt, the future), and suggests one tiny next step. If a worry mentions self-harm, it gently points to people who can help. It runs fully offline and nothing is saved.
+
+## Lots to say
+
+Every moment has plenty of lines (about 950 across English, Hindi and Hinglish), and Mochi never repeats the same line twice in a row. Drop it somewhere and it reacts to the spot: a cozy corner, up in the sky at the top, by the taskbar, centre stage, a long "wheee" flight, or dizzy if you keep moving it around.
+
 ## Play room
 
 Right-click → **Play** turns your desktop into a play area. Your buddy stays where it is and the games happen around it. Every game makes your buddy happier. Press Esc or ✕ to go back to work, and your buddy stays wherever play left it.
 - **Breathe with me**: your buddy swells as you breathe in and shrinks as you breathe out (4s in, 4s hold, 6s out, 6 rounds).
 - **Bubble pop**: soft bubbles float up across your whole screen. Pop them with gentle sounds. No timer, no score pressure.
 - **Chase the light**: a warm light follows your mouse and your buddy floats after it.
-- **Feed it a worry**: type what's bothering you and your buddy eats it, letter by letter. It reflects back what you wrote, offers comfort that fits the topic (deadlines, work, study, money, people, health, self-doubt, the future), and suggests one tiny next step. If a worry mentions self-harm, it gently points to people who can help. It runs fully offline and nothing is saved.
 
 Your buddy also sometimes asks if you want a quick play break. The 🔊 button turns sounds off.
 

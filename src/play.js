@@ -109,6 +109,10 @@ function show(name) {
   current = name;
   for (const b of document.querySelectorAll('#tabs button')) b.classList.toggle('active', b.dataset.game === name);
   for (const p of document.querySelectorAll('.panel')) p.classList.toggle('active', p.id === name);
+  // Feed a worry is its own quiet space, not one of the games.
+  const talking = name === 'worry';
+  document.body.classList.toggle('talk-mode', talking);
+  document.getElementById('title').textContent = T(talking ? 'worryTitle' : 'playTitle');
   petWrap.className = '';
   document.body.classList.remove('chasing');
   mood('idle');
@@ -469,7 +473,6 @@ placePet(home.x, home.y);
 window.play.getState().then((s) => {
   S = s;
   document.body.dataset.skin = s.skin || 'smoke';
-  document.getElementById('title').textContent = T('playTitle');
   for (const b of document.querySelectorAll('#tabs button')) b.textContent = T('tabs.' + b.dataset.game);
   document.querySelector('#bubbles .hint').textContent = T('bubblesHint');
   document.querySelector('#chase .hint').textContent = T('chaseHint');
