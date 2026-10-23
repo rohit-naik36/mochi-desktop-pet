@@ -1,0 +1,46 @@
+name: Tag versions
+
+# Every version in package.json gets a git tag (vX.Y.Z) on the last commit
+# that carried it, including older versions that were never tagged. When the
+# current version gets its tag, the Windows build runs and publishes a Release.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    outputs:
+      new_tag: ${{ steps.tags.outputs.new_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: tags
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          declare -A last
+          for c in $(git rev-list --reverse HEAD); do
+            v=$(git show "$c:package.json" 2>/dev/null | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).version||"")}catch{console.log("")}})')
+            [ -n "$v" ] && last[$v]=$c
+          done
+          head_v=$(node -p 'require("./package.json").version')
+          for v in "${!last[@]}"; do
+            if git rev-parse -q --verify "refs/tags/v$v" >/dev/null; then continue; fi
+            git tag -a "v$v" "${last[$v]}" -m "Mochi v$v"
+            echo "Tagged v$v at ${last[$v]}"
+            [ "$v" = "$head_v" ] && echo "new_tag=v$v" >> "$GITHUB_OUTPUT"
+          done
+          git push origin --tags
+
+  release:
+    needs: tag
+    if: needs.tag.outputs.new_tag != ''
+    uses: ./.github/workflows/build-windows.yml
+    with:
+      tag: ${{ needs.tag.outputs.new_tag }}
+    secrets: inherit

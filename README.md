@@ -91,6 +91,10 @@ npm run dist:mac     # on a Mac
 
 Code: `src/main.js` (window, tray, movement), `src/pet.html|css|js` (the pet, its moods, reminders).
 
+## Versions
+
+Every version is tagged automatically (`v0.1.0`, `v0.2.0`, ...) by `.github/workflows/tag-versions.yml` when it lands on `main`. Bump `version` in package.json and push: the new tag gets a Windows build and a GitHub Release.
+
 ## Getting rid of the SmartScreen warning
 
 `.github/workflows/build-windows.yml` builds on a real Windows machine. Push a tag (`git tag v0.1.1 && git push --tags`)
