@@ -81,7 +81,7 @@ body.chasing #toolbar, body.chasing #toolbar * { cursor: pointer !important; }
 #reply-opener { color: #b6bbd3; font-style: italic; font-size: 12px; }
 #reply-reflect { font-weight: 600; }
 #reply-step { background: rgba(143,162,255,.14); border-radius: 10px; padding: 7px 9px; font-size: 12.5px; }
-#reply-step::before { content: "Tiny next step: "; font-weight: 600; color: #b9c4ff; }
+#reply-step::before { content: var(--tiny-step, "Tiny next step: "); font-weight: 600; color: #b9c4ff; }
 #worry-reply.serious #reply-step::before { content: ""; }
 #worry-reply.serious #reply-step { background: rgba(255,170,140,.16); }
 #reply-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; margin-top: 2px; }

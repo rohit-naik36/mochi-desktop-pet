@@ -10,6 +10,9 @@ const rand = (a, b) => a + Math.random() * (b - a);
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const params = new URLSearchParams(location.search);
 let S = { name: 'Mochi' };
+// T('breatheIn') in the chosen language; L(lang, key) for a specific language.
+const L = (lang, key, extra = {}) => window.I18N.t(lang, key, { name: S.userName, pet: S.name, ...extra });
+const T = (key, extra) => L(S.lang || 'en', key, extra);
 let current = null;
 let soundOn = true;
 try { soundOn = localStorage.getItem('sound') !== 'off'; } catch {}
@@ -156,25 +159,25 @@ function Breathe() {
   }
   function round(n) {
     if (n === ROUNDS) return complete();
-    cue.textContent = 'Breathe in...';
+    cue.textContent = T('breatheIn');
     petWrap.className = 'inhale';
     mood('idle');
     countdown(4);
     tone(392, 1.2, 'sine', 0.03);
-    later(() => { cue.textContent = 'Hold'; petWrap.className = 'hold'; countdown(4); }, 4000);
-    later(() => { cue.textContent = 'Breathe out...'; petWrap.className = 'exhale'; mood('sleep'); countdown(6); tone(294, 1.6, 'sine', 0.03); }, 8000);
+    later(() => { cue.textContent = T('breatheHold'); petWrap.className = 'hold'; countdown(4); }, 4000);
+    later(() => { cue.textContent = T('breatheOut'); petWrap.className = 'exhale'; mood('sleep'); countdown(6); tone(294, 1.6, 'sine', 0.03); }, 8000);
     later(() => { paintDots(n + 1); round(n + 1); }, 14000);
   }
   function complete() {
     running = false;
     petWrap.className = '';
-    cue.textContent = 'Nicely done';
+    cue.textContent = T('breatheDone');
     count.textContent = '';
-    btn.textContent = 'Again';
+    btn.textContent = T('breatheAgain');
     btn.classList.remove('hidden');
     happy(1600);
     chime();
-    say(pick(['That felt good. Your shoulders look lighter.', 'Calm buddy, calm human.', 'Thanks for breathing with me.']));
+    say(T('breatheAfter'));
     window.play.reward({ happiness: 10 });
   }
   btn.onclick = () => {
@@ -185,7 +188,7 @@ function Breathe() {
     round(0);
   };
   return {
-    start() { cue.textContent = 'Breathe with me'; count.textContent = ''; btn.textContent = 'Start (about a minute)'; btn.classList.remove('hidden'); paintDots(0); },
+    start() { cue.textContent = T('breatheTitle'); count.textContent = ''; btn.textContent = T('breatheStart'); btn.classList.remove('hidden'); paintDots(0); },
     stop() { timers.forEach(clearTimeout); timers = []; running = false; petWrap.className = ''; },
   };
 }
@@ -230,13 +233,13 @@ function Bubbles() {
     b.remove();
     popSound();
     popped++;
-    counter.textContent = `${popped} popped`;
+    counter.textContent = T('popped', { count: popped });
     // The buddy glances toward each pop.
     petEl.classList.toggle('facing-left', cx < pos.x);
     if (popped % 10 === 0) {
       happy();
       float('✨', pos.x - 8, pos.y - 70);
-      say(pick(['So satisfying!', 'Pop pop pop!', `${popped}! You're a natural.`, 'I love this game.']), 1800);
+      say(T('bubbleCheer', { count: popped }), 1800);
       window.play.reward({ happiness: 3 });
     }
   }
@@ -244,7 +247,7 @@ function Bubbles() {
   return {
     start() {
       popped = 0;
-      counter.textContent = '0 popped';
+      counter.textContent = T('popped', { count: 0 });
       spawner = setInterval(spawn, 550);
       for (let i = 0; i < 6; i++) setTimeout(spawn, i * 150);
     },
@@ -279,11 +282,11 @@ function Chase() {
       if (d < 24 && Date.now() - lastCatch > 1500) {
         lastCatch = Date.now();
         catches++;
-        counter.textContent = `Caught it ${catches} time${catches === 1 ? '' : 's'}`;
+        counter.textContent = catches === 1 ? T('caughtOne') : T('caught', { count: catches });
         happy(900);
         float('💛', pos.x - 10, pos.y - 70);
         tone(880, 0.25, 'triangle', 0.04, 1.3);
-        if (catches % 5 === 0) { say(pick(['Got it! Again!', 'Hehe, too slow!', 'This is the best.']), 1800); window.play.reward({ happiness: 4 }); }
+        if (catches % 5 === 0) { say(T('chaseCheer'), 1800); window.play.reward({ happiness: 4 }); }
       }
     }
     raf = requestAnimationFrame(tick);
@@ -358,16 +361,18 @@ function Worry() {
       parts.helplines.appendChild(line);
     }
     parts.actions.innerHTML = '';
-    const labels = { another: 'Feed another', breathe: 'Breathe with me' };
+    const lang = r.lang || S.lang || 'en';
+    const labels = { another: L(lang, 'feedAnother'), breathe: L(lang, 'breatheWithMe') };
+    document.documentElement.style.setProperty('--tiny-step', JSON.stringify(L(lang, 'tinyStep')));
     for (const f of r.followups) {
       const b = document.createElement('button');
       b.className = f === r.followups[0] ? 'cta' : 'ghost';
-      b.textContent = f === 'thanks' ? (r.serious ? 'Okay' : `Thanks, ${S.name}`) : labels[f];
+      b.textContent = f === 'thanks' ? (r.serious ? L(lang, 'okay') : L(lang, 'thanks')) : labels[f];
       b.onclick = () => {
         if (f === 'another') askMode();
         else if (f === 'breathe') show('breathe');
-        else if (r.serious) { say(`I'm right here${S.userName ? ', ' + S.userName : ''}. Please reach out to one of them. 💛`, 4000); }
-        else { happy(1200); say(pick([`Anytime${S.userName ? ', ' + S.userName : ''}. I'm always hungry for worries.`, "That's what friends are for. 💛", "I've got you. Always."]), 2500); setTimeout(finish, 1800); }
+        else if (r.serious) { say(L(lang, 'crisisStay'), 4000); }
+        else { happy(1200); say(L(lang, 'thanksReply'), 2500); setTimeout(finish, 1800); }
       };
       parts.actions.appendChild(b);
     }
@@ -377,8 +382,12 @@ function Worry() {
 
   function feed() {
     const words = text.value.trim();
-    if (!words) { text.focus(); say('Type anything, big or small.', 2000); return; }
+    if (!words) { text.focus(); say(T('typeSomething'), 2000); return; }
     btn.disabled = true;
+    const said = window.WorryEater.detectLang(words, S.lang || 'en');
+    const lang = said === 'other' ? S.lang || 'en' : said;
+    const rude = window.Profanity.analyse(words, S.name);
+    if (rude.atPet) return refuse(words, lang);
     const tr = text.getBoundingClientRect();
     mood('eat');
     [...words].forEach((ch, i) => {
@@ -401,12 +410,26 @@ function Worry() {
     const total = 1500 + Math.min(words.length, 280) * 16;
     setTimeout(() => tone(220, 0.25, 'sine', 0.06, 0.6), total - 200);
     setTimeout(() => {
-      const r = window.WorryEater.respond(words, S.userName);
+      const r = window.WorryEater.respond(words, S.userName, S.lang || 'en');
+      // Swearing about a situation is just venting: acknowledge the feeling.
+      if (rude.profane && !r.serious) r.comfort = L(r.lang, 'ventNote') + ' ' + r.comfort;
       mood(r.serious ? 'idle' : 'happy');
       setTimeout(() => mood('idle'), 1400);
       showReply(r);
       window.play.reward({ happiness: 6, hunger: -5 });
     }, total);
+  }
+
+  // Swearing at Mochi: no eating. Two warnings, then Mochi goes to hide.
+  async function refuse(words, lang) {
+    text.value = '';
+    mood('upset');
+    const strikes = await window.play.strike();
+    const key = strikes >= 3 ? 'hiding' : strikes === 2 ? 'warn2' : 'warn1';
+    say(L(lang, key), strikes >= 3 ? 4000 : 5000);
+    window.play.reward({ happiness: -6 });
+    if (strikes >= 3) { setTimeout(() => window.play.hide(), 2800); return; }
+    setTimeout(() => { mood('idle'); askMode(); }, 2600);
   }
 
   btn.onclick = feed;
@@ -424,6 +447,13 @@ placePet(home.x, home.y);
 window.play.getState().then((s) => {
   S = s;
   document.body.dataset.skin = s.skin || 'smoke';
-  document.getElementById('title').textContent = `Play with ${s.name}`;
+  document.getElementById('title').textContent = T('playTitle');
+  for (const b of document.querySelectorAll('#tabs button')) b.textContent = T('tabs.' + b.dataset.game);
+  document.querySelector('#bubbles .hint').textContent = T('bubblesHint');
+  document.querySelector('#chase .hint').textContent = T('chaseHint');
+  document.getElementById('worry-hint').textContent = T('worryHint');
+  document.getElementById('worry-text').placeholder = T('worryPlaceholder');
+  document.getElementById('worry-feed').textContent = T('feedIt');
+  document.documentElement.style.setProperty('--tiny-step', JSON.stringify(T('tinyStep')));
   show(params.get('game') || 'breathe');
 });

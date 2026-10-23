@@ -2,7 +2,9 @@
 const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeImage } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const I18N = require('./i18n');
 
+const MIN_MS = 60_000;
 const WIN_W = 220;
 const WIN_H = 260; // room above the pet for speech bubbles
 
@@ -20,6 +22,8 @@ const SKINS = [
 
 const defaults = {
   userName: null, // asked on first run
+  lang: 'en',
+  strikes: { count: 0, at: 0 }, // swearing at the pet
   skin: 'smoke',
   name: 'Mochi',
   happiness: 80,
@@ -89,6 +93,7 @@ const PET_CY = WIN_H - 61;
 // Play mode: a transparent layer over the whole work area. The desktop pet
 // hides and the same buddy appears in the layer at the same spot.
 function openPlay(game) {
+  if (hidingUntil) return;
   if (playWin && !playWin.isDestroyed()) { playWin.focus(); return; }
   const pb = win.getBounds();
   const wa = screen.getDisplayMatching(pb).workArea;
@@ -123,6 +128,7 @@ function openPlay(game) {
   playWin.webContents.on('console-message', (_e, level, msg) => process.env.MOCHI_DEBUG && level >= 2 && console.log('play error:', msg));
   playWin.on('closed', () => {
     playWin = null;
+    if (hidingUntil) return; // stays hidden until it's ready to come back
     win.showInactive();
     send('action', 'play-closed');
   });
@@ -130,6 +136,35 @@ function openPlay(game) {
 }
 
 ipcMain.handle('get-state', () => state);
+
+// Swearing at the pet: count strikes (forgotten after a day); the third one sends it into hiding.
+const HIDE_MIN = 5;
+let hidingUntil = 0;
+ipcMain.handle('profanity-strike', () => {
+  const s = state.strikes || { count: 0, at: 0 };
+  if (Date.now() - s.at > 24 * 60 * 60 * 1000) s.count = 0;
+  s.count += 1;
+  s.at = Date.now();
+  state.strikes = s;
+  saveState();
+  return s.count;
+});
+ipcMain.on('pet-hide', () => {
+  state.strikes = { count: 0, at: Date.now() };
+  hidingUntil = Date.now() + HIDE_MIN * MIN_MS;
+  saveState();
+  if (playWin) playWin.close();
+  win.hide();
+  refreshTrayMenu();
+  tray.setToolTip(I18N.t(state.lang, 'menu.hidingNow', { pet: state.name }));
+  setTimeout(() => {
+    hidingUntil = 0;
+    win.showInactive();
+    tray.setToolTip(`${state.name} the desktop pet`);
+    refreshTrayMenu();
+    send('action', 'back-from-hiding');
+  }, HIDE_MIN * MIN_MS);
+});
 // The buddy comes back to the desktop wherever play left it.
 ipcMain.on('play-done', (_e, x, y) => {
   if (!playWin) return;
@@ -156,26 +191,34 @@ function buildTray() {
 }
 
 function buildMenu() {
+  const M = (key, count) => I18N.t(state.lang, 'menu.' + key, { name: state.userName, pet: state.name, count });
   const toggle = (key, label) => ({
     label,
     type: 'checkbox',
     checked: state.nudges[key],
     click: (item) => { state.nudges[key] = item.checked; saveState(); send('state', state); },
   });
+  if (hidingUntil) {
+    return Menu.buildFromTemplate([
+      { label: M('hidingNow'), enabled: false },
+      { type: 'separator' },
+      { label: M('quit'), click: () => app.quit() },
+    ]);
+  }
   return Menu.buildFromTemplate([
     { label: `${state.name}  ❤ ${Math.round(state.happiness)}  🍙 ${Math.round(100 - state.hunger)}`, enabled: false },
     { type: 'separator' },
-    { label: 'Feed', click: () => send('action', 'feed') },
-    { label: 'Play', submenu: [
-      { label: 'Play time', click: () => openPlay() },
+    { label: M('feed'), click: () => send('action', 'feed') },
+    { label: M('play'), submenu: [
+      { label: M('playTime'), click: () => openPlay() },
       { type: 'separator' },
-      { label: 'Breathe with me', click: () => openPlay('breathe') },
-      { label: 'Bubble pop', click: () => openPlay('bubbles') },
-      { label: 'Chase the light', click: () => openPlay('chase') },
-      { label: 'Feed it a worry', click: () => openPlay('worry') },
+      { label: M('breathe'), click: () => openPlay('breathe') },
+      { label: M('bubbles'), click: () => openPlay('bubbles') },
+      { label: M('chase'), click: () => openPlay('chase') },
+      { label: M('worry'), click: () => openPlay('worry') },
     ] },
-    { label: 'Nap time', click: () => send('action', 'sleep') },
-    { label: 'Choose your buddy', submenu: SKINS.map((sk) => ({
+    { label: M('nap'), click: () => send('action', 'sleep') },
+    { label: M('buddy'), submenu: SKINS.map((sk) => ({
       label: sk.label,
       type: 'radio',
       checked: state.skin === sk.id,
@@ -189,21 +232,27 @@ function buildMenu() {
         send('action', 'switched');
       },
     })) },
-    { label: state.userName ? `Change my name (${state.userName})` : 'Tell me your name', click: () => send('action', 'ask-name') },
-    { label: 'Let it wander', type: 'checkbox', checked: state.walking,
+    { label: state.userName ? M('changeName') : M('name'), click: () => send('action', 'ask-name') },
+    { label: M('language'), submenu: I18N.LANGS.map((l) => ({
+      label: l.label,
+      type: 'radio',
+      checked: state.lang === l.id,
+      click: () => { state.lang = l.id; saveState(); refreshTrayMenu(); send('state', state); send('action', 'switched'); },
+    })) },
+    { label: M('wander'), type: 'checkbox', checked: state.walking,
       click: (i) => { state.walking = i.checked; saveState(); send('state', state); } },
     { type: 'separator' },
-    { label: 'Reminders', submenu: [
-      toggle('water', `Drink water (every ${state.waterEveryMin} min)`),
-      toggle('stretch', `Stretch break (every ${state.stretchEveryMin} min)`),
-      toggle('eyes', `20-20-20 eye rest (every ${state.eyesEveryMin} min)`),
+    { label: M('reminders'), submenu: [
+      toggle('water', M('water', state.waterEveryMin)),
+      toggle('stretch', M('stretch', state.stretchEveryMin)),
+      toggle('eyes', M('eyes', state.eyesEveryMin)),
     ] },
-    { label: 'Start with Windows', type: 'checkbox',
+    { label: M('startup'), type: 'checkbox',
       checked: app.getLoginItemSettings().openAtLogin,
       click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked }) },
     { type: 'separator' },
-    { label: 'Bring pet back', click: () => { const wa = workArea(); placeAt(wa.x + wa.width - WIN_W - 40, wa.y + wa.height - WIN_H); } },
-    { label: 'Quit', click: () => app.quit() },
+    { label: M('bringBack'), click: () => { const wa = workArea(); placeAt(wa.x + wa.width - WIN_W - 40, wa.y + wa.height - WIN_H); } },
+    { label: M('quit'), click: () => app.quit() },
   ]);
 }
 

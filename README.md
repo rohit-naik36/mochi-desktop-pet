@@ -32,6 +32,17 @@ Change it any time: right-click → **Change my name**.
 If a worry mentions suicide or self-harm, Mochi responds with care and shows free Indian helplines:
 Tele-MANAS **14416**, KIRAN **1800-599-0019**, Vandrevala Foundation **+91 9999 666 555**, and emergency **112**.
 
+## Languages
+
+Right-click → **Language** to pick English, हिंदी (Hindi) or Hinglish. Menus, reminders, chatter and play mode switch over.
+In **Feed a worry** you can write in any of the three. Mochi replies in the language you wrote in.
+
+## Swearing
+
+Mochi looks at who the swearing is aimed at. Venting about a situation ("this bc deadline...") gets empathy, not a lecture.
+Swearing at or insulting Mochi gets a gentle warning, then a firmer one. The third time, Mochi hides for 5 minutes and comes back asking to be kind.
+Strikes reset after a day.
+
 ## Pick your buddy
 
 Right-click the pet and open **Choose your buddy**:
