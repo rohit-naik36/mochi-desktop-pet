@@ -75,7 +75,7 @@ function createWindow() {
   win.setAlwaysOnTop(true, 'screen-saver');
   win.setVisibleOnAllWorkspaces(true);
   // Clicks pass through empty space until the pointer is over the pet.
-  win.setIgnoreMouseEvents(true, { forward: true });
+  if (!process.env.MOCHI_DEBUG) win.setIgnoreMouseEvents(true, { forward: true });
   win.loadFile(path.join(__dirname, 'pet.html'));
   win.webContents.on('did-finish-load', () => win.webContents.send('state', state));
 }
@@ -132,7 +132,7 @@ function buildMenu() {
       checked: app.getLoginItemSettings().openAtLogin,
       click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked }) },
     { type: 'separator' },
-    { label: 'Bring pet back', click: () => { const wa = workArea(); win.setPosition(wa.x + wa.width - WIN_W - 40, wa.y + wa.height - WIN_H); } },
+    { label: 'Bring pet back', click: () => { const wa = workArea(); placeAt(wa.x + wa.width - WIN_W - 40, wa.y + wa.height - WIN_H); } },
     { label: 'Quit', click: () => app.quit() },
   ]);
 }
@@ -147,18 +147,43 @@ function send(ch, payload) {
 
 // Renderer asks to toggle click-through as the pointer enters or leaves the pet.
 ipcMain.on('mouse-over-pet', (_e, over) => {
-  if (!win) return;
+  if (!win || process.env.MOCHI_DEBUG) return;
   win.setIgnoreMouseEvents(!over, { forward: true });
 });
 
-// Drag and walk both move the window; keep the pet on screen.
+// All moves go through placeAt so the window keeps its exact size. On Windows
+// with display scaling, setPosition alone lets the size creep by a pixel each
+// call, which slowly pushed the pet down behind the taskbar.
+function placeAt(x, y) {
+  const wa = screen.getDisplayNearestPoint({ x: x + WIN_W / 2, y: y + WIN_H / 2 }).workArea;
+  const nx = Math.min(Math.max(Math.round(x), wa.x - 40), wa.x + wa.width - WIN_W + 40);
+  const ny = Math.min(Math.max(Math.round(y), wa.y - 40), wa.y + wa.height - WIN_H);
+  win.setBounds({ x: nx, y: ny, width: WIN_W, height: WIN_H });
+}
+
+function floorY(x) {
+  const wa = screen.getDisplayNearestPoint({ x: x + WIN_W / 2, y: win.getBounds().y + WIN_H / 2 }).workArea;
+  return wa.y + wa.height - WIN_H;
+}
+
 ipcMain.on('move-by', (_e, dx, dy) => {
-  const [x, y] = win.getPosition();
-  const b = screen.getDisplayMatching(win.getBounds()).bounds;
-  const nx = Math.min(Math.max(x + Math.round(dx), b.x - 40), b.x + b.width - WIN_W + 40);
-  const ny = Math.min(Math.max(y + Math.round(dy), b.y - 40), b.y + b.height - WIN_H + 20);
-  win.setPosition(nx, ny);
+  const { x, y } = win.getBounds();
+  placeAt(x + dx, y + dy);
 });
+
+// Dragging follows the real cursor position, so rounding never adds up.
+let dragOffset = null;
+ipcMain.on('drag-start', () => {
+  const c = screen.getCursorScreenPoint();
+  const { x, y } = win.getBounds();
+  dragOffset = { x: c.x - x, y: c.y - y };
+});
+ipcMain.on('drag-move', () => {
+  if (!dragOffset) return;
+  const c = screen.getCursorScreenPoint();
+  placeAt(c.x - dragOffset.x, c.y - dragOffset.y);
+});
+ipcMain.on('drag-end', () => { dragOffset = null; });
 
 ipcMain.on('context-menu', () => buildMenu().popup({ window: win }));
 
@@ -169,9 +194,9 @@ ipcMain.handle('get-bounds', () => {
 });
 
 ipcMain.on('drop-to-floor', () => {
-  const [x] = win.getPosition();
-  const wa = screen.getDisplayMatching(win.getBounds()).workArea;
-  win.setPosition(x, wa.y + wa.height - WIN_H);
+  const { x } = win.getBounds();
+  placeAt(x, floorY(x));
+  if (process.env.MOCHI_DEBUG) console.log('dropped at', JSON.stringify(win.getBounds()));
 });
 
 ipcMain.on('save-state', (_e, partial) => {
@@ -191,6 +216,10 @@ if (!gotLock) {
     loadState();
     createWindow();
     buildTray();
+    const refloor = () => { const { x } = win.getBounds(); placeAt(x, floorY(x)); };
+    screen.on('display-metrics-changed', refloor);
+    screen.on('display-removed', refloor);
+    refloor(); // also rescues a pet saved somewhere off screen
     // Tray label shows live stats, so refresh it now and then.
     setInterval(refreshTrayMenu, 60_000);
   });

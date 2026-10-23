@@ -251,6 +251,7 @@ for (const el of [petEl, bubble]) {
 petEl.addEventListener('mousedown', (e) => {
   if (e.button !== 0) return;
   dragging = { x: e.screenX, y: e.screenY, moved: 0 };
+  window.pet.dragStart();
 });
 
 window.addEventListener('mousemove', (e) => {
@@ -261,7 +262,7 @@ window.addEventListener('mousemove', (e) => {
   dragging.x = e.screenX; dragging.y = e.screenY;
   if (dragging.moved > 4) {
     petEl.classList.add('dragging');
-    window.pet.moveBy(dx, dy);
+    window.pet.dragMove();
   }
 });
 
@@ -269,6 +270,7 @@ window.addEventListener('mouseup', () => {
   if (!dragging) return;
   const wasDrag = dragging.moved > 4;
   dragging = null;
+  window.pet.dragEnd();
   petEl.classList.remove('dragging');
   if (wasDrag) {
     window.pet.dropToFloor();
