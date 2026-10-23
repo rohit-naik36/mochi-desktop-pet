@@ -14,5 +14,8 @@ contextBridge.exposeInMainWorld('pet', {
   getBounds: () => ipcRenderer.invoke('get-bounds'),
   dragDone: () => ipcRenderer.send('drag-done'),
   contextMenu: () => ipcRenderer.send('context-menu'),
+  focus: () => ipcRenderer.send('focus-pet'),
+  glideCenter: () => ipcRenderer.send('glide-center'),
+  glideHome: () => ipcRenderer.send('glide-home'),
   save: (partial) => ipcRenderer.send('save-state', partial),
 });

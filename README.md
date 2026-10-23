@@ -22,6 +22,16 @@ Right-click → **Play** turns your desktop into a play area. Your buddy stays w
 
 Your buddy also sometimes asks if you want a quick play break. The 🔊 button turns sounds off.
 
+## Your name
+
+On first launch Mochi asks what to call you and uses your name in greetings, reminders and replies.
+Change it any time: right-click → **Change my name**.
+
+## If someone is struggling
+
+If a worry mentions suicide or self-harm, Mochi responds with care and shows free Indian helplines:
+Tele-MANAS **14416**, KIRAN **1800-599-0019**, Vandrevala Foundation **+91 9999 666 555**, and emergency **112**.
+
 ## Pick your buddy
 
 Right-click the pet and open **Choose your buddy**:
@@ -44,7 +54,7 @@ Reminders (each can be turned off from the menu):
 - Stretch break every 60 min (Mochi stretches with you)
 - 20-20-20 eye rest every 20 min
 
-Click **Done!** on a reminder and Mochi gets happier. Ignore it too long and it gets hungry and a bit sad.
+Click **Done!** on a reminder and Mochi cheers you on. Ignore a reminder for 3 minutes and Mochi floats to the middle of your screen and puffs up, upset, until you click Done (or snooze it). Ignore it too long and it gets hungry and a bit sad.
 Stats are saved in `%APPDATA%\Mochi\pet-state.json`, so Mochi remembers you between restarts.
 
 ## Develop

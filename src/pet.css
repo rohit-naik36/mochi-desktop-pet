@@ -154,3 +154,24 @@ body[data-skin="cinder"] .speck { animation-name: ember; animation-duration: 2.6
 }
 #bubble button.primary { background: #ffb36b; font-weight: 600; }
 #bubble button:hover { filter: brightness(.95); }
+
+/* upset: puffed up and grumpy, puffing little clouds */
+#eyes-angry, #brows { display: none; }
+#eyes-angry ellipse { fill: var(--eye-color); }
+#brows path { fill: var(--smoke); }
+#pet.upset #eyes, #pet.upset #eyes-closed, #pet.upset #eyes-happy { display: none; }
+#pet.upset #eyes-angry, #pet.upset #brows { display: inline; }
+#pet.upset #mouth { transform: scaleY(-1); transform-box: fill-box; transform-origin: center; }
+#pet.upset #smoke-body { animation: fume 1.1s ease-in-out infinite; transform-origin: 60px 60px; }
+@keyframes fume { 0%,100% { transform: scale(1.35); } 50% { transform: scale(1.48, 1.4); } }
+#pet.upset .wisp { animation-duration: 1.4s; }
+#pet.upset #body-group { animation: shake .35s ease-in-out infinite; transform-origin: 60px 60px; }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-1.5px) rotate(-2deg); } 75% { transform: translateX(1.5px) rotate(2deg); } }
+.huff { font-size: 20px; }
+
+/* name input inside the speech bubble */
+#bubble input {
+  width: 100%; box-sizing: border-box; margin-top: 6px; border: 1.5px solid #f0d2ad; border-radius: 8px;
+  padding: 5px 8px; font: inherit; font-size: 12.5px; outline: none; color: var(--ink);
+}
+#bubble input:focus { border-color: #ffb36b; }

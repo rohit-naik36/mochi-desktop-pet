@@ -57,6 +57,14 @@ const PET_SVG = `<svg viewBox="0 0 120 110" width="120" height="110" aria-label=
               <g class="eye"><ellipse cx="47" cy="58" rx="6" ry="8"/></g>
               <g class="eye"><ellipse cx="73" cy="58" rx="6" ry="8"/></g>
             </g>
+            <g id="eyes-angry" filter="url(#glow)">
+              <ellipse cx="47" cy="60" rx="6.5" ry="6"/>
+              <ellipse cx="73" cy="60" rx="6.5" ry="6"/>
+            </g>
+            <g id="brows">
+              <path d="M37 50 L57 58 L57 49 Z"/>
+              <path d="M83 50 L63 58 L63 49 Z"/>
+            </g>
             <g id="eyes-closed" filter="url(#glow)">
               <path d="M41 60 Q47 64 53 60"/>
               <path d="M67 60 Q73 64 79 60"/>

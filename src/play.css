@@ -91,3 +91,8 @@ body.chasing #toolbar, body.chasing #toolbar * { cursor: pointer !important; }
   background: #fff; color: #2a2238; border-radius: 12px; padding: 7px 12px; font-size: 13px; max-width: 260px; text-align: center;
   box-shadow: 0 4px 14px rgba(0,0,0,.3);
 }
+
+#reply-ask { color: #d7dbf0; font-style: italic; }
+#reply-helplines { display: flex; flex-direction: column; gap: 4px; background: rgba(255,170,140,.14); border-radius: 10px; padding: 8px 10px; }
+#reply-helplines .line { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; }
+#reply-helplines .num { font-weight: 700; color: #ffd2c2; white-space: nowrap; user-select: text; -webkit-user-select: text; }

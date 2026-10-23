@@ -28,14 +28,20 @@ function placePet(x, y) {
   document.body.style.setProperty('--py', y + 'px');
 }
 
-// Put the card above the pet, or below it if there is no room, kept on screen.
+// Put the card above the pet, else below, else beside it, always on screen.
 function placeCard() {
   card.classList.remove('hidden');
   const w = card.offsetWidth, h = card.offsetHeight;
-  let top = pos.y - 90 - h;
-  if (top < 70) top = pos.y + 90;
-  if (top + h > innerHeight - 10) top = Math.max(70, innerHeight - h - 10);
-  const left = Math.min(Math.max(pos.x - w / 2, 10), innerWidth - w - 10);
+  const clampX = (x) => Math.min(Math.max(x, 10), innerWidth - w - 10);
+  const clampY = (y) => Math.min(Math.max(y, 70), innerHeight - h - 10);
+  let left = clampX(pos.x - w / 2);
+  let top;
+  if (pos.y - 90 - h >= 70) top = pos.y - 90 - h;
+  else if (pos.y + 90 + h <= innerHeight - 10) top = pos.y + 90;
+  else {
+    top = clampY(pos.y - h / 2);
+    left = pos.x + 90 + w <= innerWidth - 10 ? pos.x + 90 : clampX(pos.x - 90 - w);
+  }
   card.style.left = left + 'px';
   card.style.top = top + 'px';
 }
@@ -315,6 +321,8 @@ function Worry() {
     reflect: document.getElementById('reply-reflect'),
     comfort: document.getElementById('reply-comfort'),
     step: document.getElementById('reply-step'),
+    ask: document.getElementById('reply-ask'),
+    helplines: document.getElementById('reply-helplines'),
     actions: document.getElementById('reply-actions'),
   };
 
@@ -338,16 +346,28 @@ function Worry() {
     parts.reflect.textContent = r.reflect;
     parts.comfort.textContent = r.comfort;
     parts.step.textContent = r.step;
+    parts.ask.textContent = r.ask || '';
+    parts.helplines.innerHTML = '';
+    parts.helplines.classList.toggle('hidden', !r.helplines);
+    for (const h of r.helplines || []) {
+      const line = document.createElement('div');
+      line.className = 'line';
+      const n = document.createElement('span'); n.textContent = h.name;
+      const num = document.createElement('span'); num.className = 'num'; num.textContent = h.number;
+      line.append(n, num);
+      parts.helplines.appendChild(line);
+    }
     parts.actions.innerHTML = '';
-    const labels = { another: 'Feed another', breathe: 'Breathe with me', thanks: 'Thanks, Mochi' };
+    const labels = { another: 'Feed another', breathe: 'Breathe with me' };
     for (const f of r.followups) {
       const b = document.createElement('button');
       b.className = f === r.followups[0] ? 'cta' : 'ghost';
-      b.textContent = f === 'thanks' ? `Thanks, ${S.name}` : labels[f];
+      b.textContent = f === 'thanks' ? (r.serious ? 'Okay' : `Thanks, ${S.name}`) : labels[f];
       b.onclick = () => {
         if (f === 'another') askMode();
         else if (f === 'breathe') show('breathe');
-        else { happy(1200); say(pick(["Anytime. I'm always hungry for worries.", "I'm right here whenever you need me."]), 2500); setTimeout(finish, 1800); }
+        else if (r.serious) { say(`I'm right here${S.userName ? ', ' + S.userName : ''}. Please reach out to one of them. 💛`, 4000); }
+        else { happy(1200); say(pick([`Anytime${S.userName ? ', ' + S.userName : ''}. I'm always hungry for worries.`, "That's what friends are for. 💛", "I've got you. Always."]), 2500); setTimeout(finish, 1800); }
       };
       parts.actions.appendChild(b);
     }
@@ -381,7 +401,7 @@ function Worry() {
     const total = 1500 + Math.min(words.length, 280) * 16;
     setTimeout(() => tone(220, 0.25, 'sine', 0.06, 0.6), total - 200);
     setTimeout(() => {
-      const r = window.WorryEater.respond(words);
+      const r = window.WorryEater.respond(words, S.userName);
       mood(r.serious ? 'idle' : 'happy');
       setTimeout(() => mood('idle'), 1400);
       showReply(r);

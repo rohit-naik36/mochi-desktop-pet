@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 const WIN_W = 220;
-const WIN_H = 210;
+const WIN_H = 260; // room above the pet for speech bubbles
 
 let win;
 let tray;
@@ -19,6 +19,7 @@ const SKINS = [
 ];
 
 const defaults = {
+  userName: null, // asked on first run
   skin: 'smoke',
   name: 'Mochi',
   happiness: 80,
@@ -188,6 +189,7 @@ function buildMenu() {
         send('action', 'switched');
       },
     })) },
+    { label: state.userName ? `Change my name (${state.userName})` : 'Tell me your name', click: () => send('action', 'ask-name') },
     { label: 'Let it wander', type: 'checkbox', checked: state.walking,
       click: (i) => { state.walking = i.checked; saveState(); send('state', state); } },
     { type: 'separator' },
@@ -233,6 +235,37 @@ function placeAt(x, y) {
 // Wandering sends absolute positions so slow sub-pixel drift isn't lost to rounding.
 ipcMain.on('move-to', (_e, x, y) => placeAt(x, y));
 
+// Smooth glide used when Mochi gets upset and floats to the middle, and back.
+let glideTimer = null;
+function glide(tx, ty, ms = 1100) {
+  clearInterval(glideTimer);
+  const { x: sx, y: sy } = win.getBounds();
+  const t0 = Date.now();
+  glideTimer = setInterval(() => {
+    const t = Math.min(1, (Date.now() - t0) / ms);
+    const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    placeAt(sx + (tx - sx) * e, sy + (ty - sy) * e);
+    if (t === 1) clearInterval(glideTimer);
+  }, 16);
+}
+
+let upsetHome = null;
+ipcMain.on('glide-center', () => {
+  if (playWin) return;
+  const b = win.getBounds();
+  upsetHome = upsetHome || { x: b.x, y: b.y };
+  const wa = screen.getDisplayMatching(b).workArea;
+  win.setAlwaysOnTop(true, 'screen-saver');
+  win.moveTop();
+  glide(wa.x + (wa.width - WIN_W) / 2, wa.y + (wa.height - WIN_H) / 2);
+});
+ipcMain.on('glide-home', () => {
+  if (!upsetHome) return;
+  glide(upsetHome.x, upsetHome.y);
+  upsetHome = null;
+});
+ipcMain.on('focus-pet', () => win.focus());
+
 ipcMain.on('move-by', (_e, dx, dy) => {
   const { x, y } = win.getBounds();
   placeAt(x + dx, y + dy);
@@ -271,7 +304,7 @@ ipcMain.on('drag-done', () => {
 
 ipcMain.on('save-state', (_e, partial) => {
   Object.assign(state, partial);
-  ({ x: state.x, y: state.y } = win.getBounds());
+  if (!upsetHome) ({ x: state.x, y: state.y } = win.getBounds()); // not the temporary centre spot
   saveState();
   refreshTrayMenu();
 });
