@@ -312,9 +312,10 @@ function buildMenu() {
       toggle('stretch', M('stretch', state.stretchEveryMin)),
       toggle('eyes', M('eyes', state.eyesEveryMin)),
     ] },
-    { label: M('startup'), type: 'checkbox',
+    // Store (MSIX) builds can't register to start with Windows this way.
+    ...(process.windowsStore ? [] : [{ label: M('startup'), type: 'checkbox',
       checked: app.getLoginItemSettings().openAtLogin,
-      click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked }) },
+      click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked }) }]),
     { type: 'separator' },
     { label: M('bringBack'), click: () => { const wa = workArea(); placeAt(wa.x + wa.width - WIN_W - 40, wa.y + wa.height - WIN_H); } },
     { label: M('quit'), click: () => app.quit() },

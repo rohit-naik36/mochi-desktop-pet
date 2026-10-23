@@ -1,6 +1,6 @@
 {
   "name": "mochi-desktop-pet",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "A tiny desktop pet that keeps you company and reminds you to drink water and stretch.",
   "main": "src/main.js",
   "scripts": {
@@ -52,10 +52,13 @@
       "icon": "build/icon.png"
     },
     "appx": {
-      "displayName": "Mochi",
+      "displayName": "Mochi - Desk Buddy",
       "applicationId": "Mochi",
-      "backgroundColor": "transparent",
-      "showNameOnTiles": false
+      "backgroundColor": "#E2EDFA",
+      "showNameOnTiles": false,
+      "languages": [
+        "en-US"
+      ]
     }
   }
 }
