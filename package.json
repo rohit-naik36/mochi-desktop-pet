@@ -7,7 +7,8 @@
     "start": "electron .",
     "dist:win": "electron-builder --win nsis portable --publish never",
     "dist:mac": "electron-builder --mac dmg",
-    "dist:linux": "electron-builder --linux AppImage"
+    "dist:linux": "electron-builder --linux AppImage",
+    "dist:store": "electron-builder --win appx --publish never"
   },
   "author": "Rohit",
   "license": "MIT",
@@ -49,6 +50,12 @@
     },
     "linux": {
       "icon": "build/icon.png"
+    },
+    "appx": {
+      "displayName": "Mochi",
+      "applicationId": "Mochi",
+      "backgroundColor": "transparent",
+      "showNameOnTiles": false
     }
   }
 }

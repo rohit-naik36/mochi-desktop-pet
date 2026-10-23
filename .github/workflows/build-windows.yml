@@ -1,0 +1,75 @@
+name: Build Windows
+
+# Builds the installer, portable exe and Microsoft Store package on a real
+# Windows machine. Push a tag like v0.1.1 to publish them as a GitHub Release.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      # Optional: Azure Artifact Signing. When these secrets are set, the
+      # installer and portable exe are signed and SmartScreen stops warning.
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      SIGN_ENDPOINT: ${{ secrets.AZURE_SIGN_ENDPOINT }}
+      SIGN_ACCOUNT: ${{ secrets.AZURE_SIGN_ACCOUNT }}
+      SIGN_PROFILE: ${{ secrets.AZURE_SIGN_PROFILE }}
+      SIGN_PUBLISHER: ${{ secrets.AZURE_SIGN_PUBLISHER }}
+      # Optional: values from Partner Center > Product identity, for the Store package.
+      STORE_IDENTITY_NAME: ${{ secrets.STORE_IDENTITY_NAME }}
+      STORE_PUBLISHER: ${{ secrets.STORE_PUBLISHER }}
+      STORE_PUBLISHER_NAME: ${{ secrets.STORE_PUBLISHER_NAME }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Build installer and portable exe
+        shell: pwsh
+        run: |
+          $extra = @()
+          if ($env:SIGN_ENDPOINT) {
+            Write-Host "Signing with Azure Artifact Signing"
+            $extra += "-c.win.azureSignOptions.endpoint=$env:SIGN_ENDPOINT"
+            $extra += "-c.win.azureSignOptions.codeSigningAccountName=$env:SIGN_ACCOUNT"
+            $extra += "-c.win.azureSignOptions.certificateProfileName=$env:SIGN_PROFILE"
+            $extra += "-c.win.azureSignOptions.publisherName=$env:SIGN_PUBLISHER"
+          } else {
+            Write-Host "No signing secrets set, building unsigned"
+          }
+          npx electron-builder --win nsis portable --publish never @extra
+
+      - name: Build Microsoft Store package
+        if: env.STORE_IDENTITY_NAME != ''
+        shell: pwsh
+        run: |
+          npx electron-builder --win appx --publish never `
+            "-c.appx.identityName=$env:STORE_IDENTITY_NAME" `
+            "-c.appx.publisher=$env:STORE_PUBLISHER" `
+            "-c.appx.publisherDisplayName=$env:STORE_PUBLISHER_NAME"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mochi-windows
+          path: |
+            dist/*.exe
+            dist/*.appx
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.exe
+            dist/*.appx

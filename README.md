@@ -9,8 +9,8 @@ drink water, stretch, and rest your eyes.
 - **Mochi Setup 0.1.0.exe**: one-click installer. Adds Start menu and desktop shortcuts and launches Mochi.
 - **Mochi-Portable-0.1.0.exe**: no install, just double-click to run.
 
-The build is not code-signed yet, so Windows SmartScreen will say "Windows protected your PC".
-Click **More info → Run anyway**. (Fix for real users: buy a code-signing certificate.)
+Until the app is signed, Windows SmartScreen says "Windows protected your PC".
+Click **More info → Run anyway**. See *Getting rid of the SmartScreen warning* below.
 
 ## Pick your buddy
 
@@ -47,3 +47,16 @@ npm run dist:mac     # on a Mac
 ```
 
 Code: `src/main.js` (window, tray, movement), `src/pet.html|css|js` (the pet, its moods, reminders).
+
+## Getting rid of the SmartScreen warning
+
+`.github/workflows/build-windows.yml` builds on a real Windows machine. Push a tag (`git tag v0.1.1 && git push --tags`)
+and it publishes the installer to GitHub Releases. Two ways to make the warning go away:
+
+1. **Microsoft Store (free for individuals).** Register at partner.microsoft.com, reserve the name "Mochi",
+   then add the three values from *Product identity* as repo secrets: `STORE_IDENTITY_NAME`, `STORE_PUBLISHER`,
+   `STORE_PUBLISHER_NAME`. The workflow then also builds a `.appx`. Upload that to Partner Center. Microsoft
+   signs Store apps, so there is no warning when people install from the Store.
+2. **Azure Artifact Signing (about $10/month).** Signs the regular installer. After identity validation, add the repo
+   secrets `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_SIGN_ENDPOINT`,
+   `AZURE_SIGN_ACCOUNT`, `AZURE_SIGN_PROFILE`, `AZURE_SIGN_PUBLISHER`. Builds are signed from then on.
