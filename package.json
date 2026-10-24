@@ -18,6 +18,7 @@
   },
   "productName": "Mochi",
   "build": {
+    "copyright": "Copyright © 2026 Unorthologic LLP",
     "appId": "com.mochi.desktoppet",
     "productName": "Mochi",
     "files": [

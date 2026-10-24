@@ -147,4 +147,4 @@ and it publishes the installer to GitHub Releases. Two ways to make the warning 
 
 ## License
 
-Copyright (c) 2026 Rohit Naik. All rights reserved. The code is public to read, but it is not open source: see [LICENSE](LICENSE).
+Copyright (c) 2026 Unorthologic LLP. All rights reserved. Mochi is made by Little Smoke Studio. The code is public to read, but it is not open source: see [LICENSE](LICENSE).
