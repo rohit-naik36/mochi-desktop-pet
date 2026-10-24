@@ -394,5 +394,36 @@
     },
   };
 
+  // More small talk per buddy, so a chattier buddy doesn't repeat itself.
+  const MORE_CHATTER = {
+    en: {
+      smoke: ['*sits a little closer* ...is this okay?', 'I like the sound of you typing. It\'s cosy.', 'Um... you\'re my favourite human. Don\'t tell the others 👉👈', 'I practised saying something nice to you... you\'re doing great. Okay, that\'s it 🥺', 'If you need a break, I\'ll keep your seat warm 💛', '*soft hum* ...sorry, happy noise slipped out.'],
+      cinder: ['Quick! Name ONE thing you crushed today! 🔥', 'Shoulders down, chin up, CHAMPION MODE 💪', 'Every email you send is a rep. Keep lifting! 🏋️', 'I just did ten tiny push-ups for you. You\'re welcome 🔥', 'Hydrate, dominate, repeat! 💧🔥', 'You\'re on a streak today. Don\'t let it cool down! 🔥'],
+      mist: ['Notice your feet on the floor. You are here. That is enough 🌫️', 'The busiest rivers still pause in pools.', 'Soft eyes, soft shoulders, soft breath 🍃', 'Nothing needs to be rushed in this minute.', 'A tidy desk, a quiet mind. Maybe one small thing to tidy?', 'Listen... even the quiet has a sound 🌫️'],
+      dusk: ['Space fact: there are more stars than grains of sand on Earth ✨', 'Neutron stars spin hundreds of times a second. Sounds like your to-do list 🌀', 'If I were a constellation, I\'d be called "The Snack" 🍙✨', 'Space fact: footprints on the Moon will last millions of years 🌙', 'You and I are made of old starlight. Fancy, right? 🌟', 'The Sun is a star too. Daytime is just a very close star ☀️✨'],
+      hope: ['Today might surprise you in a good way 🌷', 'Proud of you for showing up, even when it\'s hard 💗', 'One kind thing for yourself today? You deserve it 🌸', 'Bad days don\'t last. You do 💗', 'I\'m keeping a little list of things you did well today. It\'s getting long 📝💗', 'You\'re closer than you think ✨'],
+    },
+    hi: {
+      smoke: ['*थोड़ा पास आकर* ...ठीक है ना?', 'तुम मेरे पसंदीदा इंसान हो। किसी को बताना मत 👉👈', 'ब्रेक चाहिए तो मैं तुम्हारी जगह सँभाल लूँगा 💛'.replace('लूँगा', '{g:लूँगा|लूँगी}')],
+      cinder: ['जल्दी! आज की एक जीत बताओ! 🔥', 'कंधे नीचे, ठोड़ी ऊपर, चैंपियन मोड 💪', 'पानी पियो, जीतो, दोहराओ! 💧🔥'],
+      mist: ['अपने पैरों को ज़मीन पर महसूस करो। तुम यहाँ हो। इतना काफ़ी है 🌫️', 'इस मिनट में कुछ भी जल्दी करना ज़रूरी नहीं।', 'नरम आँखें, नरम कंधे, नरम साँस 🍃'],
+      dusk: ['अंतरिक्ष तथ्य: धरती की रेत के दानों से ज़्यादा तारे हैं ✨', 'चाँद पर पैरों के निशान लाखों साल रहेंगे 🌙', 'हम सब पुरानी तारों की रोशनी से बने हैं 🌟'],
+      hope: ['आज शायद अच्छे से चौंका दे 🌷', 'बुरे दिन टिकते नहीं। तुम टिकते हो 💗', 'तुम सोचते हो उससे ज़्यादा क़रीब हो ✨'],
+    },
+    hinglish: {
+      smoke: ['*thoda paas aa ke* ...theek hai na?', 'Tum mere favourite insaan ho. Kisi ko batana mat 👉👈', 'Break chahiye toh main tumhari seat garam {g:rakhunga|rakhungi} 💛'],
+      cinder: ['Jaldi! Aaj ki ek jeet batao! 🔥', 'Kandhe neeche, chin upar, CHAMPION MODE 💪', 'Paani piyo, jeeto, repeat! 💧🔥'],
+      mist: ['Apne pairon ko zameen pe feel karo. Tum yahan ho. Itna kaafi hai 🌫️', 'Is minute mein kuch bhi jaldi karna zaroori nahi.', 'Naram aankhein, naram kandhe, naram saans 🍃'],
+      dusk: ['Space fact: Earth ki ret ke daanon se zyada taare hain ✨', 'Chaand pe footprints laakhon saal rahenge 🌙', 'Hum sab purani starlight se bane hain 🌟'],
+      hope: ['Aaj shayad accha surprise de 🌷', 'Bure din tikte nahi. Tum tikte ho 💗', 'Tum jitna sochte ho usse zyada kareeb ho ✨'],
+    },
+  };
+  for (const [lang, buddies] of Object.entries(MORE_CHATTER)) {
+    for (const [skin, lines] of Object.entries(buddies)) {
+      const p = PERSONA[lang][skin];
+      if (p) p.chatter = [...(p.chatter || []), ...lines];
+    }
+  }
+
   if (root.I18N) root.I18N.persona = PERSONA;
 })(typeof window !== 'undefined' ? window : globalThis);

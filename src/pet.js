@@ -561,6 +561,7 @@ window.pet.onActivity((sec) => {
     // check decides whether to ask about night shifts.
     if (asleep === 'bed' && S.schedule !== 'night' && inBedtime()) return;
     if (asleep || awayMs >= IDLE_NAP_MIN * MIN) wakeUp(awayMs);
+    else if (awayMs >= 10 * MIN && !bubbleSticky && !(focusUntil > now)) { setMode('happy', 1200); float('👋'); say(T('welcomeBack'), { ms: 4000 }); }
   }
 });
 
@@ -667,8 +668,11 @@ function scheduleChatter() {
       say(line, { ms: 5000 });
     }
     scheduleChatter();
-  }, rand(18, 35) * MIN);
+  }, rand(...(CHATTY[(S && S.chatty) || 'normal'] || CHATTY.normal)) * MIN);
 }
+
+// Minutes between things the buddy says on its own.
+const CHATTY = { quiet: [20, 35], normal: [7, 12], chatty: [3, 6] };
 
 // ---------- behaviour loop ----------
 
@@ -742,6 +746,49 @@ setInterval(() => {
     decideNext();
   }
 }, 30);
+
+// Little things to do between reminders, so the buddy never just drifts
+// around silently. No words, just a moment of life every minute or two.
+const ACTS = {
+  common: [
+    () => { setMode('talk', 1600); float('🎵'); setTimeout(() => float('🎶'), 500); },
+    () => { setMode('idle', 2400); petEl.classList.add('peek'); },
+    () => { setMode('talk', 1400); float('🥱'); },
+    () => { setMode('happy', 1000); float('✨'); },
+    () => { setMode('idle', 2000); petEl.classList.add('spin'); },
+    () => { setMode('idle', 1800); float('🫧'); setTimeout(() => float('🫧'), 300); setTimeout(() => float('🫧'), 650); },
+    () => { setMode('eat', 1600); float(pick(['🍙', '🍡', '🍪'])); },
+    () => { setMode('eat', 1400); float('💧'); },
+    () => { setMode('idle', 2200); petEl.classList.add('wiggle'); },
+    () => { setMode('stretch', 3200); },
+  ],
+  smoke: [() => { setMode('idle', 2400); petEl.classList.add('peek'); float('👉👈'); }, () => { setMode('happy', 1000); float('💛'); }],
+  cinder: [() => { setMode('stretch', 3200); float('💪'); }, () => { setMode('happy', 1000); float('🔥'); setTimeout(() => float('🔥'), 300); }],
+  mist: [() => { setMode('idle', 2600); float('🍃'); }, () => { setMode('idle', 2600); float('🌫️'); }],
+  dusk: [() => { setMode('idle', 2400); petEl.classList.add('peek'); float('🔭'); }, () => { setMode('happy', 1000); float('⭐'); setTimeout(() => float('🌙'), 400); }],
+  hope: [() => { setMode('happy', 1000); float('💗'); setTimeout(() => float('🌸'), 350); }, () => { setMode('idle', 2200); float('🌷'); }],
+};
+(function doSomething() {
+  setTimeout(() => {
+    const free = S && !dragging && !asleep && !upsetKey && !bubbleSticky && mode !== 'sleep' && !(focusUntil > Date.now());
+    // Only while you're at the computer, and not over a bubble.
+    if (free && idleSec < 120 && bubble.classList.contains('hidden')) {
+      const own = ACTS[S.skin] || [];
+      pick(Math.random() < 0.35 && own.length ? own : ACTS.common)();
+    }
+    doSomething();
+  }, rand(60, 150) * 1000);
+})();
+
+// Eyes follow the mouse pointer while awake.
+setInterval(async () => {
+  if (!S || asleep || !['idle', 'walk', 'talk', 'stretch'].includes(mode)) return petEl.style.removeProperty('--look');
+  const c = await window.pet.getCursor();
+  if (!c) return;
+  const d = Math.hypot(c.dx, c.dy) || 1;
+  const k = Math.min(3, d / 60) / d;
+  petEl.style.setProperty('--look', `translate(${(c.dx * k * (dir < 0 ? -1 : 1)).toFixed(2)}px, ${(c.dy * k).toFixed(2)}px)`);
+}, 200);
 
 // Random blinks while awake.
 (function blink() {
