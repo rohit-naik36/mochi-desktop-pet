@@ -71,8 +71,8 @@ def page(path, title, desc, body, current=None, og_image='assets/img/og-image.pn
 <title>{html.escape(full_title)}</title>
 <meta name="description" content="{html.escape(desc)}">
 <link rel="canonical" href="{canonical}">
-<meta name="theme-color" content="#eaf1fb" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0f1527" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eaf1fb">
+<meta name="color-scheme" content="light only">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Mochi">
 <meta property="og:title" content="{html.escape(full_title)}">

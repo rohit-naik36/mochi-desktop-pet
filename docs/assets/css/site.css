@@ -20,18 +20,8 @@
   --max: 1160px;
   color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --sky: #0f1527; --sky-deep: #1a2547; --paper: #18213b; --ink: #e8eef9; --ink-soft: #a9b6d1;
-    --line: #2a3658; --ember: #ffb36b; --ember-ink: #ffc48d; --ember-soft: #3a2a1c;
-    --night: #070b18; --night-fg: #e9eef9; --focus: #8db4ff; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --sky: #0f1527; --sky-deep: #1a2547; --paper: #18213b; --ink: #e8eef9; --ink-soft: #a9b6d1;
-  --line: #2a3658; --ember: #ffb36b; --ember-ink: #ffc48d; --ember-soft: #3a2a1c;
-  --night: #070b18; --night-fg: #e9eef9; --focus: #8db4ff; color-scheme: dark;
-}
+/* Light only: Mochi is a black buddy and must always sit on a light sky. */
+:root[data-theme="dark"] { color-scheme: light; }
 
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
