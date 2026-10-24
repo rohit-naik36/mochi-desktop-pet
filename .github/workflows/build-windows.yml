@@ -30,10 +30,6 @@ jobs:
       SIGN_ACCOUNT: ${{ secrets.AZURE_SIGN_ACCOUNT }}
       SIGN_PROFILE: ${{ secrets.AZURE_SIGN_PROFILE }}
       SIGN_PUBLISHER: ${{ secrets.AZURE_SIGN_PUBLISHER }}
-      # Optional: values from Partner Center > Product identity, for the Store package.
-      STORE_IDENTITY_NAME: ${{ secrets.STORE_IDENTITY_NAME }}
-      STORE_PUBLISHER: ${{ secrets.STORE_PUBLISHER }}
-      STORE_PUBLISHER_NAME: ${{ secrets.STORE_PUBLISHER_NAME }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -59,14 +55,11 @@ jobs:
           }
           npx electron-builder --win nsis portable --publish never @extra
 
+      # Identity values from Partner Center > Product identity live in
+      # package.json (build.appx). The Store signs the package itself.
       - name: Build Microsoft Store package
-        if: env.STORE_IDENTITY_NAME != ''
         shell: pwsh
-        run: |
-          npx electron-builder --win appx --publish never `
-            "-c.appx.identityName=$env:STORE_IDENTITY_NAME" `
-            "-c.appx.publisher=$env:STORE_PUBLISHER" `
-            "-c.appx.publisherDisplayName=$env:STORE_PUBLISHER_NAME"
+        run: npx electron-builder --win appx --publish never
 
       - uses: actions/upload-artifact@v4
         with:
