@@ -142,3 +142,7 @@ and it publishes the installer to GitHub Releases. Two ways to make the warning 
 2. **Azure Artifact Signing (about $10/month).** Signs the regular installer. After identity validation, add the repo
    secrets `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_SIGN_ENDPOINT`,
    `AZURE_SIGN_ACCOUNT`, `AZURE_SIGN_PROFILE`, `AZURE_SIGN_PUBLISHER`. Builds are signed from then on.
+
+## License
+
+Copyright (c) 2026 Rohit Naik. All rights reserved. The code is public to read, but it is not open source: see [LICENSE](LICENSE).

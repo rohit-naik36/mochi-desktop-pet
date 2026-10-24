@@ -10,8 +10,8 @@
     "dist:linux": "electron-builder --linux AppImage",
     "dist:store": "electron-builder --win appx --publish never"
   },
-  "author": "Rohit",
-  "license": "MIT",
+  "author": "Rohit Naik",
+  "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
     "electron": "44.7.0",
     "electron-builder": "^26.15.3"
