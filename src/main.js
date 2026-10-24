@@ -12,6 +12,7 @@ const WIN_H = 260; // room above the pet for speech bubbles
 let win;
 let tray;
 let state;
+const IS_MAC = process.platform === 'darwin';
 const statePath = () => path.join(app.getPath('userData'), 'pet-state.json');
 
 const SKINS = [
@@ -93,7 +94,7 @@ function createWindow() {
     },
   });
   win.setAlwaysOnTop(true, 'screen-saver');
-  win.setVisibleOnAllWorkspaces(true);
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   // Clicks pass through empty space until the pointer is over the pet.
   if (!process.env.MOCHI_DEBUG) win.setIgnoreMouseEvents(true, { forward: true });
   win.loadFile(path.join(__dirname, 'pet.html'));
@@ -247,7 +248,9 @@ ipcMain.on('play-reward', (_e, delta) => send('reward', { delta }));
 function trayIcon() {
   const p = path.join(__dirname, 'icon.png');
   const img = nativeImage.createFromPath(p);
-  return img.isEmpty() ? nativeImage.createEmpty() : img.resize({ width: 16, height: 16 });
+  // The macOS menu bar is a little taller than the Windows tray.
+  const size = IS_MAC ? 18 : 16;
+  return img.isEmpty() ? nativeImage.createEmpty() : img.resize({ width: size, height: size });
 }
 
 function buildTray() {
@@ -338,7 +341,11 @@ function buildMenu() {
       toggle('eyes', M('eyes', state.eyesEveryMin)),
     ] },
     // Store (MSIX) builds can't register to start with Windows this way.
-    ...(process.windowsStore ? [] : [{ label: M('startup'), type: 'checkbox',
+    // On macOS (including the sandboxed App Store build) the app registers
+    // itself as a login item through SMAppService.
+    ...(process.windowsStore ? [] : [IS_MAC ? { label: M('startupMac'), type: 'checkbox',
+      checked: app.getLoginItemSettings({ type: 'mainAppService' }).status === 'enabled',
+      click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked, type: 'mainAppService' }) } : { label: M('startup'), type: 'checkbox',
       checked: app.getLoginItemSettings().openAtLogin,
       click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked }) }]),
     { type: 'separator' },
@@ -481,6 +488,9 @@ if (!gotLock) {
   app.on('second-instance', () => send('action', 'pet'));
   app.whenReady().then(() => {
     if (process.platform === 'win32') app.setAppUserModelId('com.mochi.desktoppet');
+    // On a Mac the buddy lives in the menu bar, not the Dock (LSUIElement
+    // in the bundle does this too; this covers `npm start`).
+    if (IS_MAC) app.dock?.hide();
     loadState();
     createWindow();
     buildTray();

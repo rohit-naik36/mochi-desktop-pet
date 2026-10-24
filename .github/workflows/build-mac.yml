@@ -1,0 +1,96 @@
+name: Build Mac
+
+# Builds Mochi for macOS on a real Mac (universal: Apple silicon and Intel).
+#
+# Without secrets it builds an unsigned DMG for testing. Add these repository
+# secrets once the Apple Developer account exists:
+#
+# Direct download (signed + notarized DMG for mochicuddle.com):
+#   MAC_CERT_P12        base64 of a .p12 with the "Developer ID Application" cert
+#   MAC_CERT_PASSWORD   password of that .p12
+#   APPLE_ID            Apple ID email used for notarization
+#   APPLE_APP_PASSWORD  app-specific password for that Apple ID
+#   APPLE_TEAM_ID       10-character team ID
+#
+# Mac App Store package (.pkg to upload with Transporter):
+#   MAS_CERT_P12        base64 of a .p12 with "Apple Distribution" and
+#                       "Mac Installer Distribution" certs
+#   MAS_CERT_PASSWORD   password of that .p12
+#   MAS_PROVISION       base64 of the Mac App Store provisioning profile
+#   APPLE_TEAM_ID       (same as above)
+on:
+  push:
+    tags: ['v*']
+  # Test builds for pull requests (never published).
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Build DMG and zip
+        env:
+          CSC_LINK: ${{ secrets.MAC_CERT_P12 }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -z "$CSC_LINK" ]; then
+            echo "No signing secrets set, building an unsigned DMG for testing"
+            export CSC_IDENTITY_AUTO_DISCOVERY=false
+            npx electron-builder --mac --publish never
+          else
+            npx electron-builder --mac --publish never
+          fi
+
+      - name: Build Mac App Store package
+        env:
+          MAS_CERT_P12: ${{ secrets.MAS_CERT_P12 }}
+          CSC_LINK: ${{ secrets.MAS_CERT_P12 }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAS_CERT_PASSWORD }}
+          MAS_PROVISION: ${{ secrets.MAS_PROVISION }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -z "$MAS_CERT_P12" ]; then
+            echo "No Mac App Store secrets set, skipping"
+            exit 0
+          fi
+          echo "$MAS_PROVISION" | base64 --decode > build/embedded.provisionprofile
+          sed -i '' "s/TEAM_ID/$APPLE_TEAM_ID/" build/entitlements.mas.plist
+          npx electron-builder --mac mas:universal --publish never
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mochi-mac
+          path: |
+            dist/*.dmg
+            dist/*-mac.zip
+            dist/mas-universal/*.pkg
+
+      - name: Publish to the GitHub Release
+        if: startsWith(github.ref, 'refs/tags/') || inputs.tag != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          files: |
+            dist/*.dmg
+            dist/*-mac.zip
