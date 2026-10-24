@@ -35,7 +35,7 @@ Uninstalling Mochi removes the app. To delete your saved data too, delete Mochi'
 
 ## Safety
 
-Mochi is a friendly companion, not a medical or mental health service. If you are thinking about suicide or self-harm, or are in danger, please contact Tele-MANAS (14416), KIRAN (1800-599-0019), Vandrevala Foundation (+91 9999 666 555) or emergency services (112) in India.
+Mochi is a friendly companion, not a medical or mental health service. If you are thinking about suicide or self-harm, or are in danger, please contact Tele-MANAS (14416), KIRAN (1800-599-0019), Vandrevala Foundation (+91 9999 666 555) or emergency services (112) in India. Outside India, call your local emergency number or find a free helpline at https://findahelpline.com.
 
 ## Children
 

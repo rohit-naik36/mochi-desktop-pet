@@ -15,10 +15,11 @@ let state;
 const statePath = () => path.join(app.getPath('userData'), 'pet-state.json');
 
 const SKINS = [
-  { id: 'smoke', name: 'Mochi', label: 'Mochi (black smoke)' },
-  { id: 'cinder', name: 'Cinder', label: 'Cinder (ember smoke)' },
-  { id: 'mist', name: 'Mist', label: 'Mist (silver fog)' },
-  { id: 'dusk', name: 'Dusk', label: 'Dusk (starry smoke)' },
+  { id: 'smoke', name: 'Mochi', label: 'Mochi (shy and sweet)' },
+  { id: 'cinder', name: 'Cinder', label: 'Cinder (hype coach)' },
+  { id: 'mist', name: 'Mist', label: 'Mist (calm and wise)' },
+  { id: 'dusk', name: 'Dusk', label: 'Dusk (starry night owl)' },
+  { id: 'hope', name: 'Hope', label: 'Hope (warm and hopeful)' },
 ];
 
 const defaults = {

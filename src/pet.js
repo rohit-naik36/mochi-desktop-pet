@@ -226,8 +226,8 @@ function getUpset(key) {
   window.pet.glideCenter();
   setMode('upset', Infinity);
   say(T(key + '.upset'), { sticky: true, actions: nudgeButtons(key) });
-  // Each buddy sulks its own way: Mochi quietly, Cinder in sparks, Mist in sighs, Dusk in dimmed stars.
-  const puffs = { smoke: ['😶', '💧', '…'], cinder: ['🔥', '💢', '💥', '😤'], mist: ['🌫️', '…', '💨'], dusk: ['🌑', '💫', '😤'] }[S.skin] || ['💢', '😤', '💨'];
+  // Each buddy sulks its own way: Mochi quietly, Cinder in sparks, Mist in sighs, Dusk in dimmed stars, Hope with a hopeful little pout.
+  const puffs = { smoke: ['😶', '💧', '…'], cinder: ['🔥', '💢', '💥', '😤'], mist: ['🌫️', '…', '💨'], dusk: ['🌑', '💫', '😤'], hope: ['🥺', '💗', '…'] }[S.skin] || ['💢', '😤', '💨'];
   const every = { cinder: [500, 900], mist: [1800, 2600] }[S.skin] || [900, 1600];
   const huff = () => { if (upsetKey) { float(pick(puffs), 'huff'); setTimeout(huff, rand(...every)); } };
   huff();
@@ -697,6 +697,7 @@ const PACE = {
   cinder: { speed: 1.9, walk: 0.55, stretch: 0.1 },
   mist: { speed: 0.6, walk: 0.2, stretch: 0.03 },
   dusk: { speed: 1.2, walk: 0.35, stretch: 0.05 },
+  hope: { speed: 1.1, walk: 0.35, stretch: 0.08 },
 };
 const pace = () => PACE[(S && S.skin) || 'smoke'] || PACE.smoke;
 

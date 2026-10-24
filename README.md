@@ -61,10 +61,11 @@ In Hindi and Hinglish this changes how Mochi talks about itself (raha/rahi, gaya
 
 ## If someone is struggling
 
-If a worry mentions suicide or self-harm, Mochi responds with care and shows free Indian helplines:
-Tele-MANAS **14416**, KIRAN **1800-599-0019**, Vandrevala Foundation **+91 9999 666 555**, and emergency **112**.
+If a worry mentions suicide or self-harm, Mochi responds with care and shows free helplines. In India that's Tele-MANAS **14416**, KIRAN **1800-599-0019**, Vandrevala Foundation **+91 9999 666 555**, and emergency **112**.
 
 If a worry is about harassment or abuse, Mochi doesn't joke or "eat" it. It says it believes you and points to **112**, the Women Helpline **181**, and the workplace Internal Committee (POSH).
+
+Outside India, Mochi shows that country's numbers instead (for example 911 and 988 in the US, 999 and Samaritans in the UK, 000 and Lifeline in Australia), plus findahelpline.com. The country is guessed from the computer's time zone, so Mochi never asks for your location and nothing is sent anywhere.
 
 ## Languages
 
@@ -89,6 +90,7 @@ Right-click the pet and open **Choose your buddy**:
 - **Cinder**: charcoal smoke, ember eyes, drifting sparks. A fiery hype coach: bouncy, loud, spins when happy, and flares up red when you ignore a reminder.
 - **Mist**: silver fog, dark eyes (easiest to see on dark wallpapers). Calm and wise: drifts slowly, glows when happy, and fades with a sigh instead of fuming.
 - **Dusk**: indigo smoke with twinkling stars. A dreamy night owl with space facts: twirls when happy, its stars dim when it sulks, groggy in the morning and lively at night.
+- **Hope**: soft pink mochi with rosy cheeks. Warm and hopeful: believes in you, finds the bright side, has a gentle heartbeat glow, bounces when happy, and droops a little (instead of fuming) when you ignore a reminder.
 
 Each buddy has its own lines for reminders, chatter, greetings, being moved and patted, in English, Hindi and Hinglish. Replies about crisis, harm, sadness and good news are the same for every buddy.
 

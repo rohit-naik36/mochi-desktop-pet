@@ -26,6 +26,12 @@ body[data-skin="mist"] {
   --eye-color: #20262e; --mouth: rgba(30,40,50,.6);
   --speck: transparent;
 }
+/* Hope: soft pink mochi with rosy eyes and little glowing sparkles */
+body[data-skin="hope"] {
+  --smoke: #f4a9c4; --core-edge: #ffd3e2;
+  --eye-color: #6b2346; --mouth: rgba(107,35,70,.65);
+  --speck: #fff0f6; --speck-glow: drop-shadow(0 0 2px #ff7fb0);
+}
 /* Dusk: deep indigo smoke with little twinkling stars */
 body[data-skin="dusk"] {
   --smoke: #120f2e; --core-edge: #231d55;

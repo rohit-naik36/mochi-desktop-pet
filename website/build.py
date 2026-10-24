@@ -146,7 +146,7 @@ BUDDIES = [
     ('hope', 'Hope', 'Warm and hopeful', 'A pink mochi with warm rosy eyes. Always finds the bright side, floats little hearts when you take a break, and when you skip one it just looks at you, hopefully, until you do.',
      "You've got this 💗 One sip of water first?", '#f4a9c4'),
 ]
-SOON = {'hope'}  # on the site before it is in the app
+SOON = set()  # on the site before it is in the app
 soon = lambda k: ' <span class="tag">Coming soon</span>' if k in SOON else ''
 
 # ---------------------------------------------------------------- pages
@@ -471,6 +471,7 @@ pages['press.html'] = page('press.html', 'Press kit', 'Mochi press kit: descript
     </div></section>''')
 
 releases = [
+    ('0.11', '24 Oct 2026', ['Meet Hope: a soft pink buddy who is warm, hopeful and always on your side', 'Helplines now match your country, guessed from your time zone with no location access']),
     ('0.10', '24 Oct 2026', ['Every buddy now has its own personality, lines and animations', 'Mochi is shy, Cinder is a hype coach, Mist is calm and Dusk is a dreamy night owl', 'Available on the Microsoft Store']),
     ('0.9', '24 Oct 2026', ['Sleep schedule: your buddy goes to bed at night and asks how you slept', 'Night-shift mode keeps your hours instead', 'Good news gets a confetti party and a place in the gratitude jar', 'Gentler replies for sadness and hopeless feelings']),
     ('0.8', '23 Oct 2026', ['Focus timer for 25 or 50 minutes', 'Daily mood check-in and gratitude jar', 'Points, levels, streaks, 26 badges and the achievement board', 'Security hardening and privacy policy']),
