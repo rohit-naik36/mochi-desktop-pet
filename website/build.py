@@ -117,7 +117,7 @@ def page(path, title, desc, body, current=None, og_image='assets/img/og-image.pn
       <div><h2>Company</h2><ul><li><a href="about.html">About</a></li><li><a href="teams.html">Mochi for teams</a></li><li><a href="press.html">Press kit</a></li><li><a href="contact.html">Contact</a></li></ul></div>
       <div><h2>Help</h2><ul><li><a href="faq.html">FAQ</a></li><li><a href="safety.html">Safety and helplines</a></li><li><a href="privacy.html">Privacy</a></li><li><a href="terms.html">Terms</a></li></ul></div>
     </div>
-    <div class="foot-base"><span>© <span data-year>2026</span> {COMPANY}. Mochi is made by {STUDIO}. All rights reserved.</span><span>Mochi is a companion, not a medical service. In an emergency in India, call 112.</span></div>
+    <div class="foot-base"><span>© <span data-year>2026</span> {COMPANY}. Mochi is made by {STUDIO}. All rights reserved.</span><span>Mochi is a companion, not a medical service. <span data-emergency>In an emergency in India, call 112. Need to talk? Tele-MANAS 14416.</span></span></div>
   </div>
 </footer>
 <script src="assets/js/site.js" defer></script>
@@ -380,6 +380,7 @@ pages['safety.html'] = page('safety.html', 'Safety and helplines', 'How Mochi re
         <div class="panel line-card"><a class="num" href="tel:181">181</a><span class="who">Women Helpline</span><span class="muted">For women facing violence or harassment</span></div>
         <div class="panel line-card"><a class="num" href="tel:112">112</a><span class="who">Emergency</span><span class="muted">Police, fire and ambulance</span></div>
       </div>
+      <div class="panel stack" data-abroad hidden><h3>Outside India?</h3><p class="muted" data-abroad-text></p><p class="muted">Find a free helpline in your country at <a href="https://findahelpline.com" rel="noopener">findahelpline.com</a>.</p></div>
     </div></section>
     <section><div class="wrap grid-2">
       <div class="panel stack"><h3>How Mochi responds</h3><ul class="ticks"><li>Words about suicide or self-harm get a caring reply and the helplines above</li><li>Hopeless feelings like "what's the point" get a gentle reply and the helplines</li><li>Sadness gets a soft, quiet reply with no jokes</li><li>Harassment or abuse gets "I believe you", plus 112, 181 and your workplace POSH committee</li></ul></div>
