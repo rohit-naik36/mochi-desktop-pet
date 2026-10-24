@@ -21,7 +21,7 @@ const clamp = (v) => Math.max(0, Math.min(100, v));
 // The user's name, for friendlier lines. ", Rohit" / "" and "Rohit" / "friend".
 const n = () => (S && S.userName ? ', ' + S.userName : '');
 // T('water.lines') -> a line in the chosen language with name/pet filled in.
-const T = (key, extra = {}) => window.I18N.t((S && S.lang) || 'en', key, { name: S && S.userName, pet: S && S.name, gender: S && S.petGender, ...extra });
+const T = (key, extra = {}) => window.I18N.t((S && S.lang) || 'en', key, { name: S && S.userName, pet: S && S.name, gender: S && S.petGender, skin: S && S.skin, ...extra });
 
 // ---------- rendering ----------
 
@@ -226,7 +226,10 @@ function getUpset(key) {
   window.pet.glideCenter();
   setMode('upset', Infinity);
   say(T(key + '.upset'), { sticky: true, actions: nudgeButtons(key) });
-  const huff = () => { if (upsetKey) { float(pick(['💢', '😤', '💨']), 'huff'); setTimeout(huff, rand(900, 1600)); } };
+  // Each buddy sulks its own way: Mochi quietly, Cinder in sparks, Mist in sighs, Dusk in dimmed stars.
+  const puffs = { smoke: ['😶', '💧', '…'], cinder: ['🔥', '💢', '💥', '😤'], mist: ['🌫️', '…', '💨'], dusk: ['🌑', '💫', '😤'] }[S.skin] || ['💢', '😤', '💨'];
+  const every = { cinder: [500, 900], mist: [1800, 2600] }[S.skin] || [900, 1600];
+  const huff = () => { if (upsetKey) { float(pick(puffs), 'huff'); setTimeout(huff, rand(...every)); } };
   huff();
 }
 
@@ -676,20 +679,38 @@ async function decideNext() {
   const tired = S.energy < 25;
   const r = Math.random();
   if (tired && r < 0.5) return sleep();
-  if (S.walking && r < 0.35) {
+  const p = pace();
+  if (S.walking && r < p.walk) {
     bounds = await window.pet.getBounds();
     // Float off in a random direction, mostly sideways but free to rise or sink.
     dir = Math.random() < 0.5 ? -1 : 1;
     vy = rand(-0.8, 0.8);
     return setMode('walk', rand(2500, 7000));
   }
-  if (r < 0.40) return setMode('stretch', 3200);
+  if (r < p.walk + p.stretch) return setMode('stretch', 3200);
   setMode('idle', rand(4000, 12000));
 }
 
+// How each buddy moves: Cinder can't sit still, Mist barely drifts.
+const PACE = {
+  smoke: { speed: 1.0, walk: 0.3, stretch: 0.05 },
+  cinder: { speed: 1.9, walk: 0.55, stretch: 0.1 },
+  mist: { speed: 0.6, walk: 0.2, stretch: 0.03 },
+  dusk: { speed: 1.2, walk: 0.35, stretch: 0.05 },
+};
+const pace = () => PACE[(S && S.skin) || 'smoke'] || PACE.smoke;
+
+// Morning or night, for Dusk's groggy mornings and lively nights.
+function markTime() {
+  const h = new Date().getHours();
+  document.body.dataset.time = h >= 5 && h < 10 ? 'morning' : h >= 20 || h < 5 ? 'night' : 'day';
+}
+markTime();
+setInterval(markTime, MIN);
+
 function walkStep() {
   if (!bounds) return;
-  const speed = 1.2;
+  const speed = pace().speed;
   const { win, workArea } = bounds;
   const nextX = win.x + dir * speed;
   const nextY = win.y + vy;

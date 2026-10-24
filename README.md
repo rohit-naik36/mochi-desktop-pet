@@ -85,10 +85,12 @@ Nothing explicit, though. "You're hot" gets a playful "let's keep it sweet". Sex
 ## Pick your buddy
 
 Right-click the pet and open **Choose your buddy**:
-- **Mochi**: black smoke, glowing white eyes
-- **Cinder**: charcoal smoke, ember eyes, drifting sparks
-- **Mist**: silver fog, dark eyes (easiest to see on dark wallpapers)
-- **Dusk**: indigo smoke with twinkling stars
+- **Mochi**: black smoke, glowing white eyes. Shy and sweet: speaks softly, blushes when happy, and pouts by quietly turning away.
+- **Cinder**: charcoal smoke, ember eyes, drifting sparks. A fiery hype coach: bouncy, loud, spins when happy, and flares up red when you ignore a reminder.
+- **Mist**: silver fog, dark eyes (easiest to see on dark wallpapers). Calm and wise: drifts slowly, glows when happy, and fades with a sigh instead of fuming.
+- **Dusk**: indigo smoke with twinkling stars. A dreamy night owl with space facts: twirls when happy, its stars dim when it sulks, groggy in the morning and lively at night.
+
+Each buddy has its own lines for reminders, chatter, greetings, being moved and patted, in English, Hindi and Hinglish. Replies about crisis, harm, sadness and good news are the same for every buddy.
 
 ## How to play
 

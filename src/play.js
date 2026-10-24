@@ -11,7 +11,7 @@ const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const params = new URLSearchParams(location.search);
 let S = { name: 'Mochi' };
 // T('breatheIn') in the chosen language; L(lang, key) for a specific language.
-const L = (lang, key, extra = {}) => window.I18N.t(lang, key, { name: S.userName, pet: S.name, gender: S.petGender, ...extra });
+const L = (lang, key, extra = {}) => window.I18N.t(lang, key, { name: S.userName, pet: S.name, gender: S.petGender, skin: S.skin, ...extra });
 const T = (key, extra) => L(S.lang || 'en', key, extra);
 let current = null;
 let soundOn = true;

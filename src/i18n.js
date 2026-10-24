@@ -955,6 +955,12 @@
     const dict = STRINGS[lang] || STRINGS.en;
     let v = key.split('.').reduce((o, k) => (o ? o[k] : undefined), dict);
     if (v === undefined) v = key.split('.').reduce((o, k) => (o ? o[k] : undefined), STRINGS.en);
+    // The chosen buddy's own voice (persona.js), most of the time.
+    const persona = root.I18N && root.I18N.persona;
+    if (persona && ctx.skin) {
+      const own = key.split('.').reduce((o, k) => (o ? o[k] : undefined), (persona[lang] || {})[ctx.skin]);
+      if (own !== undefined && (v === undefined || key === 'switched' || Math.random() < 0.75)) v = own;
+    }
     if (Array.isArray(v)) {
       // Don't say the same line twice in a row.
       let next = pick(v);

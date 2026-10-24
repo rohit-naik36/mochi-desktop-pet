@@ -73,6 +73,10 @@ const PET_SVG = `<svg viewBox="0 0 120 110" width="120" height="110" aria-label=
               <path d="M41 62 Q47 53 53 62"/>
               <path d="M67 62 Q73 53 79 62"/>
             </g>
+            <g id="blush">
+              <ellipse cx="38" cy="69" rx="5" ry="2.6"/>
+              <ellipse cx="82" cy="69" rx="5" ry="2.6"/>
+            </g>
             <path id="mouth" d="M57 71 Q60 73.5 63 71"/>
             <ellipse id="mouth-open" cx="60" cy="72" rx="3" ry="3.5"/>
           </g>

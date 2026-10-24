@@ -1,0 +1,87 @@
+/* Each buddy moves the way it feels. Loaded after pet.css on the desktop and
+   in the play room. Moods are classes on #pet: idle, walk, happy, eat, talk,
+   stretch, sleep, upset. */
+
+/* blush (shown by shy Mochi) */
+#blush { display: none; }
+#blush ellipse { fill: #ff8fa3; opacity: .55; filter: blur(1.2px); }
+.eye ellipse { transform-box: fill-box; transform-origin: center; transition: transform .4s; }
+
+/* ---------- Mochi: shy and sweet ---------- */
+/* Slow, small hover; peeks to the side now and then; blushes when happy. */
+body[data-skin="smoke"] #float-group { animation-duration: 5.5s; }
+body[data-skin="smoke"] #pet.idle #body-group { animation: shyPeek 9s ease-in-out infinite; transform-origin: 60px 60px; }
+@keyframes shyPeek { 0%, 70%, 100% { transform: translateX(0); } 76%, 86% { transform: translateX(-2.5px) rotate(-3deg); } }
+body[data-skin="smoke"] #pet.happy { animation: shyWiggle 1.1s ease-in-out 1; }
+@keyframes shyWiggle { 20% { transform: rotate(-5deg) translateY(-2px); } 45% { transform: rotate(5deg) translateY(-3px); } 70% { transform: rotate(-3deg); } }
+body[data-skin="smoke"] #pet.happy #blush, body[data-skin="smoke"] #pet.eat #blush { display: inline; }
+/* pout: turns half away and puffs up a little, no big tantrum */
+body[data-skin="smoke"] #pet.upset #body-group { transform: translateX(-6px) scaleX(.85) rotate(-10deg); transform-origin: 60px 60px; }
+body[data-skin="smoke"] #pet.upset #smoke-body { animation: shyPout 1.8s ease-in-out infinite; }
+@keyframes shyPout { 0%, 100% { transform: scale(1.12); } 50% { transform: scale(1.2, 1.14); } }
+body[data-skin="smoke"] #pet.upset #body-group { animation: none; }
+body[data-skin="smoke"] #pet.upset #smoke-body { opacity: .92; }
+body[data-skin="smoke"] #pet.upset #brows { display: none; }
+body[data-skin="smoke"] #pet.upset #blush { display: inline; }
+body[data-skin="smoke"] #pet.walk #float-group { transform: rotate(2deg); }
+
+/* ---------- Cinder: fiery hype coach ---------- */
+/* Bouncy, restless, big jumps and spins, flares up when cross. */
+body[data-skin="cinder"] #float-group { animation: cinderBounce 1.6s ease-in-out infinite; }
+@keyframes cinderBounce { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-6px); } 55% { transform: translateY(-6px) scale(1.02, .98); } }
+body[data-skin="cinder"] #smoke-body { animation-duration: 1.8s; }
+body[data-skin="cinder"] .wisp { animation-duration: 2.6s; }
+body[data-skin="cinder"] #pet.idle #body-group { animation: cinderFlicker 2.2s steps(2) infinite; transform-origin: 60px 60px; }
+@keyframes cinderFlicker { 50% { transform: translateY(-.6px) scale(1.01); } }
+body[data-skin="cinder"] #pet.happy, body[data-skin="dusk"] #pet.happy { transform-origin: 50% 55%; }
+body[data-skin="cinder"] #pet.happy { animation: cinderJump .9s cubic-bezier(.3, 1.6, .5, 1) 1; }
+@keyframes cinderJump { 35% { transform: translateY(-20px) rotate(-12deg) scale(1.08); } 65% { transform: translateY(-14px) rotate(200deg); } 100% { transform: rotate(360deg); } }
+body[data-skin="cinder"] #pet.happy .speck { animation-duration: .9s; }
+body[data-skin="cinder"] #pet.upset #smoke-body { animation: cinderRage .55s ease-in-out infinite; }
+@keyframes cinderRage { 0%, 100% { transform: scale(1.4); filter: drop-shadow(0 0 4px #ff5a00); } 50% { transform: scale(1.55, 1.45); filter: drop-shadow(0 0 10px #ff2a00); } }
+body[data-skin="cinder"] #pet.upset #body-group { animation-duration: .2s; }
+body[data-skin="cinder"] #pet.upset .speck { animation-duration: .7s; }
+body[data-skin="cinder"] #pet.walk #float-group { transform: rotate(8deg); }
+body[data-skin="cinder"] #pet.stretch #smoke-body { animation: cinderFlex 1.6s ease-in-out 1; }
+@keyframes cinderFlex { 30% { transform: scale(1.18, .9); } 60% { transform: scale(.9, 1.2); } }
+
+/* ---------- Mist: calm and wise ---------- */
+/* Drifts very slowly, sways like fog, fades and sighs instead of fuming. */
+body[data-skin="mist"] #float-group { animation: mistDrift 8s ease-in-out infinite; }
+@keyframes mistDrift { 25% { transform: translate(2px, -3px); } 50% { transform: translate(0, -5px); } 75% { transform: translate(-2px, -3px); } }
+body[data-skin="mist"] #smoke-body { animation-duration: 7s; }
+body[data-skin="mist"] .wisp { animation-duration: 7s; }
+body[data-skin="mist"] #pet.idle #body-group { animation: mistBreathe 6s ease-in-out infinite; }
+@keyframes mistBreathe { 50% { transform: translateY(.8px) scale(1.01); } }
+body[data-skin="mist"] #pet.happy { animation: mistGlow 2.2s ease-in-out 1; }
+@keyframes mistGlow { 50% { transform: translateY(-6px); filter: drop-shadow(0 0 10px rgba(255,255,255,.95)); } }
+body[data-skin="mist"] #pet.upset #smoke-body { animation: mistSigh 3.2s ease-in-out infinite; }
+@keyframes mistSigh { 0%, 100% { transform: scale(1); opacity: .55; } 45% { transform: scale(.92, .88) translateY(4px); opacity: .4; } }
+body[data-skin="mist"] #pet.upset #body-group { animation: none; opacity: .6; }
+body[data-skin="mist"] #pet.upset #brows { display: none; }
+body[data-skin="mist"] #pet.upset .wisp { animation-duration: 5s; }
+body[data-skin="mist"] #pet.walk #float-group { transform: none; }
+
+/* ---------- Dusk: dreamy night owl ---------- */
+/* Tilts its head with curiosity, twirls when happy, sulks with dim stars.
+   Groggy in the morning, bright and lively at night. */
+body[data-skin="dusk"] #pet.idle #body-group { animation: duskTilt 7s ease-in-out infinite; transform-origin: 60px 64px; }
+@keyframes duskTilt { 0%, 100% { transform: rotate(0); } 30% { transform: rotate(-7deg); } 60% { transform: rotate(5deg); } }
+body[data-skin="dusk"] #pet.happy { animation: duskTwirl 1.3s ease-in-out 1; }
+@keyframes duskTwirl { 50% { transform: translateY(-12px) rotate(180deg); } 100% { transform: rotate(360deg); } }
+body[data-skin="dusk"] #pet.happy .speck { animation-duration: .8s; }
+body[data-skin="dusk"] #pet.upset #smoke-body { animation: duskSulk 2.4s ease-in-out infinite; }
+@keyframes duskSulk { 0%, 100% { transform: scale(1.15) rotate(-3deg); } 50% { transform: scale(1.2, 1.1) rotate(3deg); } }
+body[data-skin="dusk"] #pet.upset .speck { opacity: .15; animation: none; }
+body[data-skin="dusk"] #pet.upset #body-group { animation: none; transform: translateY(3px); }
+body[data-skin="dusk"] #pet.walk #float-group { animation: duskOrbit 3s ease-in-out infinite; }
+@keyframes duskOrbit { 50% { transform: translateY(-5px) rotate(-4deg); } }
+body[data-skin="dusk"][data-time="morning"] #pet.idle .eye ellipse,
+body[data-skin="dusk"][data-time="morning"] #pet.talk .eye ellipse { transform: scaleY(.5) translateY(2px); }
+body[data-skin="dusk"][data-time="morning"] #float-group { animation-duration: 7s; }
+body[data-skin="dusk"][data-time="night"] .speck { animation-duration: 1.6s; }
+body[data-skin="dusk"][data-time="night"] #float-group { animation-duration: 3s; }
+
+@media (prefers-reduced-motion: reduce) {
+  #pet, #pet * { animation-duration: 0s !important; animation-iteration-count: 1 !important; }
+}
