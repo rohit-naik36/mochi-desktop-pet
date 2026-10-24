@@ -20,4 +20,5 @@ contextBridge.exposeInMainWorld('pet', {
   save: (partial) => ipcRenderer.send('save-state', partial),
   track: (event, n) => ipcRenderer.send('track', event, n),
   onAchievement: (fn) => ipcRenderer.on('achievement', (_e, id) => fn(id)),
+  onActivity: (fn) => ipcRenderer.on('activity', (_e, idleSec) => fn(idleSec)),
 });

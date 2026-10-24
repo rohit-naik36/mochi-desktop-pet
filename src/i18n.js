@@ -789,6 +789,135 @@
   };
   for (const lang of Object.keys(V08)) merge(STRINGS[lang], V08[lang]);
 
+  // Sleep schedule: bedtime, night shifts, "did you sleep well?"
+  const V09 = {
+    en: {
+      menu: { schedule: '🌙 Sleep schedule', bedAt: 'Bedtime {count}', nightShift: '🦉 I work night shifts (sleep when I sleep)' },
+      bedtimeSoon: [
+        "Bedtime in about 15 minutes{n}. Start wrapping up? 🌙",
+        "My eyelids are getting heavy... 15 more minutes and I'm off to bed. You too? 🌙",
+        "Quarter of an hour till lights out{n}. Save your work, future-you says thanks 💾",
+      ],
+      goodnight: [
+        "That's my bedtime{n}. Goodnight! Don't stay up too long, okay? 🌙💤",
+        "Lights out for me. Sweet dreams when you get there{n} 💤",
+        "*curls into a tiny cloud* Goodnight{n}. Tomorrow's a fresh page 🌙",
+        "Bed o'clock! I'll be right here when you wake up 💤",
+      ],
+      askSchedule: [
+        "*opens one eye* You're still going strong{n}! Do you work night shifts? I can keep your hours instead 🦉",
+        "Psst{n}, it's the middle of the night and you're busy. Are you a night-shift hero? I can sleep when you sleep 🦉",
+      ],
+      schedNight: '🦉 Yes, I work nights',
+      schedTonight: 'Just tonight',
+      schedSleep: 'You sleep, {pet}',
+      nightShiftOn: [
+        "Night owl team, assemble! 🦉 I'll work with you through the night and sleep when you sleep.",
+        "Got it! From now on your night is my day. I'll nap when you head to bed 🌙",
+        "Night shift buddy mode: on. Reminders and all, right through the night 🦉",
+      ],
+      stayUpTonight: [
+        "Okay, I'll stay up with you tonight. Water and stretches still count after midnight 😉",
+        "Late night it is! I've got snacks and moral support 🌙",
+      ],
+      backToBed: ["Okay... back to my cloud. Don't forget to rest{n} 💤", "*yawns* Goodnight again{n} 💤"],
+      scheduleDay: ["Got it, bedtime is {count} now. I'll sleep and wake with you ☀️", "Bedtime set to {count}. Early birds and I get along great 🐦"],
+      windDown: [
+        "Your usual sleep time is close{n}. Start winding down? 🌙",
+        "Almost your bedtime{n}. Finish this bit and go rest, you've earned it 💤",
+        "Shift's nearly done{n}! Sleep well when you get home 🦉",
+      ],
+      nightShiftChatter: [
+        "The world's asleep and we're the night crew{n} 🦉",
+        "Night shift fact: you're doing something most people can't. Respect 🌙",
+        "Quiet hours are focus hours. Want some water to go with them? 💧",
+        "Hey night owl{n}, how's the shift going? 🦉",
+      ],
+      morning: ["{greet}{n}! ☀️ I'm up. Let's make today a good one.", "{greet}{n}! *stretches into a long wisp* Ready when you are ☀️"],
+      welcomeBack: [
+        "You're back{n}! I took a little nap while you were gone 💛",
+        "Welcome back! I kept your spot warm ☁️",
+        "There you are{n}! I missed you. A bit. Okay, a lot 💛",
+      ],
+      sleptAsk: [
+        "{greet}{n}! ☀️ A whole new day is here. Did you sleep well?",
+        "{greet}{n}! *wakes up with you* How did you sleep?",
+        "Rise and shine{n}! ☀️ Fresh day, fresh start. Did you get good sleep?",
+      ],
+      sleptWell: '😴 Slept well',
+      sleptOkay: '😐 Okay-ish',
+      sleptBadly: '😵 Not really',
+      sleptWellReply: ["Yay! A rested you is a powerful you ✨", "Love that! Today's going to be a good one 💛", "Fully charged! Let's go 🚀"],
+      sleptOkayReply: ["Okay is okay! We'll take it easy and keep the water coming 💧", "Fair enough. Small steps today, and a good night later 🌙"],
+      sleptBadReply: [
+        "Aw, I'm sorry{n}. Be gentle with yourself today. Water, short breaks, no big pressure 💛",
+        "Rough night? Let's go slow today. I'll remind you to rest, and maybe an early night later 🌙",
+      ],
+      dayBoost: [
+        "Thought for today: you don't have to do everything, just the next small thing ✨",
+        "Today's a blank page{n}. Write something kind on it 💛",
+        "Reminder: you've survived 100% of your hard days so far. Today's got nothing on you 💪",
+        "One small win today is still a win. I'll cheer for every one 🎉",
+        "Be the kind of busy that still drinks water 💧",
+        "Something good is going to happen today. I can feel it in my fluff ☁️",
+      ],
+    },
+    hi: {
+      menu: { schedule: '🌙 सोने का समय', bedAt: 'रात {count} बजे सोना', nightShift: '🦉 मैं नाइट शिफ़्ट करता/करती हूँ (मेरे साथ सोना)' },
+      bedtimeSoon: ['करीब 15 मिनट में सोने का समय{n}। काम समेटना शुरू करें? 🌙', 'मेरी पलकें भारी हो रही हैं... 15 मिनट और फिर मैं सोने {g:चला|चली}। तुम भी? 🌙'],
+      goodnight: ['मेरे सोने का समय हो गया{n}। शुभ रात्रि! ज़्यादा देर मत जागना 🌙💤', 'मेरी लाइट बंद। जब सोओ तो मीठे सपने{n} 💤', '*एक छोटे बादल में सिमटकर* शुभ रात्रि{n}। कल नया पन्ना है 🌙'],
+      askSchedule: ['*एक आँख खोलकर* तुम अभी भी लगे हो{n}! क्या तुम नाइट शिफ़्ट करते हो? मैं तुम्हारे हिसाब से सो-जाग सकता हूँ 🦉'.replace('सकता', '{g:सकता|सकती}'), 'श्श्श{n}, आधी रात है और तुम काम में हो। नाइट शिफ़्ट वाले हीरो हो? जब तुम सोओगे, मैं भी सोऊँगा 🦉'.replace('सोऊँगा', '{g:सोऊँगा|सोऊँगी}')],
+      schedNight: '🦉 हाँ, मैं रात में काम करता/करती हूँ',
+      schedTonight: 'बस आज रात',
+      schedSleep: 'तुम सो जाओ',
+      nightShiftOn: ['नाइट उल्लू टीम तैयार! 🦉 मैं रात भर तुम्हारे साथ काम {g:करूँगा|करूँगी} और जब तुम सोओगे तब {g:सोऊँगा|सोऊँगी}।', 'समझ गया! अब तुम्हारी रात मेरा दिन है 🌙'.replace('समझ गया', 'समझ {g:गया|गई}')],
+      stayUpTonight: ['ठीक है, आज रात मैं तुम्हारे साथ {g:जागूँगा|जागूँगी}। आधी रात के बाद भी पानी और स्ट्रेच गिने जाते हैं 😉'],
+      backToBed: ['ठीक है... वापस अपने बादल पर। आराम करना मत भूलना{n} 💤'],
+      scheduleDay: ['ठीक है, अब सोने का समय रात {count} बजे। मैं तुम्हारे साथ {g:सोऊँगा|सोऊँगी} और {g:जागूँगा|जागूँगी} ☀️'],
+      windDown: ['तुम्हारे सोने का समय पास है{n}। धीरे-धीरे काम समेटें? 🌙', 'शिफ़्ट लगभग ख़त्म{n}! घर जाकर अच्छी नींद लेना 🦉'],
+      nightShiftChatter: ['दुनिया सो रही है और हम नाइट क्रू हैं{n} 🦉', 'हे नाइट उल्लू{n}, शिफ़्ट कैसी चल रही है? 🦉', 'शांत घंटे, फोकस वाले घंटे। साथ में थोड़ा पानी? 💧'],
+      morning: ['{greet}{n}! ☀️ मैं उठ {g:गया|गई}। चलो आज का दिन अच्छा बनाते हैं।'],
+      welcomeBack: ['तुम वापस आ गए{n}! तुम्हारे जाने पर मैंने एक छोटी झपकी ली 💛', 'वापसी पर स्वागत! मैंने तुम्हारी जगह गर्म रखी ☁️'],
+      sleptAsk: ['{greet}{n}! ☀️ नया दिन आ गया। नींद अच्छी आई?', '{greet}{n}! *तुम्हारे साथ जागते हुए* कैसी नींद आई?'],
+      sleptWell: '😴 अच्छी नींद आई',
+      sleptOkay: '😐 ठीक-ठाक',
+      sleptBadly: '😵 ज़्यादा नहीं',
+      sleptWellReply: ['वाह! आराम किया हुआ तुम, सबसे ताक़तवर तुम ✨', 'बढ़िया! आज का दिन अच्छा जाएगा 💛'],
+      sleptOkayReply: ['ठीक-ठाक भी ठीक है! आज आराम से, और पानी चलता रहे 💧'],
+      sleptBadReply: ['ओह, सॉरी{n}। आज ख़ुद पर नरमी रखना। पानी, छोटे ब्रेक, कोई बड़ा दबाव नहीं 💛', 'रात मुश्किल थी? आज धीरे चलते हैं, और शायद आज जल्दी सोना 🌙'],
+      dayBoost: ['आज का विचार: सब कुछ नहीं करना है, बस अगला छोटा काम ✨', 'आज एक खाली पन्ना है{n}। उस पर कुछ अच्छा लिखो 💛', 'याद रखना: अब तक के सारे मुश्किल दिन तुमने पार किए हैं। आज भी कर लोगे 💪', 'आज कुछ अच्छा होने वाला है। मुझे अपने रोएँ में महसूस हो रहा है ☁️'],
+    },
+    hinglish: {
+      menu: { schedule: '🌙 Sone ka time', bedAt: 'Raat {count} baje sona', nightShift: '🦉 Main night shift karta/karti hoon (mere saath sona)' },
+      bedtimeSoon: ['Lagbhag 15 minute mein sone ka time{n}. Kaam samatna shuru karein? 🌙', 'Meri palkein bhaari ho rahi hain... 15 minute aur phir main sone {g:chala|chali}. Tum bhi? 🌙'],
+      goodnight: ['Mera sone ka time ho gaya{n}. Good night! Zyada der mat jaagna 🌙💤', 'Meri light off. Jab so jao toh sweet dreams{n} 💤', '*ek chhote cloud mein simat ke* Good night{n}. Kal naya page hai 🌙'],
+      askSchedule: ['*ek aankh khol ke* Tum abhi bhi lage ho{n}! Night shift karte ho kya? Main tumhare hisaab se so-jaag {g:sakta|sakti} hoon 🦉', 'Psst{n}, aadhi raat hai aur tum kaam mein ho. Night shift wale hero ho? Jab tum soge, main bhi {g:sounga|soungi} 🦉'],
+      schedNight: '🦉 Haan, main raat mein kaam karta/karti hoon',
+      schedTonight: 'Bas aaj raat',
+      schedSleep: 'Tum so jao',
+      nightShiftOn: ['Night owl team ready! 🦉 Main raat bhar tumhare saath kaam {g:karunga|karungi} aur jab tum soge tab {g:sounga|soungi}.', 'Samajh {g:gaya|gayi}! Ab tumhari raat mera din hai 🌙'],
+      stayUpTonight: ['Theek hai, aaj raat main tumhare saath {g:jaagunga|jaagungi}. Midnight ke baad bhi paani aur stretch count hote hain 😉'],
+      backToBed: ['Theek hai... wapas apne cloud pe. Aaram karna mat bhoolna{n} 💤'],
+      scheduleDay: ['Theek hai, ab sone ka time raat {count} baje. Main tumhare saath {g:sounga|soungi} aur {g:jaagunga|jaagungi} ☀️'],
+      windDown: ['Tumhare sone ka time paas hai{n}. Dheere dheere kaam samatein? 🌙', 'Shift almost khatam{n}! Ghar jaake acchi neend lena 🦉'],
+      nightShiftChatter: ['Duniya so rahi hai aur hum night crew hain{n} 🦉', 'Hey night owl{n}, shift kaisi chal rahi hai? 🦉', 'Shaant ghante, focus wale ghante. Saath mein thoda paani? 💧'],
+      morning: ['{greet}{n}! ☀️ Main uth {g:gaya|gayi}. Chalo aaj ka din accha banate hain.'],
+      welcomeBack: ['Tum wapas aa gaye{n}! Tumhare jaane pe maine ek chhoti si jhapki li 💛', 'Welcome back! Maine tumhari jagah garam rakhi ☁️'],
+      sleptAsk: ['{greet}{n}! ☀️ Naya din aa gaya. Neend acchi aayi?', '{greet}{n}! *tumhare saath jaagte hue* Kaisi neend aayi?'],
+      sleptWell: '😴 Acchi neend aayi',
+      sleptOkay: '😐 Theek-thaak',
+      sleptBadly: '😵 Zyada nahi',
+      sleptWellReply: ['Wah! Aaram kiya hua tum, sabse powerful tum ✨', 'Badhiya! Aaj ka din accha jayega 💛'],
+      sleptOkayReply: ['Theek-thaak bhi theek hai! Aaj aaram se, aur paani chalta rahe 💧'],
+      sleptBadReply: ['Oh, sorry{n}. Aaj khud pe narmi rakhna. Paani, chhote breaks, koi bada pressure nahi 💛', 'Raat mushkil thi? Aaj dheere chalte hain, aur shayad aaj jaldi sona 🌙'],
+      dayBoost: ['Aaj ka thought: sab kuch nahi karna, bas agla chhota kaam ✨', 'Aaj ek khaali page hai{n}. Uspe kuch accha likho 💛', 'Yaad rakhna: ab tak ke saare mushkil din tumne paar kiye hain. Aaj bhi kar loge 💪', 'Aaj kuch accha hone wala hai. Mujhe apne fluff mein feel ho raha hai ☁️'],
+    },
+  };
+  for (const lang of Object.keys(V09)) merge(STRINGS[lang], V09[lang]);
+
+  // 11 -> "11 pm" in English; "11" in Hindi/Hinglish, which say "raat 11 baje".
+  const hourLabel = (lang, h) => (lang === 'en' ? `${h % 12 || 12} ${h < 12 ? 'am' : 'pm'}` : String(h % 12 || 12));
+
   const LANGS = [
     { id: 'en', label: 'English' },
     { id: 'hi', label: 'हिंदी (Hindi)' },
@@ -829,6 +958,6 @@
       .replace(/\{g:([^|}]*)\|([^}]*)\}/g, (_, m, f) => (ctx.gender === 'female' ? f : m));
   }
 
-  root.I18N = { STRINGS, LANGS, t, fill };
+  root.I18N = { STRINGS, LANGS, t, fill, hourLabel };
   if (typeof module !== 'undefined') module.exports = root.I18N;
 })(typeof window !== 'undefined' ? window : globalThis);

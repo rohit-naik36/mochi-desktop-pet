@@ -109,7 +109,8 @@ function minuteTick() {
     energy: sleeping ? 4 : -0.3,
   });
   dailyCheckIns();
-  if (focusUntil > Date.now()) return; // no tummy grumbles while you focus
+  scheduleTick();
+  if (asleep || focusUntil > Date.now()) return; // no tummy grumbles while you sleep or focus
   if (S.hunger > 75 && !bubbleSticky && Math.random() < 0.15) {
     say(T('hungry'), { actions: [{ label: T('feedBtn'), primary: true, run: feed }, { label: T('laterBtn') }], sticky: true });
   }
@@ -118,6 +119,7 @@ function minuteTick() {
 // ---------- interactions ----------
 
 function feed() {
+  if (asleep) return sleepyNo();
   setMode('eat', 2200);
   for (let i = 0; i < 3; i++) setTimeout(() => float(pick(['🍙', '🍓', '🐟', '🍪'])), i * 350);
   change({ hunger: -35, happiness: 6 });
@@ -126,6 +128,7 @@ function feed() {
 }
 
 function play() {
+  if (asleep) return sleepyNo();
   setMode('happy', 1200);
   for (let i = 0; i < 4; i++) setTimeout(() => float(pick(['⭐', '🎾', '✨'])), i * 200);
   change({ happiness: 12, energy: -8 });
@@ -168,6 +171,11 @@ window.pet.onAction((a) => {
   else if (a === 'focus-stop') stopFocus();
   else if (a === 'mood') askMood();
   else if (a === 'gratitude') askGratitude();
+  else if (a === 'schedule-changed') {
+    if (asleep === 'bed' && (S.schedule === 'night' || !inBedtime())) wakeUp(0);
+    setMode('happy', 1200);
+    say(S.schedule === 'night' ? T('nightShiftOn') : T('scheduleDay', { count: bedLabel(S.bedtime ?? 23) }), { ms: 6000 });
+  }
   else if (a === 'gender-changed') { setMode('happy', 1200); float('💛'); say(T('genderSaved.' + S.petGender), { ms: 4000 }); }
 });
 
@@ -201,6 +209,8 @@ function fireNudge(key) {
   if (!S.nudges[key]) return scheduleNudge(key, nd.every());
   if (bubbleSticky || upsetKey) return scheduleNudge(key, 2); // don't stack reminders
   if (focusUntil > Date.now()) return scheduleNudge(key, (focusUntil - Date.now()) / MIN + 1); // wait for the break
+  if (asleep) return scheduleNudge(key, nd.every()); // you're away or it's bedtime
+  if (idleSec >= 5 * 60) return scheduleNudge(key, 5); // nobody at the desk right now
   if (mode === 'sleep') setMode('idle', 0);
   if (nd.anim) setMode(nd.anim, 3200);
   say(T(key + '.lines'), { sticky: true, actions: nudgeButtons(key) });
@@ -369,6 +379,194 @@ function askGratitude() {
   });
 }
 
+// ---------- sleep schedule ----------
+
+// Mochi keeps your hours. On a day schedule it goes to bed at bedtime (11pm
+// unless you pick another time). If you're still busy at the computer a while
+// later, it asks whether you work nights; on night shifts it simply sleeps
+// whenever you're away for long and wakes when you're back. After a real
+// sleep it asks how you slept and gives you something nice for the day.
+const H = 60 * MIN;
+const IDLE_NAP_MIN = 30;   // nobody at the desk this long: doze off
+const LONG_SLEEP_H = 3;    // away this long: that was a proper sleep
+const ASK_AFTER_MIN = 10;  // still busy this long after Mochi's bedtime: ask about it
+let asleep = null;         // null | 'bed' (for the night) | 'away' (you left)
+let idleSec = 0;           // seconds since the last mouse or keyboard input
+let awaySince = 0;
+let lastPoll = Date.now();
+let nightBusyMin = 0;
+let askingSchedule = false; // the "do you work nights?" question is open
+let saidBedtimeSoon = '';
+let saidWindDown = '';
+
+const nightKey = () => window.Progress.dayKey(Date.now() - 12 * H); // the evening this night began
+function inBedtime(h = new Date().getHours()) {
+  const b = S.bedtime ?? 23;
+  const w = S.wakeTime ?? 7;
+  return b > w ? h >= b || h < w : h >= b && h < w;
+}
+
+function sleepyNo() {
+  say(T('sleepyPet'), { ms: 3000 });
+  float('💤', 'zzz');
+}
+
+// Close anything waiting and curl up.
+function settle(kind) {
+  asleep = kind;
+  askingSchedule = false;
+  for (const k of Object.keys(upsetTimers)) clearTimeout(upsetTimers[k]);
+  if (upsetKey) calmDown();
+  hideBubble(true);
+  setMode('sleep', Infinity);
+  nightBusyMin = 0;
+}
+
+function goToBed() {
+  settle('bed');
+  say(T('goodnight'), { ms: 6000 });
+}
+
+function wakeUp(awayMs) {
+  const wasAsleep = asleep;
+  asleep = null;
+  nightBusyMin = 0;
+  setMode('happy', 1500);
+  for (const k of Object.keys(NUDGES)) scheduleNudge(k, NUDGES[k].every());
+  if (awayMs >= LONG_SLEEP_H * H) {
+    S.sleepLog = [...(S.sleepLog || []), { from: Date.now() - awayMs, to: Date.now() }].slice(-14);
+    window.pet.save({ sleepLog: S.sleepLog });
+    askSlept();
+  } else if (wasAsleep === 'bed') {
+    say(T('morning', { greet: timeGreet() }), { ms: 6000 });
+  } else if (awayMs >= IDLE_NAP_MIN * MIN) {
+    say(T('welcomeBack'), { ms: 5000 });
+  } else if (wasAsleep) {
+    say(T('woke'), { ms: 3000 });
+  }
+}
+
+function askSlept(greet = timeGreet()) {
+  setTimeout(() => {
+    float('☀️');
+    const answer = (key) => () => {
+      setMode(key === 'Bad' ? 'idle' : 'happy', 1500);
+      say(T('slept' + key + 'Reply'), { ms: 6000 });
+      setTimeout(() => { if (!bubbleSticky) say(T('dayBoost'), { ms: 8000 }); }, 6500);
+    };
+    say(T('sleptAsk', { greet }), {
+      sticky: true,
+      actions: [
+        { label: T('sleptWell'), primary: true, run: answer('Well') },
+        { label: T('sleptOkay'), run: answer('Okay') },
+        { label: T('sleptBadly'), run: answer('Bad') },
+      ],
+    });
+  }, 1200);
+}
+
+function askSchedule() {
+  S.askedNight = nightKey();
+  window.pet.save({ askedNight: S.askedNight });
+  asleep = null;
+  askingSchedule = true;
+  setMode('idle', 3000);
+  float('🦉');
+  say(T('askSchedule'), {
+    sticky: true,
+    actions: [
+      { label: T('schedNight'), primary: true, run: () => {
+        askingSchedule = false;
+        S.schedule = 'night';
+        window.pet.save({ schedule: 'night' });
+        setMode('happy', 1500);
+        float('🦉'); setTimeout(() => float('🌙'), 250);
+        say(T('nightShiftOn'), { ms: 8000 });
+      } },
+      { label: T('schedTonight'), run: () => {
+        askingSchedule = false;
+        S.stayUp = nightKey();
+        window.pet.save({ stayUp: S.stayUp });
+        say(T('stayUpTonight'), { ms: 6000 });
+      } },
+      { label: T('schedSleep'), run: () => { settle('bed'); say(T('backToBed'), { ms: 4000 }); } },
+    ],
+  });
+}
+
+// On night shifts: when you usually go to sleep, judging by the last few
+// sleeps (circular average of the start times, so 11pm and 1am give midnight).
+function usualSleepMinute() {
+  const log = (S.sleepLog || []).slice(-7);
+  if (log.length < 2) return null;
+  let x = 0, y = 0;
+  for (const { from } of log) {
+    const d = new Date(from);
+    const a = ((d.getHours() * 60 + d.getMinutes()) / 1440) * 2 * Math.PI;
+    x += Math.cos(a); y += Math.sin(a);
+  }
+  return Math.round(((Math.atan2(y, x) / (2 * Math.PI) + 1) % 1) * 1440);
+}
+
+// Once a minute.
+function scheduleTick() {
+  const now = new Date();
+  const h = now.getHours();
+  const busy = idleSec < 60;
+  if (S.schedule === 'night') {
+    const usual = usualSleepMinute();
+    const m = h * 60 + now.getMinutes();
+    const until = usual === null ? Infinity : (usual - m + 1440) % 1440;
+    if (!asleep && busy && until <= 30 && saidWindDown !== window.Progress.dayKey() && !bubbleSticky) {
+      saidWindDown = window.Progress.dayKey();
+      say(T('windDown'), { ms: 7000 });
+    }
+    if (asleep === 'bed') asleep = 'away'; // no clock bedtime on night shifts
+    return;
+  }
+  const bed = S.bedtime ?? 23;
+  if (!asleep && busy && h === (bed + 23) % 24 && now.getMinutes() >= 45 && saidBedtimeSoon !== nightKey() && !bubbleSticky) {
+    saidBedtimeSoon = nightKey();
+    say(T('bedtimeSoon'), { ms: 7000 });
+  }
+  if (inBedtime(h)) {
+    if (asleep === 'away') asleep = 'bed';
+    else if (!asleep && !askingSchedule && S.stayUp !== nightKey() && !(focusUntil > Date.now())) goToBed();
+    else if (asleep === 'bed' && busy && S.askedNight !== nightKey() && ++nightBusyMin >= ASK_AFTER_MIN) askSchedule();
+  } else if (asleep === 'bed' && busy) {
+    wakeUp(0); // morning, and you're already at it
+  }
+}
+
+// From main every 15 seconds: how long since the last mouse or keyboard input.
+window.pet.onActivity((sec) => {
+  if (!S) return;
+  const now = Date.now();
+  // A long gap between reports means the computer itself was asleep.
+  if (now - lastPoll > 5 * MIN && !awaySince) awaySince = lastPoll;
+  lastPoll = now;
+  idleSec = sec;
+  if (sec >= 120) {
+    if (!awaySince) awaySince = now - sec * 1000;
+    if (!asleep && sec >= IDLE_NAP_MIN * 60 && !(focusUntil > now)) settle('away');
+    return;
+  }
+  if (sec < 60 && awaySince) {
+    const awayMs = now - sec * 1000 - awaySince;
+    awaySince = 0;
+    // Busy at the computer during Mochi's bedtime: stay in bed, the minute
+    // check decides whether to ask about night shifts.
+    if (asleep === 'bed' && S.schedule !== 'night' && inBedtime()) return;
+    if (asleep || awayMs >= IDLE_NAP_MIN * MIN) wakeUp(awayMs);
+  }
+});
+
+const bedLabel = (h) => window.I18N.hourLabel((S && S.lang) || 'en', h);
+const timeGreet = () => {
+  const h = new Date().getHours();
+  return (window.I18N.STRINGS[S.lang || 'en'] || window.I18N.STRINGS.en).timeGreet[h < 12 ? 0 : h < 18 ? 1 : 2];
+};
+
 // ---------- achievements ----------
 
 window.pet.onAchievement((id) => {
@@ -449,7 +647,8 @@ function scheduleChatter() {
     if (!bubbleSticky && mode !== 'sleep' && !(focusUntil > Date.now())) {
       const h = new Date().getHours();
       let line;
-      if (h >= 23 || h < 5) line = T('lateNight');
+      if (S.schedule === 'night' && (h >= 22 || h < 6) && Math.random() < 0.5) line = T('nightShiftChatter');
+      else if (S.schedule !== 'night' && (h >= 23 || h < 5)) line = T('lateNight');
       else if (h >= 12 && h < 14 && Math.random() < 0.5) line = T('lunch');
       else if (Math.random() < 0.3) {
         say(T('playInvite'), {
@@ -513,6 +712,9 @@ setInterval(() => {
   if (mode === 'walk') walkStep();
   if (mode === 'sleep' && Math.random() < 0.02) float('z', 'zzz');
   if (upsetKey) return;
+  // Asleep for the night (or while you're away): after a snack or a game,
+  // settle back down instead of waking up.
+  if (asleep && mode !== 'sleep' && Date.now() > modeUntil) return setMode('sleep', Infinity);
   if (Date.now() > modeUntil) {
     if (mode === 'sleep') say(T('woke'), { ms: 3000 });
     decideNext();
@@ -583,10 +785,14 @@ window.pet.onState((s) => {
   booted = true;
   catchUpWhileAway();
   setMode('idle', 3000);
+  const greet = timeGreet();
+  // Off for hours (overnight, or a night shifter's day): ask how they slept.
+  const awayMs = Date.now() - (S.lastSeen || Date.now());
   const h = new Date().getHours();
-  const greet = (window.I18N.STRINGS[S.lang || 'en'] || window.I18N.STRINGS.en).timeGreet[h < 12 ? 0 : h < 18 ? 1 : 2];
+  const sleptAway = awayMs >= LONG_SLEEP_H * H && (S.schedule === 'night' || (h >= 4 && h < 13));
   if (S.userName === undefined || S.userName === null) setTimeout(() => askName(), 800);
   else if (!S.petGender) setTimeout(() => askGender(() => say(T('greet', { greet }), { ms: 6000 })), 800);
+  else if (sleptAway) askSlept(greet);
   else setTimeout(() => say(T('greet', { greet }), { ms: 6000 }), 800);
   scheduleNudge('water', S.waterEveryMin);
   scheduleNudge('stretch', S.stretchEveryMin);

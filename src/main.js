@@ -1,5 +1,5 @@
 // Mochi: a tiny desktop pet that keeps you company while you work.
-const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeImage } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeImage, powerMonitor } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const I18N = require('./i18n');
@@ -43,6 +43,12 @@ const defaults = {
   moods: {}, // 'YYYY-MM-DD' -> 1..5
   gratitude: [], // [{ d: 'YYYY-MM-DD', t: 'text' }]
   focusUntil: 0, // end of the current focus session, if any
+  schedule: 'day', // 'day' = sleeps at bedtime, 'night' = night shifts, sleeps when you do
+  bedtime: 23, // hour Mochi goes to bed on the day schedule
+  wakeTime: 7,
+  sleepLog: [], // [{ from, to }] your recent long breaks, to learn a night shifter's hours
+  askedNight: '', // night we last asked "still up?" (the evening's date)
+  stayUp: '', // night the user asked Mochi to stay up with them
 };
 
 function loadState() {
@@ -277,6 +283,16 @@ function buildMenu() {
     ] },
     { label: M('worry'), click: () => openPlay('worry') },
     { label: M('nap'), click: () => send('action', 'sleep') },
+    { label: M('schedule'), submenu: [
+      ...[22, 23, 0, 1].map((h) => ({
+        label: M('bedAt', I18N.hourLabel(state.lang, h)),
+        type: 'radio',
+        checked: state.schedule !== 'night' && state.bedtime === h,
+        click: () => setSchedule('day', h),
+      })),
+      { type: 'separator' },
+      { label: M('nightShift'), type: 'radio', checked: state.schedule === 'night', click: () => setSchedule('night') },
+    ] },
     { label: M('buddy'), submenu: SKINS.map((sk) => ({
       label: sk.label,
       type: 'radio',
@@ -320,6 +336,22 @@ function buildMenu() {
     { label: M('bringBack'), click: () => { const wa = workArea(); placeAt(wa.x + wa.width - WIN_W - 40, wa.y + wa.height - WIN_H); } },
     { label: M('quit'), click: () => app.quit() },
   ]);
+}
+
+function setSchedule(schedule, bedtime = state.bedtime) {
+  Object.assign(state, { schedule, bedtime, stayUp: '' });
+  saveState();
+  refreshTrayMenu();
+  send('state', state);
+  send('action', 'schedule-changed');
+}
+
+// Tell the pet how long since the last mouse or keyboard input, so it can
+// doze off while you're away and greet you when you're back. Only the number
+// of idle seconds is read, never what you type or where you click.
+function reportActivity() {
+  const idle = process.env.MOCHI_DEBUG_IDLE ? +process.env.MOCHI_DEBUG_IDLE : powerMonitor.getSystemIdleTime();
+  send('activity', idle);
 }
 
 function refreshTrayMenu() {
@@ -451,6 +483,9 @@ if (!gotLock) {
     if (process.env.MOCHI_DEBUG_BOARD) setTimeout(openBoard, 2000);
     // Tray label shows live stats, so refresh it now and then.
     setInterval(refreshTrayMenu, 60_000);
+    setInterval(reportActivity, 15_000);
+    powerMonitor.on('resume', reportActivity);
+    powerMonitor.on('unlock-screen', reportActivity);
   });
   app.on('before-quit', saveState);
   app.on('window-all-closed', () => app.quit());

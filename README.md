@@ -20,6 +20,10 @@ Its own space, separate from the games: right-click → **Feed me a worry**. Typ
 
 Right-click → **Focus with me** → 25 or 50 minutes. A small 🛡️ timer appears under your buddy. While you focus it stays quiet: no chatter, no hunger, and reminders wait until the break. Petting it gets a whispered "shh". When time's up it celebrates and offers a 5-minute break (☕ timer), then asks if you want another round.
 
+## Sleeps when you sleep
+
+Mochi goes to bed at 11pm (pick 10pm, 11pm, 12am or 1am under **🌙 Sleep schedule**). If you're still busy at the computer a while after its bedtime, it opens one eye and asks if you work night shifts. Say yes and it keeps your hours instead: it works through the night with you and sleeps whenever you're away for a long while. It dozes off when nobody has touched the mouse or keyboard for 30 minutes, and reminders wait while you're away. When you come back after a proper sleep, it asks how you slept and gives you something positive for the day.
+
 ## Mood check-in and gratitude jar
 
 Once a day (from late morning) your buddy asks how you feel with five faces. On a rough day it offers to eat a worry or breathe with you, and gives back one good thing from your gratitude jar. Each evening it asks for one good thing that happened today and keeps it in the jar. Both are also in the right-click menu. Everything stays on your computer.

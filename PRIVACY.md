@@ -1,6 +1,6 @@
 # Mochi privacy policy
 
-_Last updated: 23 October 2026_
+_Last updated: 24 October 2026_
 
 Mochi is a desktop pet that keeps you company while you work. This policy explains what it stores and what it doesn't.
 
@@ -16,6 +16,7 @@ To remember things between sessions, Mochi keeps one file on your own PC (in you
 - your settings (reminders, wandering, where the buddy sits on screen)
 - your buddy's happiness, hunger and energy
 - points, badges, streak days and activity counts
+- your sleep schedule choice and the start and end times of your last 14 long breaks (so Mochi can learn a night shifter's hours)
 - your daily mood check-ins (a number from 1 to 5 per day)
 - the "good things" you put in the gratitude jar
 
@@ -25,6 +26,7 @@ Worries you type into **Feed me a worry** are never saved. Mochi reads them on y
 
 - No internet connection: no accounts, servers, analytics, tracking, advertising or cloud sync.
 - No access to your files, camera, microphone, location, contacts or other apps.
+- To know when you're away, Mochi asks Windows how many seconds it has been since the mouse or keyboard was last used. It never sees what you type or where you click.
 - No data shared with anyone, including the developer.
 
 ## Your control
