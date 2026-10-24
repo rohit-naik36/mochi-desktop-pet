@@ -496,7 +496,7 @@ pages['privacy.html'] = page('privacy.html', 'Privacy policy', 'How Mochi and mo
       <p>Mochi makes no network requests. It has no account, analytics, advertising or cloud storage, and nothing is sent to us or anyone else.</p>
       <p>To work, Mochi saves a small file on your computer at <code>%APPDATA%\\Mochi\\pet-state.json</code>. It holds:</p>
       <ul><li>the name you give yourself and your buddy, and your choice of buddy, language and gender</li><li>your settings, such as reminders and sleep schedule</li><li>points, badges, streaks and activity counts</li><li>your daily mood faces and the good things you add to the gratitude jar</li><li>the times you usually go to sleep, so your buddy can follow a night-shift schedule</li></ul>
-      <p>What you type into Feed me a worry is never saved. Mochi also reads how long your computer has been idle (a number of seconds) so it can pause reminders and fall asleep while you are away. It does not read what you type in other apps or what is on your screen.</p>
+      <p>What you type into Feed me a worry is never saved. Mochi also reads how long your computer has been idle (a number of seconds) so it can pause reminders and fall asleep while you are away, and where the mouse pointer is so its eyes can follow it (never saved or sent). It does not read what you type in other apps or what is on your screen.</p>
       <p>To delete everything, uninstall Mochi or delete that file.</p>
       <h2>This website</h2>
       <p>mochicuddle.com uses no cookies, analytics or trackers. Fonts are loaded from Google Fonts, which receives your IP address to deliver them. The site is hosted on a static host, which may keep standard server logs for security.</p>

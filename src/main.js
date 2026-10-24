@@ -37,6 +37,7 @@ const defaults = {
   stretchEveryMin: 60,
   eyesEveryMin: 20,
   walking: true,
+  chatty: 'normal', // 'quiet' | 'normal' | 'chatty': how often the buddy talks on its own
   x: null,
   y: null,
   lastSeen: Date.now(),
@@ -330,6 +331,12 @@ function buildMenu() {
       checked: state.lang === l.id,
       click: () => { state.lang = l.id; saveState(); refreshTrayMenu(); send('state', state); send('action', 'switched'); },
     })) },
+    { label: M('chatty'), submenu: ['quiet', 'normal', 'chatty'].map((c) => ({
+      label: M('chatty_' + c),
+      type: 'radio',
+      checked: (state.chatty || 'normal') === c,
+      click: () => { state.chatty = c; saveState(); send('state', state); },
+    })) },
     { label: M('wander'), type: 'checkbox', checked: state.walking,
       click: (i) => { state.walking = i.checked; saveState(); send('state', state); } },
     { type: 'separator' },
@@ -445,6 +452,15 @@ ipcMain.on('drag-end', () => { dragOffset = null; });
 ipcMain.on('open-play', (_e, game) => openPlay(game));
 
 ipcMain.on('context-menu', () => buildMenu().popup({ window: win }));
+
+// Where the mouse pointer is, relative to the pet, so its eyes can follow it.
+// Only used for that; never stored or sent anywhere.
+ipcMain.handle('get-cursor', () => {
+  if (!win || win.isDestroyed() || !win.isVisible()) return null;
+  const p = screen.getCursorScreenPoint();
+  const b = win.getBounds();
+  return { dx: p.x - (b.x + b.width / 2), dy: p.y - (b.y + b.height - 60) };
+});
 
 ipcMain.handle('get-bounds', () => {
   const bounds = win.getBounds();
