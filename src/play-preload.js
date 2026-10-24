@@ -7,5 +7,6 @@ contextBridge.exposeInMainWorld('play', {
   hide: () => ipcRenderer.send('pet-hide'),
   done: (x, y) => ipcRenderer.send('play-done', x, y),
   track: (event, n) => ipcRenderer.send('track', event, n),
+  jar: (text) => ipcRenderer.send('jar-add', text),
   onAchievement: (fn) => ipcRenderer.on('achievement', (_e, id) => fn(id)),
 });

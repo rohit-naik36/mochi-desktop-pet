@@ -915,6 +915,29 @@
   };
   for (const lang of Object.keys(V09)) merge(STRINGS[lang], V09[lang]);
 
+  // Good news in Feed me a worry: save it to the jar, badges for wins.
+  const V091 = {
+    en: {
+      saveToJar: '🫙 Save to gratitude jar', jarSavedBtn: '🫙 Saved!',
+      jarSaved: ["In the jar it goes! I'll remind you of this on a hard day 💛", 'Saved! Future-you is going to love finding this 🫙'],
+      board: { events: { win: 'Wins celebrated' } },
+      badges: { firstWin: { name: 'Party Starter', desc: 'Share your first piece of good news' }, onARoll: { name: 'On a Roll', desc: 'Celebrate 10 wins' } },
+    },
+    hi: {
+      saveToJar: '🫙 ग्रेटिट्यूड जार में रखो', jarSavedBtn: '🫙 रख दिया!',
+      jarSaved: ['जार में चला गया! किसी मुश्किल दिन मैं ये याद {g:दिलाऊँगा|दिलाऊँगी} 💛'],
+      board: { events: { win: 'जश्न मनाई जीतें' } },
+      badges: { firstWin: { name: 'पार्टी शुरू', desc: 'पहली अच्छी ख़बर बताओ' }, onARoll: { name: 'जीत की लहर', desc: '10 जीतों का जश्न मनाओ' } },
+    },
+    hinglish: {
+      saveToJar: '🫙 Gratitude jar mein rakho', jarSavedBtn: '🫙 Rakh diya!',
+      jarSaved: ['Jar mein chala gaya! Kisi mushkil din main ye yaad {g:dilaunga|dilaungi} 💛'],
+      board: { events: { win: 'Celebrate ki jeet' } },
+      badges: { firstWin: { name: 'Party Starter', desc: 'Pehli good news batao' }, onARoll: { name: 'Jeet ki Lehar', desc: '10 jeet celebrate karo' } },
+    },
+  };
+  for (const lang of Object.keys(V091)) merge(STRINGS[lang], V091[lang]);
+
   // 11 -> "11 pm" in English; "11" in Hindi/Hinglish, which say "raat 11 baje".
   const hourLabel = (lang, h) => (lang === 'en' ? `${h % 12 || 12} ${h < 12 ? 'am' : 'pm'}` : String(h % 12 || 12));
 

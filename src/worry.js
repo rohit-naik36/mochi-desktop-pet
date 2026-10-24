@@ -399,6 +399,111 @@
     }
   }
 
+  // Not every message is a worry. Good news gets a party, sadness gets a soft
+  // voice (no munching jokes), and hopeless words get the helplines, gently.
+  const FEEL_WORDS = {
+    hopeless: ['nothing matters', "what's the point", 'whats the point', 'what is the point', 'no point in anything', 'no point living', 'give up on everything', 'giving up on everything', "can't go on", 'cant go on', 'cannot go on', 'no way out', 'tired of living', 'tired of life', 'want to disappear', 'wish i could disappear', "wish i wasn't here", 'wish i wasnt here', 'nobody would care', 'no one would care', 'nobody would notice', 'no one would notice',
+      'kya fayda', 'koi fayda nahi', 'sab khatam', 'jeene ka mann nahi', 'jee nahi karta', 'gayab ho jaana', 'kisi ko farak nahi',
+      'क्या फ़ायदा', 'क्या फायदा', 'कोई फ़ायदा नहीं', 'कोई फायदा नहीं', 'सब ख़त्म', 'सब खत्म', 'जीने का मन नहीं', 'जी नहीं करता', 'गायब हो जाना', 'किसी को फ़र्क नहीं'],
+    low: ['sad', 'so sad', 'empty', 'lonely', 'alone', 'depressed', 'depression', 'crying', 'cried', 'cry', 'hopeless', 'numb', 'heartbroken', 'broken', 'miserable', 'feeling low', 'feel low', 'feeling down', 'feel down', 'unhappy', 'hurting', 'hurts', 'grief', 'grieving', 'passed away', 'died', 'breakup', 'broke up', 'dumped', 'miss them', 'miss her', 'miss him', 'nobody cares', 'no one cares', 'unloved',
+      'udaas', 'udas', 'akela', 'akeli', 'dukhi', 'rona aa raha', 'ro raha', 'ro rahi', 'mann nahi lag', 'dil toot', 'dil tut', 'tanha', 'khaali', 'khali lag', 'gussa aur dukh', 'yaad aa rahi', 'yaad aa raha', 'guzar gaye', 'guzar gayi', 'nahi rahe', 'pass nahi', 'select nahi', 'selection nahi', 'job nahi mili', 'reject ho',
+      'उदास', 'अकेला', 'अकेली', 'अकेलापन', 'दुखी', 'दुख', 'रोना', 'रो रहा', 'रो रही', 'दिल टूट', 'खाली', 'मन नहीं लग', 'याद आ रही', 'गुज़र गए', 'गुजर गए', 'नहीं रहे'],
+    good: ['got promoted', 'promoted', 'selected', 'shortlisted', 'got a promotion', 'got the promotion', 'got the job', 'got a job', 'got hired', 'got selected', 'got placed', 'got an offer', 'got the offer', 'offer letter', 'got a raise', 'salary hike', 'passed', 'cleared', 'aced', 'nailed it', 'nailed the', 'won', 'we won', 'i won', 'topped', 'got first', 'came first', 'graduated', 'finished my', 'finally finished', 'finally done', 'completed my', 'did it', 'made it', 'shipped', 'launched', 'got engaged', 'got married', 'proud of myself', 'good news', 'great news', 'best day', 'so happy', 'excited', 'yay', 'woohoo', 'achievement', 'got accepted', 'accepted into', 'got admission', 'got my visa', 'bought my first', 'first salary',
+      'promotion mil', 'job mil', 'naukri mil', 'offer mil', 'select ho', 'selection ho', 'pass ho', 'clear ho', 'jeet gaya', 'jeet gayi', 'jeet gaye', 'khushkhabri', 'khush hoon', 'bahut khush', 'ho gaya finally', 'kar diya', 'kar dikhaya', 'shaadi pakki', 'admission mil', 'visa mil', 'pehli salary',
+      'प्रमोशन मिल', 'नौकरी मिल', 'जॉब मिल', 'ऑफ़र मिल', 'सिलेक्शन', 'सेलेक्ट हो', 'पास हो', 'क्लियर हो', 'जीत गया', 'जीत गई', 'जीत गए', 'खुशखबरी', 'ख़ुशख़बरी', 'बहुत खुश', 'खुश हूँ', 'कर दिखाया', 'पहली सैलरी'],
+  };
+  // "didn't get promoted", "not selected", "pass nahi hua": a letdown, not good news.
+  const LETDOWN = /\b(not|didn't|didnt|did not|never|failed|fail|rejected|missed|couldn't|couldnt|wasn't|wasnt|nahi|nahin|nhi)\b|नहीं|ना हुआ|फेल/;
+  // "what if I don't pass", "I won't make it", "I passed out": worries, not wins.
+  const NOT_YET = /\b(won't|wont|will i|if i|hope|hoping|worried|scared|afraid|nervous|might|what if|may not|tomorrow|kal)\b|passed out|pass out|डर|कल/;
+
+  function hits(text, words) {
+    const t = ' ' + text.toLowerCase().replace(/[’']/g, "'") + ' ';
+    return words.some((w) => (w.includes(' ') || /[^\x00-\x7F]/.test(w)
+      ? t.includes(w)
+      : new RegExp(`[^a-z]${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^a-z]`).test(t)));
+  }
+
+  function feeling(text) {
+    if (hits(text, FEEL_WORDS.hopeless)) return 'hopeless';
+    const t = text.toLowerCase();
+    if (hits(text, FEEL_WORDS.good) && !NOT_YET.test(t)) {
+      if (LETDOWN.test(t)) return 'low';
+      if (!hits(text, FEEL_WORDS.low)) return 'good';
+    }
+    if (hits(text, FEEL_WORDS.low)) return 'low';
+    return null;
+  }
+
+  const FEEL = {
+    en: {
+      good: {
+        openers: ['🎉', '🥳', '✨🎉✨', '*does a happy little twirl*', '*puffs up with pride*'],
+        reflects: ['WAIT. "{q}"?! That\'s amazing!', '"{q}" — okay, I\'m officially throwing a party.', 'Hold on, let me get this right: "{q}". YES!', '"{q}"! I\'m not eating this one. I\'m framing it.'],
+        comfort: ["I'm so proud of you, {name}! You worked for this, and it shows.", "Look at you go, {name}! All those hard days were leading to this.", "This one's all you, {name}. Take a second and really let it sink in.", "You did that! I'm doing happy loops over here, {name}."],
+        steps: ['Tell someone who\'ll be happy for you. Good news gets bigger when you share it.', 'Treat yourself to something small today. Chai, a sweet, a walk, anything. You earned it.', 'Write down how this feels right now, so you can read it on a hard day later.', 'Take a proper break to celebrate. The to-do list can wait ten minutes.'],
+        asks: ['How are you going to celebrate?', 'What was the hardest part of getting here?', 'Want to save this in the gratitude jar?'],
+      },
+      low: {
+        reflects: ['I hear you, {name}.', 'Thank you for telling me, {name}.', "I'm right here, {name}."],
+        comfort: ["That sounds really heavy. You don't have to pretend to be okay with me.", "Feeling this way doesn't mean something is wrong with you. It means you're carrying a lot.", "It's okay to be sad. You don't have to fix it right now. I'll just sit here with you.", "I'm sorry it hurts this much. You're not alone in it, even if it feels that way."],
+        steps: ['Be gentle with yourself today. Water, something to eat, and one small kind thing for you.', 'If you can, message one person you trust, even just "having a rough day".', 'Try one slow breath with me. In for four, out for six. Just one.', 'Step outside or open a window for a minute. A little air helps more than it should.'],
+        asks: ['Want to breathe with me for a minute?', 'Is there someone you could talk to today?', 'Do you want to tell me a little more?'],
+        lasting: "If you've felt like this for more than a couple of weeks, please talk to someone. Tele-MANAS (14416) is free and kind.",
+      },
+      hopeless: {
+        reflect: "{name}, I'm really glad you told me.",
+        comfort: "When everything feels pointless, that's your pain talking, and it's lying to you a little. You matter, even on days you can't feel it. Please don't carry this alone. These people are free, kind and there right now:",
+        step: "If things get darker or you think about hurting yourself, call 112 or go to the nearest hospital. And if you can, tell someone near you how you feel.",
+        ask: 'Can you reach out to one of them, or to someone you trust, today?',
+      },
+    },
+    hi: {
+      good: {
+        openers: ['🎉', '🥳', '✨🎉✨', '*ख़ुशी में एक छोटा सा चक्कर*', '*गर्व से फूलकर*'],
+        reflects: ['रुको! "{q}"?! ये तो कमाल है!', '"{q}" — ठीक है, अब पार्टी होगी।', '"{q}"! ये मैं नहीं {g:खाऊँगा|खाऊँगी}, इसे फ़्रेम {g:करूँगा|करूँगी}।'],
+        comfort: ['मुझे तुम पर बहुत गर्व है, {name}! तुमने इसके लिए मेहनत की, और वो दिख रही है।', 'वाह {name}! वो सारे मुश्किल दिन इसी तक ले आए।', 'ये पूरी तरह तुम्हारी जीत है, {name}। एक पल रुककर इसे महसूस करो।'],
+        steps: ['किसी ऐसे को बताओ जो तुम्हारे लिए ख़ुश होगा। अच्छी ख़बर बाँटने से बड़ी हो जाती है।', 'आज ख़ुद को कुछ छोटा सा ट्रीट दो। चाय, मिठाई, कुछ भी। तुमने कमाया है।', 'अभी कैसा लग रहा है, लिख लो, ताकि किसी मुश्किल दिन पढ़ सको।'],
+        asks: ['जश्न कैसे मनाओगे?', 'यहाँ तक पहुँचने में सबसे मुश्किल क्या था?', 'इसे ग्रेटिट्यूड जार में रखें?'],
+      },
+      low: {
+        reflects: ['मैं सुन {g:रहा|रही} हूँ, {name}।', 'मुझे बताने के लिए शुक्रिया, {name}।', 'मैं यहीं हूँ, {name}।'],
+        comfort: ['ये सच में भारी लग रहा है। मेरे सामने ठीक होने का नाटक करने की ज़रूरत नहीं।', 'ऐसा महसूस करने का मतलब ये नहीं कि तुम में कुछ ग़लत है। बस तुम बहुत कुछ उठा रहे हो।', 'उदास होना ठीक है। अभी इसे ठीक करना ज़रूरी नहीं। मैं बस तुम्हारे साथ {g:बैठा|बैठी} हूँ।'],
+        steps: ['आज ख़ुद पर नरमी रखो। पानी, कुछ खाना, और अपने लिए एक छोटी अच्छी चीज़।', 'हो सके तो किसी भरोसेमंद को एक मैसेज कर दो, बस "आज दिन भारी है" भी काफ़ी है।', 'मेरे साथ एक धीमी साँस लो। चार तक अंदर, छह तक बाहर।'],
+        asks: ['एक मिनट मेरे साथ साँस लोगे?', 'क्या आज किसी से बात कर सकते हो?', 'थोड़ा और बताना चाहोगे?'],
+        lasting: 'अगर कुछ हफ़्तों से ऐसा लग रहा है, तो प्लीज़ किसी से बात करो। Tele-MANAS (14416) मुफ़्त है और बहुत अच्छे से सुनते हैं।',
+      },
+      hopeless: {
+        reflect: '{name}, मुझे बहुत अच्छा लगा कि तुमने बताया।',
+        comfort: 'जब सब बेमतलब लगे, तो वो तुम्हारा दर्द बोल रहा होता है, और वो पूरा सच नहीं बोलता। तुम मायने रखते हो, उन दिनों भी जब ऐसा महसूस न हो। इसे अकेले मत उठाओ। ये लोग मुफ़्त हैं और अभी बात कर सकते हैं:',
+        step: 'अगर हालत और बिगड़े या ख़ुद को चोट पहुँचाने का ख़याल आए, तो 112 पर कॉल करो या नज़दीकी अस्पताल जाओ। और हो सके तो पास किसी को बताओ।',
+        ask: 'क्या आज इनमें से किसी से, या किसी भरोसेमंद से बात कर सकते हो?',
+      },
+    },
+    hinglish: {
+      good: {
+        openers: ['🎉', '🥳', '✨🎉✨', '*khushi mein ek chhota sa chakkar*', '*garv se phool ke*'],
+        reflects: ['Ruko! "{q}"?! Ye toh kamaal hai!', '"{q}" — theek hai, ab party hogi.', '"{q}"! Ye main nahi {g:khaunga|khaungi}, isko frame {g:karunga|karungi}.'],
+        comfort: ['Mujhe tum pe bahut proud hai, {name}! Tumne iske liye mehnat ki, aur wo dikh rahi hai.', 'Wah {name}! Wo saare mushkil din isi tak le aaye.', 'Ye poori tarah tumhari jeet hai, {name}. Ek second ruk ke isko feel karo.'],
+        steps: ['Kisi aise ko batao jo tumhare liye khush hoga. Good news share karne se badi ho jaati hai.', 'Aaj khud ko ek chhota sa treat do. Chai, mithai, kuch bhi. Tumne kamaya hai.', 'Abhi kaisa lag raha hai, likh lo, taaki kisi mushkil din padh sako.'],
+        asks: ['Celebrate kaise karoge?', 'Yahan tak pahunchne mein sabse mushkil kya tha?', 'Isko gratitude jar mein rakhein?'],
+      },
+      low: {
+        reflects: ['Main sun {g:raha|rahi} hoon, {name}.', 'Mujhe batane ke liye thank you, {name}.', 'Main yahin hoon, {name}.'],
+        comfort: ['Ye sach mein bhaari lag raha hai. Mere saamne theek hone ka natak karne ki zaroorat nahi.', 'Aisa feel karne ka matlab ye nahi ki tum mein kuch galat hai. Bas tum bahut kuch utha rahe ho.', 'Udaas hona theek hai. Abhi isko fix karna zaroori nahi. Main bas tumhare saath {g:baitha|baithi} hoon.'],
+        steps: ['Aaj khud pe narmi rakho. Paani, kuch khana, aur apne liye ek chhoti acchi cheez.', 'Ho sake toh kisi bharosemand ko ek message kar do, bas "aaj din bhaari hai" bhi kaafi hai.', 'Mere saath ek slow saans lo. Chaar tak andar, chhe tak bahar.'],
+        asks: ['Ek minute mere saath saans loge?', 'Kya aaj kisi se baat kar sakte ho?', 'Thoda aur batana chahoge?'],
+        lasting: 'Agar kuch hafton se aisa lag raha hai, toh please kisi se baat karo. Tele-MANAS (14416) free hai aur bahut acche se sunte hain.',
+      },
+      hopeless: {
+        reflect: '{name}, mujhe bahut accha laga ki tumne bataya.',
+        comfort: 'Jab sab bekaar lage, toh wo tumhara dard bol raha hota hai, aur wo poora sach nahi bolta. Tum matter karte ho, un dino bhi jab aisa feel na ho. Isko akele mat uthao. Ye log free hain aur abhi baat kar sakte hain:',
+        step: 'Agar haalat aur bigde ya khud ko hurt karne ka khayal aaye, toh 112 pe call karo ya nazdeeki hospital jao. Aur ho sake toh paas kisi ko batao.',
+        ask: 'Kya aaj inmein se kisi se, ya kisi bharosemand se baat kar sakte ho?',
+      },
+    },
+  };
+
   function shorten(text) {
     const t = text.trim().replace(/\s+/g, ' ').replace(/[.!?।]+$/, '');
     return t.length > 60 ? t.slice(0, 57).trimEnd() + '...' : t;
@@ -458,6 +563,18 @@
       const c = L ? L.crisis : EN_CRISIS;
       return { topic: 'crisis', lang, serious: true, opener: '', reflect: fill(c.reflect), comfort: fill(c.comfort), helplines: HELPLINES_IN, step: fill(c.step), ask: fill(c.ask), followups: ['breathe', 'thanks'] };
     }
+    const feel = topic && topic.priority ? null : feeling(text);
+    if (feel) {
+      const F = (FEEL[lang] || FEEL.en)[feel];
+      if (feel === 'hopeless') {
+        return { topic: 'hopeless', lang, gentle: true, opener: '', reflect: fill(F.reflect), comfort: fill(F.comfort), helplines: HELPLINES_IN, step: fill(F.step), ask: fill(F.ask), followups: ['breathe', 'thanks'] };
+      }
+      if (feel === 'good') {
+        return { topic: 'good', lang, celebrate: true, opener: pick(F.openers), reflect: fill(pick(F.reflects)).replace('{q}', shorten(text)), comfort: fill(pick(F.comfort)), step: fill(pick(F.steps)), ask: fill(pick(F.asks)), followups: ['jar', 'another', 'thanks'] };
+      }
+      const heavyLow = intensity(text) >= 2;
+      return { topic: 'low', lang, gentle: true, opener: '', reflect: fill(pick(F.reflects)), comfort: fill(pick(F.comfort)), step: fill(heavyLow ? F.lasting : pick(F.steps)), ask: fill(pick(F.asks)), followups: ['breathe', 'another', 'thanks'] };
+    }
     const id = topic ? topic.id : 'general';
     const src = L ? L[id] : (topic || GENERAL);
     const heavy = intensity(text) >= 2;
@@ -480,6 +597,6 @@
     };
   }
 
-  root.WorryEater = { respond, classify, detectLang, HELPLINES_IN };
+  root.WorryEater = { respond, classify, feeling, detectLang, HELPLINES_IN };
   if (typeof module !== 'undefined') module.exports = root.WorryEater;
 })(typeof window !== 'undefined' ? window : globalThis);

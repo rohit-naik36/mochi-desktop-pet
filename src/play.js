@@ -369,13 +369,21 @@ function Worry() {
     }
     parts.actions.innerHTML = '';
     const lang = r.lang || S.lang || 'en';
-    const labels = { another: L(lang, 'feedAnother'), breathe: L(lang, 'breatheWithMe') };
+    const labels = { another: L(lang, 'feedAnother'), breathe: L(lang, 'breatheWithMe'), jar: L(lang, 'saveToJar') };
     document.documentElement.style.setProperty('--tiny-step', JSON.stringify(L(lang, 'tinyStep')));
     for (const f of r.followups) {
       const b = document.createElement('button');
       b.className = f === r.followups[0] ? 'cta' : 'ghost';
       b.textContent = f === 'thanks' ? (r.serious ? L(lang, 'okay') : L(lang, 'thanks')) : labels[f];
       b.onclick = () => {
+        if (f === 'jar') {
+          window.play.jar(r.text);
+          b.disabled = true;
+          b.textContent = L(lang, 'jarSavedBtn');
+          for (let i = 0; i < 4; i++) setTimeout(() => float(pick(['🫙', '💛', '✨']), pos.x + rand(-30, 30), pos.y - 50), i * 150);
+          say(L(lang, 'jarSaved'), 3000);
+          return;
+        }
         if (f === 'another') askMode();
         else if (f === 'breathe') show('breathe');
         else if (r.serious) { say(L(lang, 'crisisStay'), 4000); }
@@ -399,6 +407,9 @@ function Worry() {
     if (heart.kind === 'explicit' && heart.atPet) return refuse(lang, 'explicit');
     if (heart.kind) return sweetTalk(heart, lang);
     const tr = text.getBoundingClientRect();
+    const r = window.WorryEater.respond(words, S.userName, S.lang || 'en', S.petGender);
+    r.text = words;
+    if (r.celebrate) return celebrate(r, tr);
     mood('eat');
     [...words].forEach((ch, i) => {
       const el = document.createElement('span');
@@ -420,7 +431,6 @@ function Worry() {
     const total = 1500 + Math.min(words.length, 280) * 16;
     setTimeout(() => tone(220, 0.25, 'sine', 0.06, 0.6), total - 200);
     setTimeout(() => {
-      const r = window.WorryEater.respond(words, S.userName, S.lang || 'en', S.petGender);
       // Swearing about a situation is just venting: acknowledge the feeling.
       if (rude.profane && !r.serious) r.comfort = L(r.lang, 'ventNote') + ' ' + r.comfort;
       mood(r.serious || r.gentle ? 'idle' : 'happy');
@@ -429,6 +439,38 @@ function Worry() {
       window.play.reward({ happiness: 6, hunger: -5 });
       window.play.track('worry');
     }, total);
+  }
+
+  // Good news isn't eaten: the words float up like confetti and Mochi throws
+  // a little party, then offers to keep it in the gratitude jar.
+  function celebrate(r, tr) {
+    const words = r.text;
+    text.value = '';
+    text.classList.add('hidden');
+    mood('happy');
+    [...words].forEach((ch, i) => {
+      const el = document.createElement('span');
+      el.className = 'letter';
+      el.textContent = ch;
+      const sx = tr.left + 10 + (i % 34) * 8;
+      const sy = tr.top + 12 + Math.floor(i / 34) * 18;
+      el.style.left = sx + 'px';
+      el.style.top = sy + 'px';
+      letters.appendChild(el);
+      setTimeout(() => {
+        el.style.transform = `translate(${rand(-60, 60)}px, ${-rand(120, 260)}px) rotate(${rand(-200, 200)}deg)`;
+        el.style.opacity = '0';
+      }, 30 + i * 10);
+      setTimeout(() => el.remove(), 1600 + i * 10);
+    });
+    for (let i = 0; i < 14; i++) setTimeout(() => float(pick(['🎉', '✨', '🌟', '🥳', '🎊', '💛']), pos.x + rand(-90, 90), pos.y - rand(30, 110)), i * 90);
+    [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.14, 'triangle', 0.06), i * 110));
+    setTimeout(() => {
+      showReply(r);
+      setTimeout(() => mood('idle'), 1400);
+      window.play.reward({ happiness: 10 });
+      window.play.track('win');
+    }, 1300);
   }
 
   // Sweet talk gets blushes and hearts. "You're hot" and sexual talk that

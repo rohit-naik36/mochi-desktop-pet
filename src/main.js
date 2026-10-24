@@ -167,6 +167,15 @@ ipcMain.on('track', (_e, event, n = 1) => {
   if (unlocked.length) refreshTrayMenu();
 });
 
+// Good news from Feed me a worry, saved to the gratitude jar.
+ipcMain.on('jar-add', (_e, text) => {
+  const t = String(text || '').trim().slice(0, 120);
+  if (!t) return;
+  state.gratitude = [...(state.gratitude || []), { d: Progress.dayKey(), t }].slice(-365);
+  send('state', state);
+  ipcMain.emit('track', null, 'gratitude');
+});
+
 let boardWin = null;
 function openBoard() {
   if (boardWin && !boardWin.isDestroyed()) { boardWin.show(); boardWin.focus(); return; }

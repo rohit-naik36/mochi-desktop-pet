@@ -16,6 +16,7 @@
     focus: { points: 25, dailyCap: 12, emoji: '🛡️' },
     mood: { points: 5, dailyCap: 1, emoji: '🌤️' },
     gratitude: { points: 10, dailyCap: 3, emoji: '🫙' },
+    win: { points: 15, dailyCap: 3, emoji: '🥳' },
   };
 
   // Badges. `event` is what's counted ('streak' = days in a row, 'level' = level).
@@ -41,6 +42,8 @@
     { id: 'moodDiary', event: 'mood', goal: 7, emoji: '📔' },
     { id: 'thankful', event: 'gratitude', goal: 1, emoji: '🫙' },
     { id: 'gratefulHeart', event: 'gratitude', goal: 30, emoji: '🌻' },
+    { id: 'firstWin', event: 'win', goal: 1, emoji: '🥳' },
+    { id: 'onARoll', event: 'win', goal: 10, emoji: '🏅' },
     { id: 'streak3', event: 'streak', goal: 3, emoji: '🔥' },
     { id: 'streak7', event: 'streak', goal: 7, emoji: '☄️' },
     { id: 'streak30', event: 'streak', goal: 30, emoji: '🌟' },

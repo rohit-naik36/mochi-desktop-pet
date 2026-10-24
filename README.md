@@ -16,6 +16,8 @@ Click **More info → Run anyway**. See *Getting rid of the SmartScreen warning*
 
 Its own space, separate from the games: right-click → **Feed me a worry**. Type what's bothering you and your buddy eats it, letter by letter. It reflects back what you wrote, offers comfort that fits the topic (deadlines, work, study, money, people, health, self-doubt, the future), and suggests one tiny next step. If a worry mentions self-harm, it gently points to people who can help. It runs fully offline and nothing is saved.
 
+Not everything is a worry. Share good news ("I got promoted!", "promotion mil gaya!") and Mochi throws a little party instead of eating it, gives you bonus points, and offers to keep it in your gratitude jar. Sad feelings get a soft, quiet reply with no munching jokes. Hopeless words like "nothing matters" or "what's the point" get a gentle reply with the free helplines.
+
 ## Focus with me
 
 Right-click → **Focus with me** → 25 or 50 minutes. A small 🛡️ timer appears under your buddy. While you focus it stays quiet: no chatter, no hunger, and reminders wait until the break. Petting it gets a whispered "shh". When time's up it celebrates and offers a 5-minute break (☕ timer), then asks if you want another round.
