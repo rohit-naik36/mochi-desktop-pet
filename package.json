@@ -6,9 +6,10 @@
   "scripts": {
     "start": "electron .",
     "dist:win": "electron-builder --win nsis portable --publish never",
-    "dist:mac": "electron-builder --mac dmg",
+    "dist:mac": "electron-builder --mac --publish never",
     "dist:linux": "electron-builder --linux AppImage",
-    "dist:store": "electron-builder --win appx --publish never"
+    "dist:store": "electron-builder --win appx --publish never",
+    "dist:mas": "electron-builder --mac mas:universal --publish never"
   },
   "author": "Rohit Naik",
   "license": "SEE LICENSE IN LICENSE",
@@ -46,8 +47,40 @@
       "artifactName": "Mochi-Portable-${version}.exe"
     },
     "mac": {
-      "icon": "build/icon.png",
-      "category": "public.app-category.lifestyle"
+      "icon": "build/icon-mac.png",
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "universal"
+          ]
+        }
+      ],
+      "artifactName": "Mochi-${version}-mac.${ext}",
+      "minimumSystemVersion": "13.0",
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "extendInfo": {
+        "LSUIElement": true
+      }
+    },
+    "mas": {
+      "entitlements": "build/entitlements.mas.plist",
+      "entitlementsInherit": "build/entitlements.mas.inherit.plist",
+      "provisioningProfile": "build/embedded.provisionprofile",
+      "hardenedRuntime": false,
+      "artifactName": "Mochi-AppStore-${version}.${ext}"
+    },
+    "dmg": {
+      "title": "Mochi"
     },
     "linux": {
       "icon": "build/icon.png"

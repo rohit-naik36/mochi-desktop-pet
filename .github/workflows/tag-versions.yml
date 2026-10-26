@@ -2,7 +2,7 @@ name: Tag versions
 
 # Every version in package.json gets a git tag (vX.Y.Z) on the last commit
 # that carried it, including older versions that were never tagged. When the
-# current version gets its tag, the Windows build runs and publishes a Release.
+# current version gets its tag, the Windows and Mac builds run and publish a Release.
 on:
   push:
     branches: [main]
@@ -53,6 +53,15 @@ jobs:
     needs: tag
     if: needs.tag.outputs.new_tag != ''
     uses: ./.github/workflows/build-windows.yml
+    with:
+      tag: ${{ needs.tag.outputs.new_tag }}
+    secrets: inherit
+
+  release-mac:
+    # After Windows, so both don't race to create the same Release.
+    needs: [tag, release]
+    if: needs.tag.outputs.new_tag != ''
+    uses: ./.github/workflows/build-mac.yml
     with:
       tag: ${{ needs.tag.outputs.new_tag }}
     secrets: inherit
