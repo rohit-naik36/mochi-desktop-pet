@@ -1,5 +1,5 @@
 // Mochi: a tiny desktop pet that keeps you company while you work.
-const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeImage, powerMonitor } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeImage, powerMonitor, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const I18N = require('./i18n');
@@ -251,6 +251,12 @@ ipcMain.on('play-done', (_e, x, y) => {
 ipcMain.on('play-reward', (_e, delta) => send('reward', { delta }));
 
 function trayIcon() {
+  // On a Mac, a black-and-white "Template" icon that macOS tints to match a
+  // light or dark menu bar (the colour icon is just a pale dot up there).
+  if (IS_MAC) {
+    const t = nativeImage.createFromPath(path.join(__dirname, 'trayTemplate.png'));
+    if (!t.isEmpty()) { t.setTemplateImage(true); return t; }
+  }
   const p = path.join(__dirname, 'icon.png');
   const img = nativeImage.createFromPath(p);
   // The macOS menu bar is a little taller than the Windows tray.
@@ -505,6 +511,23 @@ app.on('web-contents-created', (_e, contents) => {
   contents.session.setPermissionRequestHandler((_wc, _perm, cb) => cb(false));
 });
 
+// Opened straight from the downloaded disk image, Mochi isn't installed and
+// is gone after a restart. Offer to put it in Applications, like most Mac apps.
+function offerMoveToApplications() {
+  if (!IS_MAC || !app.isPackaged || app.isInApplicationsFolder()) return;
+  const M = (key) => I18N.t(state.lang, 'menu.' + key, { pet: state.name });
+  const choice = dialog.showMessageBoxSync({
+    type: 'question',
+    message: M('moveToApps'),
+    detail: M('moveToAppsDetail'),
+    buttons: [M('moveYes'), M('moveNo')],
+    defaultId: 0,
+    cancelId: 1,
+  });
+  if (choice !== 0) return;
+  try { app.moveToApplicationsFolder(); } catch (e) { console.error('move to Applications failed', e); }
+}
+
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
   app.quit();
@@ -516,6 +539,7 @@ if (!gotLock) {
     // in the bundle does this too; this covers `npm start`).
     if (IS_MAC) app.dock?.hide();
     loadState();
+    offerMoveToApplications();
     createWindow();
     buildTray();
     const keepOnScreen = () => { const { x, y } = win.getBounds(); placeAt(x, y); };
