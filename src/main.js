@@ -88,6 +88,9 @@ function createWindow() {
     skipTaskbar: true,
     hasShadow: false,
     focusable: true,
+    // macOS swallows the first click on a window of an app that isn't active,
+    // so right-click and pats would do nothing. Let that click through.
+    acceptFirstMouse: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -458,7 +461,11 @@ ipcMain.on('drag-end', () => { dragOffset = null; });
 
 ipcMain.on('open-play', (_e, game) => openPlay(game));
 
-ipcMain.on('context-menu', () => buildMenu().popup({ window: win }));
+ipcMain.on('context-menu', () => {
+  // Mochi has no Dock icon on Mac, so bring it forward or the menu may not open.
+  if (IS_MAC) app.focus({ steal: true });
+  buildMenu().popup({ window: win });
+});
 
 // Where the mouse pointer is, relative to the pet, so its eyes can follow it.
 // Only used for that; never stored or sent anywhere.
