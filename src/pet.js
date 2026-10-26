@@ -214,6 +214,7 @@ function fireNudge(key) {
   if (mode === 'sleep') setMode('idle', 0);
   if (nd.anim) setMode(nd.anim, 3200);
   say(T(key + '.lines'), { sticky: true, actions: nudgeButtons(key) });
+  window.pet.insight('shown', key);
   clearTimeout(upsetTimers[key]);
   upsetTimers[key] = setTimeout(() => getUpset(key), UPSET_AFTER_MIN * MIN);
   scheduleNudge(key, nd.every());
@@ -251,6 +252,7 @@ function nudgeDone(key) {
 }
 
 function nudgeSnoozed(key) {
+  window.pet.insight('snoozed', key);
   clearTimeout(upsetTimers[key]);
   const wasUpset = calmDown();
   setMode('idle', 3000);
@@ -348,6 +350,7 @@ function saveMood(score) {
   S.moods = { ...(S.moods || {}), [today()]: score };
   window.pet.save({ moods: S.moods });
   window.pet.track('mood');
+  window.pet.insight('mood', score);
   setMode(score >= 4 ? 'happy' : 'idle', 1500);
   if (score >= 4) float(pick(['☀️', '💛', '✨']));
   const jar = S.gratitude || [];

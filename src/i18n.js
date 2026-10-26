@@ -637,7 +637,7 @@
   // Focus timer, mood check-in, gratitude jar, points and badges.
   const V08 = {
     en: {
-      menu: { board: '🏆 Achievement board', focus: '🛡️ Focus with me', focusMin: '{count} minutes', focusStop: '🛡️ Stop focusing ({count} min left)', mood: '🌤️ How I feel today', gratitude: '🫙 Gratitude jar' },
+      menu: { teams: '🏢 Mochi for Teams', board: '🏆 Achievement board', focus: '🛡️ Focus with me', focusMin: '{count} minutes', focusStop: '🛡️ Stop focusing ({count} min left)', mood: '🌤️ How I feel today', gratitude: '🫙 Gratitude jar' },
       focusStart: ["Focus mode on! {count} minutes. I'll guard you from distractions 🛡️", "Okay, {count} minutes of deep work. I'll be quiet as a cloud. Go! 🛡️", "Shields up{n}! See you in {count} minutes 🛡️"],
       focusShh: ['Shh, we\'re focusing 🤫', 'Pets after the timer! Eyes on the prize 🤫', "*whispers* You've got this. Back to it 🤫"],
       focusDone: ['DING! {count} minutes of focus{n}! 🏆 Break time?', 'You did it! {count} solid minutes. I\'m so proud of you 🏆', 'Focus session complete! Your brain just did a whole workout 🏆'],
