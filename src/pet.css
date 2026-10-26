@@ -201,3 +201,7 @@ body[data-skin="cinder"] .speck { animation-name: ember; animation-duration: 2.6
 @keyframes spinOnce { 50% { transform: translateY(-8px) rotate(180deg); } 100% { transform: rotate(360deg); } }
 #pet.wiggle #body-group { animation: wiggle 1s ease-in-out 2; transform-origin: 60px 70px; }
 @keyframes wiggle { 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+
+/* On a call or in silent mode: fade back so the buddy never distracts. */
+body #pet { transition: opacity .6s; }
+body.hushed #pet { opacity: .35; }

@@ -52,6 +52,8 @@ function render(v) {
     ['Low moments', p.lowFeelings],
     ['Times support contacts were shown', p.supportShown],
     ['Reminders shown / done / snoozed', `${p.reminders.shown} / ${p.reminders.done} / ${p.reminders.snoozed}`],
+    ['Breaks with real time away from the keyboard', p.reminders.away],
+    ['Calls (count, total minutes)', `${p.calls.count}, ${p.calls.minutes} min`],
     ['Features used', list(p.features, FEATURE)],
   ];
   $('preview').tBodies[0].replaceChildren(...rows.map(([k, val]) => {

@@ -6,6 +6,7 @@ const I18N = require('./i18n');
 const Progress = require('./progress');
 const Insights = require('./insights');
 const Company = require('./company');
+const Calls = require('./calls');
 
 const MIN_MS = 60_000;
 const WIN_W = 220;
@@ -56,12 +57,14 @@ const defaults = {
   stayUp: '', // night the user asked Mochi to stay up with them
   teams: null, // Mochi for Teams: { id, name, support, posh, teams, team, insights }
   insights: {}, // anonymous weekly counts, kept only while insights are on
+  silent: { auto: true, until: 0 }, // quiet on calls; until = manual silent mode end (ms)
 };
 
 function loadState() {
   try {
     state = { ...defaults, ...JSON.parse(fs.readFileSync(statePath(), 'utf8')) };
     state.nudges = { ...defaults.nudges, ...state.nudges };
+    state.silent = { ...defaults.silent, ...state.silent };
   } catch {
     state = { ...defaults };
   }
@@ -167,7 +170,7 @@ ipcMain.handle('get-state', () => state);
 // Any window reports an activity here; new badges are announced by the pet
 // (or in the play layer if it's open) and the board refreshes.
 ipcMain.on('track', (_e, event, n = 1) => {
-  if (Insights.NUDGES.includes(event)) noteInsight('done', event);
+  if (Insights.NUDGES.includes(event)) { noteInsight('done', event); checkAway(event); }
   else noteInsight('feature', event);
   const unlocked = Progress.record(state.stats, event, n);
   saveState();
@@ -178,6 +181,59 @@ ipcMain.on('track', (_e, event, n = 1) => {
   if (boardWin && !boardWin.isDestroyed()) boardWin.webContents.send('state', state);
   if (unlocked.length) refreshTrayMenu();
 });
+
+// ---------- breaks, calls and silent mode ----------
+
+// "Done" is only a click. After it, see whether the keyboard and mouse really
+// go quiet for a moment within a few minutes. Only yes or no is kept.
+const AWAY_SEC = { eyes: 20, water: 45, stretch: 60 };
+let lastSneaky = 0;
+function checkAway(key) {
+  const need = AWAY_SEC[key];
+  if (!need) return;
+  const started = Date.now();
+  const timer = setInterval(() => {
+    const idle = powerMonitor.getSystemIdleTime();
+    if (idle >= need) {
+      clearInterval(timer);
+      noteInsight('away', key);
+      saveState();
+    } else if (Date.now() - started > 4 * MIN_MS) {
+      clearInterval(timer);
+      // A playful nudge, at most once every two hours, never on a call.
+      if (!quietNow() && Date.now() - lastSneaky > 120 * MIN_MS) { lastSneaky = Date.now(); send('action', 'sneaky-' + key); }
+    }
+  }, 2000);
+}
+
+// On a call (mic or camera in use), or in manual silent mode, Mochi fades
+// and keeps every reminder and line for later.
+let onCall = false;
+let callStart = 0;
+const quietNow = () => onCall || state.silent.until > Date.now();
+function sendQuiet(extra = {}) {
+  send('quiet', { call: onCall, until: state.silent.until, ...extra });
+}
+async function checkCall() {
+  const now = state.silent.auto ? await Calls.onCall() : false;
+  if (now === onCall) return;
+  onCall = now;
+  let endedMin = 0;
+  if (now) callStart = Date.now();
+  else {
+    endedMin = Math.round((Date.now() - callStart) / MIN_MS);
+    noteInsight('call', endedMin);
+    saveState();
+  }
+  sendQuiet({ endedMin });
+  refreshTrayMenu();
+}
+function setSilent(min) {
+  state.silent.until = min === 0 ? 0 : min < 0 ? Number.MAX_SAFE_INTEGER : Date.now() + min * MIN_MS;
+  saveState();
+  sendQuiet({ manual: min !== 0 ? 'on' : 'off' });
+  refreshTrayMenu();
+}
 
 // ---------- Mochi for Teams ----------
 
@@ -382,6 +438,14 @@ function buildMenu() {
     { label: M('board'), click: openBoard },
     { label: state.teams ? '🏢 ' + state.teams.name : M('teams'), click: openTeams },
     { type: 'separator' },
+    { label: M('silent') + (quietNow() ? ' ✓' : ''), submenu: [
+      { label: M('silentAuto'), type: 'checkbox', checked: state.silent.auto, click: (item) => { state.silent.auto = item.checked; saveState(); if (!item.checked && onCall) { onCall = false; sendQuiet(); } } },
+      { type: 'separator' },
+      ...(state.silent.until > Date.now()
+        ? [{ label: M('silentOff'), click: () => setSilent(0) }]
+        : [{ label: M('silent30'), click: () => setSilent(30) }, { label: M('silent60'), click: () => setSilent(60) }, { label: M('silentOn'), click: () => setSilent(-1) }]),
+    ] },
+    { label: M('bigCall'), click: () => send('action', 'big-call') },
     state.focusUntil > Date.now()
       ? { label: M('focusStop', Math.ceil((state.focusUntil - Date.now()) / MIN_MS)), click: () => send('action', 'focus-stop') }
       : { label: M('focus'), submenu: [25, 50].map((m) => ({ label: M('focusMin', m), click: () => send('action', 'focus-' + m) })) },
@@ -644,6 +708,9 @@ if (!gotLock) {
     // Tray label shows live stats, so refresh it now and then.
     setInterval(refreshTrayMenu, 60_000);
     setInterval(reportActivity, 15_000);
+    setInterval(checkCall, 15_000);
+    // Manual silent mode ends on its own; tell the pet when it does.
+    setInterval(() => { if (state.silent.until && state.silent.until <= Date.now()) setSilent(0); }, 30_000);
     powerMonitor.on('resume', reportActivity);
     powerMonitor.on('unlock-screen', reportActivity);
   });

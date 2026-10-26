@@ -24,7 +24,7 @@
   }
 
   function blank() {
-    return { days: [], late: [], moods: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }, themes: {}, low: 0, support: 0, shown: {}, done: {}, snoozed: {}, features: {} };
+    return { days: [], late: [], moods: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }, themes: {}, low: 0, support: 0, shown: {}, done: {}, snoozed: {}, away: {}, features: {}, calls: 0, callMin: 0 };
   }
 
   function week(store, d) {
@@ -35,6 +35,7 @@
       const keys = Object.keys(store.weeks).sort();
       for (const old of keys.slice(0, Math.max(0, keys.length - KEEP_WEEKS))) delete store.weeks[old];
     }
+    store.weeks[k] = Object.assign(blank(), store.weeks[k]); // weeks saved before new fields existed
     return store.weeks[k];
   }
 
@@ -47,8 +48,10 @@
     return h >= bedtime || h < 5;
   }
 
-  // kind: 'active' | 'mood' | 'worry' | 'shown' | 'done' | 'snoozed' | 'feature'
-  // value: a mood 1-5, a worry topic id, a reminder key or a feature name.
+  // kind: 'mood' | 'worry' | 'shown' | 'done' | 'snoozed' | 'away' | 'feature' | 'call'
+  // value: a mood 1-5, a worry topic id, a reminder key, a feature name, or a
+  // call's length in minutes. 'away' means the keyboard and mouse really went
+  // quiet after "Done" on a break.
   // Anything else is ignored, so free text can never end up stored here.
   function record(store, kind, value, d = new Date(), bedtime = 23) {
     const w = week(store, d);
@@ -62,7 +65,10 @@
       if (THEMES.includes(value)) w.themes[value] = (w.themes[value] || 0) + 1;
       else if (value === 'low') w.low += 1;
       else if (SUPPORT.includes(value)) { w.support += 1; if (value === 'hopeless') w.low += 1; }
-    } else if (kind === 'shown' || kind === 'done' || kind === 'snoozed') {
+    } else if (kind === 'call') {
+      const m = Math.round(Number(value));
+      if (m > 0 && m < 24 * 60) { w.calls += 1; w.callMin += m; }
+    } else if (kind === 'shown' || kind === 'done' || kind === 'snoozed' || kind === 'away') {
       if (NUDGES.includes(value)) w[kind][value] = (w[kind][value] || 0) + 1;
     } else if (kind === 'feature') {
       if (FEATURES.includes(value)) w.features[value] = (w.features[value] || 0) + 1;
@@ -86,7 +92,8 @@
       worryThemes: { ...w.themes },
       lowFeelings: w.low,
       supportShown: w.support,
-      reminders: { shown: sum(w.shown), done: sum(w.done), snoozed: sum(w.snoozed) },
+      reminders: { shown: sum(w.shown), done: sum(w.done), away: sum(w.away), snoozed: sum(w.snoozed) },
+      calls: { count: w.calls, minutes: w.callMin },
       features: { ...w.features },
     };
   }
@@ -112,6 +119,7 @@
       supportShown: total((p) => p.supportShown),
       reminders: add('reminders'),
       features: add('features'),
+      calls: add('calls'),
     };
   }
 

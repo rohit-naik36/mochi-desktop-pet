@@ -19,7 +19,17 @@ assert.strictEqual(p.moodCheckIns[2], 1);
 assert.deepStrictEqual(p.worryThemes, { deadline: 1 });
 assert.strictEqual(p.supportShown, 1);
 assert.ok(!JSON.stringify(s).includes('manager'), 'no typed words stored');
-assert.deepStrictEqual(p.reminders, { shown: 1, done: 1, snoozed: 0 });
+assert.deepStrictEqual(p.reminders, { shown: 1, done: 1, away: 0, snoozed: 0 });
+I.record(s, 'away', 'water', mon);
+I.record(s, 'call', 42, mon);
+I.record(s, 'call', 'lots', mon); // not a number: ignored
+const p2 = I.packet(s, null, '2026-10-26');
+assert.strictEqual(p2.reminders.away, 1);
+assert.deepStrictEqual(p2.calls, { count: 1, minutes: 42 });
+// A week saved by an older version still works.
+const old = { weeks: { '2026-10-26': { days: [0], late: [], moods: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }, themes: {}, low: 0, support: 0, shown: {}, done: {}, snoozed: {}, features: {} } } };
+I.record(old, 'away', 'eyes', mon);
+assert.strictEqual(I.packet(old, null, '2026-10-26').reminders.away, 1);
 
 // Night shift: nothing counts as late.
 const n = {};
@@ -38,3 +48,13 @@ assert.strictEqual(t.people, 10);
 assert.strictEqual(t.worryThemes.deadline, 10);
 assert.strictEqual(t.lateNightPeople, 10);
 console.log('insights: all good');
+
+// Call detection reads only "in use" from the registry.
+const { deviceInUse } = require('../src/calls');
+const reg = (start, stop) => `HKEY_CURRENT_USER\\x\\microphone\\NonPackaged\\C:#Zoom.exe\r\n    LastUsedTimeStart    REG_QWORD    0x${start}\r\n    LastUsedTimeStop    REG_QWORD    0x${stop}\r\n`;
+assert.strictEqual(deviceInUse(reg('1d9a3b', '0')), true);
+assert.strictEqual(deviceInUse(reg('1d9a3b', '1d9a3c')), false);
+assert.strictEqual(deviceInUse(reg('0', '0')), false);
+assert.strictEqual(deviceInUse(reg('1d9a3b', '1d9a3c') + reg('1d9a40', '0')), true);
+assert.strictEqual(deviceInUse(''), false);
+console.log('calls: all good');
