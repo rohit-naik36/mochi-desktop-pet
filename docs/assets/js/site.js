@@ -119,4 +119,46 @@
   });
 
   for (const y of document.querySelectorAll('[data-year]')) y.textContent = new Date().getFullYear();
+
+  // Emergency numbers for the visitor's country, guessed from the time zone
+  // the browser already reports. No location permission, nothing sent anywhere.
+  const HELP = {
+    IN: ['India', '112', 'Tele-MANAS 14416'],
+    US: ['the US', '911', 'Call or text 988'],
+    CA: ['Canada', '911', 'Call or text 988'],
+    GB: ['the UK', '999', 'Samaritans 116 123'],
+    IE: ['Ireland', '112 or 999', 'Samaritans 116 123'],
+    AU: ['Australia', '000', 'Lifeline 13 11 14'],
+    NZ: ['New Zealand', '111', 'Call or text 1737'],
+    SG: ['Singapore', '995', 'SOS 1767'],
+    AE: ['the UAE', '999', null],
+    PH: ['the Philippines', '911', 'NCMH 1553'],
+    EU: ['Europe', '112', null],
+  };
+  const country = (() => {
+    let tz = '';
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch {}
+    if (tz === 'Asia/Kolkata' || tz === 'Asia/Calcutta') return 'IN';
+    if (tz === 'Europe/London') return 'GB';
+    if (tz === 'Europe/Dublin') return 'IE';
+    if (tz.startsWith('Australia/')) return 'AU';
+    if (tz === 'Pacific/Auckland') return 'NZ';
+    if (tz === 'Asia/Singapore') return 'SG';
+    if (tz === 'Asia/Dubai') return 'AE';
+    if (tz === 'Asia/Manila') return 'PH';
+    if (/^America\/(Toronto|Vancouver|Edmonton|Winnipeg|Halifax|St_Johns|Regina|Montreal|Moncton)$/.test(tz)) return 'CA';
+    if (/^(America\/(New_York|Chicago|Denver|Los_Angeles|Phoenix|Anchorage|Detroit|Boise|Indiana\/.+|Kentucky\/.+)|Pacific\/Honolulu)$/.test(tz)) return 'US';
+    if (tz.startsWith('Europe/')) return 'EU';
+    return tz ? 'OTHER' : 'IN';
+  })();
+  const h = HELP[country];
+  const line = h
+    ? `In an emergency in ${h[0]}, call ${h[1]}.` + (h[2] ? ` Need to talk? ${h[2]}.` : '')
+    : 'In an emergency, call your local emergency number. Free helplines: findahelpline.com.';
+  for (const el of document.querySelectorAll('[data-emergency]')) el.textContent = line;
+  const abroad = document.querySelector('[data-abroad]');
+  if (abroad && country !== 'IN') {
+    abroad.querySelector('[data-abroad-text]').textContent = line;
+    abroad.hidden = false;
+  }
 })();

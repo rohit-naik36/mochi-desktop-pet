@@ -11,6 +11,52 @@
     { name: 'Emergency', number: '112' },
   ];
 
+  // Outside India, show the visitor's own numbers. The country is guessed from
+  // the computer's time zone, so nothing is asked for and nothing leaves the PC.
+  // [country, emergency, [[helpline, number], ...]]
+  const HELP = {
+    US: ['the US', '911', [['988 Suicide & Crisis Lifeline (call or text, 24/7)', '988']]],
+    CA: ['Canada', '911', [['9-8-8 Suicide Crisis Helpline (call or text, 24/7)', '988']]],
+    GB: ['the UK', '999', [['Samaritans (free, 24/7)', '116 123'], ['Shout (text, 24/7)', 'Text SHOUT to 85258']]],
+    IE: ['Ireland', '112', [['Samaritans (free, 24/7)', '116 123']]],
+    AU: ['Australia', '000', [['Lifeline (24/7)', '13 11 14']]],
+    NZ: ['New Zealand', '111', [['Need to talk? (call or text, 24/7)', '1737']]],
+    SG: ['Singapore', '995', [['SOS (24/7)', '1767']]],
+    AE: ['the UAE', '999', []],
+    PH: ['the Philippines', '911', [['NCMH Crisis Hotline (24/7)', '1553']]],
+    EU: ['Europe', '112', []],
+  };
+  function country() {
+    let tz = '';
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch { /* fall back to India */ }
+    if (!tz || /^Asia\/(Kolkata|Calcutta)$/.test(tz)) return 'IN';
+    const fixed = { 'Europe/London': 'GB', 'Europe/Dublin': 'IE', 'Pacific/Auckland': 'NZ', 'Asia/Singapore': 'SG', 'Asia/Dubai': 'AE', 'Asia/Manila': 'PH' };
+    if (fixed[tz]) return fixed[tz];
+    if (/^Australia\//.test(tz)) return 'AU';
+    if (/^America\/(Toronto|Vancouver|Edmonton|Winnipeg|Halifax|St_Johns|Regina|Moncton|Whitehorse|Yellowknife|Iqaluit)$/.test(tz)) return 'CA';
+    if (/^(America\/(New_York|Chicago|Denver|Los_Angeles|Phoenix|Anchorage|Detroit|Boise|Indiana|Kentucky|North_Dakota)|Pacific\/Honolulu|US\/)/.test(tz)) return 'US';
+    if (/^Europe\//.test(tz)) return 'EU';
+    return 'OTHER';
+  }
+  const HERE = country();
+  const FINDER = { name: 'Find a free helpline near you', number: 'findahelpline.com' };
+  const HELPLINES = HERE === 'IN' ? HELPLINES_IN
+    : HELP[HERE] ? [...HELP[HERE][2].map(([name, number]) => ({ name, number })), { name: 'Emergency', number: HELP[HERE][1] }, FINDER]
+      : [{ name: 'Emergency', number: 'Your local emergency number' }, FINDER];
+  // Swap India's numbers in the reply text for the local ones.
+  function localNumbers(str) {
+    if (HERE === 'IN') return str;
+    const sos = HELP[HERE] ? HELP[HERE][1] : null;
+    const talk = HELP[HERE] && HELP[HERE][2][0] ? `${HELP[HERE][2][0][0].replace(/ \(.*\)$/, '')} (${HELP[HERE][2][0][1]})` : 'findahelpline.com';
+    return str
+      .replace(/ ?(The Women Helpline 181 is free and 24\/7 too\.|महिला हेल्पलाइन 181 भी मुफ़्त और 24\/7 है।|Women Helpline 181 bhi free aur 24\/7 hai\.)/g, '')
+      .replace(/the Internal Committee \(POSH\)/g, 'HR').replace(/इंटरनल कमेटी \(POSH\)/g, 'HR').replace(/Internal Committee \(POSH\)/g, 'HR')
+      .replace(/Tele-MANAS \(14416\)/g, talk)
+      .replace(/call 112/g, `call ${sos || 'your local emergency number'}`)
+      .replace(/112 पर/g, `${sos || 'स्थानीय इमरजेंसी नंबर'} पर`)
+      .replace(/112 pe/g, `${sos || 'local emergency number'} pe`);
+  }
+
   const TOPICS = [
     {
       id: 'crisis',
@@ -556,18 +602,18 @@
     const lang = otherScript ? prefLang : detected;
     const who = (name || '').trim() || FALLBACK_NAME[lang] || 'friend';
     // {g:masculine|feminine} picks the buddy's grammar; non-binary uses the masculine default.
-    const fill = (str) => str.replace(/\{g:([^|}]*)\|([^}]*)\}/g, (_, m, f) => (gender === 'female' ? f : m)).replace(/\{name\}/g, who);
+    const fill = (str) => localNumbers(str.replace(/\{g:([^|}]*)\|([^}]*)\}/g, (_, m, f) => (gender === 'female' ? f : m)).replace(/\{name\}/g, who));
     const topic = classify(text);
     const L = LOCAL[lang];
     if (topic && topic.serious) {
       const c = L ? L.crisis : EN_CRISIS;
-      return { topic: 'crisis', lang, serious: true, opener: '', reflect: fill(c.reflect), comfort: fill(c.comfort), helplines: HELPLINES_IN, step: fill(c.step), ask: fill(c.ask), followups: ['breathe', 'thanks'] };
+      return { topic: 'crisis', lang, serious: true, opener: '', reflect: fill(c.reflect), comfort: fill(c.comfort), helplines: HELPLINES, step: fill(c.step), ask: fill(c.ask), followups: ['breathe', 'thanks'] };
     }
     const feel = topic && topic.priority ? null : feeling(text);
     if (feel) {
       const F = (FEEL[lang] || FEEL.en)[feel];
       if (feel === 'hopeless') {
-        return { topic: 'hopeless', lang, gentle: true, opener: '', reflect: fill(F.reflect), comfort: fill(F.comfort), helplines: HELPLINES_IN, step: fill(F.step), ask: fill(F.ask), followups: ['breathe', 'thanks'] };
+        return { topic: 'hopeless', lang, gentle: true, opener: '', reflect: fill(F.reflect), comfort: fill(F.comfort), helplines: HELPLINES, step: fill(F.step), ask: fill(F.ask), followups: ['breathe', 'thanks'] };
       }
       if (feel === 'good') {
         return { topic: 'good', lang, celebrate: true, opener: pick(F.openers), reflect: fill(pick(F.reflects)).replace('{q}', shorten(text)), comfort: fill(pick(F.comfort)), step: fill(pick(F.steps)), ask: fill(pick(F.asks)), followups: ['jar', 'another', 'thanks'] };
@@ -597,6 +643,6 @@
     };
   }
 
-  root.WorryEater = { respond, classify, feeling, detectLang, HELPLINES_IN };
+  root.WorryEater = { respond, classify, feeling, detectLang, HELPLINES_IN, HELPLINES, country: HERE };
   if (typeof module !== 'undefined') module.exports = root.WorryEater;
 })(typeof window !== 'undefined' ? window : globalThis);

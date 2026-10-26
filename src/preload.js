@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('pet', {
   moveTo: (x, y) => ipcRenderer.send('move-to', x, y),
   moveBy: (dx, dy) => ipcRenderer.send('move-by', dx, dy),
   getBounds: () => ipcRenderer.invoke('get-bounds'),
+  getCursor: () => ipcRenderer.invoke('get-cursor'),
   dragDone: () => ipcRenderer.send('drag-done'),
   contextMenu: () => ipcRenderer.send('context-menu'),
   focus: () => ipcRenderer.send('focus-pet'),

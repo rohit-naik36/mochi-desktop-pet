@@ -26,6 +26,12 @@ body[data-skin="mist"] {
   --eye-color: #20262e; --mouth: rgba(30,40,50,.6);
   --speck: transparent;
 }
+/* Hope: soft pink mochi with rosy eyes and little glowing sparkles */
+body[data-skin="hope"] {
+  --smoke: #f4a9c4; --core-edge: #ffd3e2;
+  --eye-color: #6b2346; --mouth: rgba(107,35,70,.65);
+  --speck: #fff0f6; --speck-glow: drop-shadow(0 0 2px #ff7fb0);
+}
 /* Dusk: deep indigo smoke with little twinkling stars */
 body[data-skin="dusk"] {
   --smoke: #120f2e; --core-edge: #231d55;
@@ -184,3 +190,14 @@ body[data-skin="cinder"] .speck { animation-name: ember; animation-duration: 2.6
   box-shadow: 0 1px 4px rgba(0,0,0,.25);
 }
 #focus-pill.hidden { display: none; }
+
+/* Eyes follow the mouse pointer (pet.js sets --look). */
+#eyes, #eyes-happy { transform: var(--look, none); transition: transform .25s ease-out; }
+
+/* Little idle moments */
+#pet.peek #eyes { animation: peek 2.4s ease-in-out 1; }
+@keyframes peek { 0%, 100% { transform: none; } 25%, 40% { transform: translateX(-4px); } 60%, 75% { transform: translateX(4px); } }
+#pet.spin { animation: spinOnce 1.2s ease-in-out 1; transform-origin: 50% 55%; }
+@keyframes spinOnce { 50% { transform: translateY(-8px) rotate(180deg); } 100% { transform: rotate(360deg); } }
+#pet.wiggle #body-group { animation: wiggle 1s ease-in-out 2; transform-origin: 60px 70px; }
+@keyframes wiggle { 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }

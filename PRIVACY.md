@@ -27,6 +27,7 @@ Worries you type into **Feed me a worry** are never saved. Mochi reads them on y
 - No internet connection: no accounts, servers, analytics, tracking, advertising or cloud sync.
 - No access to your files, camera, microphone, location, contacts or other apps.
 - To know when you're away, Mochi asks Windows how many seconds it has been since the mouse or keyboard was last used. It never sees what you type or where you click.
+- So its eyes can follow your mouse pointer, Mochi checks where the pointer is on screen a few times a second. That position is used only for the eyes, never saved and never sent anywhere.
 - No data shared with anyone, including the developer.
 
 ## Your control
@@ -35,7 +36,7 @@ Uninstalling Mochi removes the app. To delete your saved data too, delete Mochi'
 
 ## Safety
 
-Mochi is a friendly companion, not a medical or mental health service. If you are thinking about suicide or self-harm, or are in danger, please contact Tele-MANAS (14416), KIRAN (1800-599-0019), Vandrevala Foundation (+91 9999 666 555) or emergency services (112) in India.
+Mochi is a friendly companion, not a medical or mental health service. If you are thinking about suicide or self-harm, or are in danger, please contact Tele-MANAS (14416), KIRAN (1800-599-0019), Vandrevala Foundation (+91 9999 666 555) or emergency services (112) in India. Outside India, call your local emergency number or find a free helpline at https://findahelpline.com.
 
 ## Children
 

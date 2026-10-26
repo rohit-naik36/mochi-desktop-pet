@@ -117,7 +117,7 @@ def page(path, title, desc, body, current=None, og_image='assets/img/og-image.pn
       <div><h2>Company</h2><ul><li><a href="about.html">About</a></li><li><a href="teams.html">Mochi for teams</a></li><li><a href="press.html">Press kit</a></li><li><a href="contact.html">Contact</a></li></ul></div>
       <div><h2>Help</h2><ul><li><a href="faq.html">FAQ</a></li><li><a href="safety.html">Safety and helplines</a></li><li><a href="privacy.html">Privacy</a></li><li><a href="terms.html">Terms</a></li></ul></div>
     </div>
-    <div class="foot-base"><span>© <span data-year>2026</span> {COMPANY}. Mochi is made by {STUDIO}. All rights reserved.</span><span>Mochi is a companion, not a medical service. In an emergency in India, call 112.</span></div>
+    <div class="foot-base"><span>© <span data-year>2026</span> {COMPANY}. Mochi is made by {STUDIO}. All rights reserved.</span><span>Mochi is a companion, not a medical service. <span data-emergency>In an emergency in India, call 112. Need to talk? Tele-MANAS 14416.</span></span></div>
   </div>
 </footer>
 <script src="assets/js/site.js" defer></script>
@@ -380,6 +380,7 @@ pages['safety.html'] = page('safety.html', 'Safety and helplines', 'How Mochi re
         <div class="panel line-card"><a class="num" href="tel:181">181</a><span class="who">Women Helpline</span><span class="muted">For women facing violence or harassment</span></div>
         <div class="panel line-card"><a class="num" href="tel:112">112</a><span class="who">Emergency</span><span class="muted">Police, fire and ambulance</span></div>
       </div>
+      <div class="panel stack" data-abroad hidden><h3>Outside India?</h3><p class="muted" data-abroad-text></p><p class="muted">Find a free helpline in your country at <a href="https://findahelpline.com" rel="noopener">findahelpline.com</a>.</p></div>
     </div></section>
     <section><div class="wrap grid-2">
       <div class="panel stack"><h3>How Mochi responds</h3><ul class="ticks"><li>Words about suicide or self-harm get a caring reply and the helplines above</li><li>Hopeless feelings like "what's the point" get a gentle reply and the helplines</li><li>Sadness gets a soft, quiet reply with no jokes</li><li>Harassment or abuse gets "I believe you", plus 112, 181 and your workplace POSH committee</li></ul></div>
@@ -495,7 +496,7 @@ pages['privacy.html'] = page('privacy.html', 'Privacy policy', 'How Mochi and mo
       <p>Mochi makes no network requests. It has no account, analytics, advertising or cloud storage, and nothing is sent to us or anyone else.</p>
       <p>To work, Mochi saves a small file on your computer at <code>%APPDATA%\\Mochi\\pet-state.json</code>. It holds:</p>
       <ul><li>the name you give yourself and your buddy, and your choice of buddy, language and gender</li><li>your settings, such as reminders and sleep schedule</li><li>points, badges, streaks and activity counts</li><li>your daily mood faces and the good things you add to the gratitude jar</li><li>the times you usually go to sleep, so your buddy can follow a night-shift schedule</li></ul>
-      <p>What you type into Feed me a worry is never saved. Mochi also reads how long your computer has been idle (a number of seconds) so it can pause reminders and fall asleep while you are away. It does not read what you type in other apps or what is on your screen.</p>
+      <p>What you type into Feed me a worry is never saved. Mochi also reads how long your computer has been idle (a number of seconds) so it can pause reminders and fall asleep while you are away, and where the mouse pointer is so its eyes can follow it (never saved or sent). It does not read what you type in other apps or what is on your screen.</p>
       <p>To delete everything, uninstall Mochi or delete that file.</p>
       <h2>This website</h2>
       <p>mochicuddle.com uses no cookies, analytics or trackers. Fonts are loaded from Google Fonts, which receives your IP address to deliver them. The site is hosted on a static host, which may keep standard server logs for security.</p>

@@ -61,10 +61,11 @@ In Hindi and Hinglish this changes how Mochi talks about itself (raha/rahi, gaya
 
 ## If someone is struggling
 
-If a worry mentions suicide or self-harm, Mochi responds with care and shows free Indian helplines:
-Tele-MANAS **14416**, KIRAN **1800-599-0019**, Vandrevala Foundation **+91 9999 666 555**, and emergency **112**.
+If a worry mentions suicide or self-harm, Mochi responds with care and shows free helplines. In India that's Tele-MANAS **14416**, KIRAN **1800-599-0019**, Vandrevala Foundation **+91 9999 666 555**, and emergency **112**.
 
 If a worry is about harassment or abuse, Mochi doesn't joke or "eat" it. It says it believes you and points to **112**, the Women Helpline **181**, and the workplace Internal Committee (POSH).
+
+Outside India, Mochi shows that country's numbers instead (for example 911 and 988 in the US, 999 and Samaritans in the UK, 000 and Lifeline in Australia), plus findahelpline.com. The country is guessed from the computer's time zone, so Mochi never asks for your location and nothing is sent anywhere.
 
 ## Languages
 
@@ -82,6 +83,12 @@ Strikes reset after a day.
 Light romance is welcome. Type "I love you", "will you marry me", "you're cute", "miss you" or "hug me" (or "tum bahut cute ho", "मैं तुमसे प्यार करता हूँ") in **Feed a worry** and Mochi blushes, floats hearts and answers sweetly.
 Nothing explicit, though. "You're hot" gets a playful "let's keep it sweet". Sexual talk aimed at Mochi gets a kind but firm no and counts as a strike, just like swearing. Mentions that aren't aimed at Mochi get a gentle redirect without a strike.
 
+## Always up to something
+
+Between reminders your buddy isn't just floating around. Every minute or two it does something small: hums a tune, peeks around, yawns, spins, blows bubbles, sneaks a snack or a sip of water, wiggles or stretches, plus little moves of its own (Cinder flexes, Dusk looks through a telescope, Hope sends hearts). Its eyes follow your mouse pointer, and it waves hello when you come back from a short break.
+
+It also talks on its own every 7 to 12 minutes. Change that under **How chatty**: Quiet (every 20 to 35 minutes) or Chatty (every 3 to 6).
+
 ## Pick your buddy
 
 Right-click the pet and open **Choose your buddy**:
@@ -89,6 +96,7 @@ Right-click the pet and open **Choose your buddy**:
 - **Cinder**: charcoal smoke, ember eyes, drifting sparks. A fiery hype coach: bouncy, loud, spins when happy, and flares up red when you ignore a reminder.
 - **Mist**: silver fog, dark eyes (easiest to see on dark wallpapers). Calm and wise: drifts slowly, glows when happy, and fades with a sigh instead of fuming.
 - **Dusk**: indigo smoke with twinkling stars. A dreamy night owl with space facts: twirls when happy, its stars dim when it sulks, groggy in the morning and lively at night.
+- **Hope**: soft pink mochi with rosy cheeks. Warm and hopeful: believes in you, finds the bright side, has a gentle heartbeat glow, bounces when happy, and droops a little (instead of fuming) when you ignore a reminder.
 
 Each buddy has its own lines for reminders, chatter, greetings, being moved and patted, in English, Hindi and Hinglish. Replies about crisis, harm, sadness and good news are the same for every buddy.
 
@@ -99,7 +107,7 @@ Each buddy has its own lines for reminders, chatter, greetings, being moved and 
 | Click | Gets petted, hearts, sometimes says something kind |
 | Double-click | Eats a snack |
 | Drag | Carry it anywhere on screen; it stays where you drop it |
-| Right-click, or the tray icon | Menu: choose your buddy, feed, play, nap, wander on/off, reminders, start with Windows, quit |
+| Right-click, or the tray icon | Menu: choose your buddy, feed, play, nap, wander on/off, how chatty (quiet, normal or chatty), reminders, start with Windows, quit |
 
 Reminders (each can be turned off from the menu):
 - Drink water every 45 min

@@ -167,6 +167,48 @@
         thanksReply: ['Always{n}. Even when you can\'t see the stars, they\'re there 🌌', 'Anytime. I\'m just a twinkle away ✨'],
         chaseCheer: ['Caught a shooting star! 🌠', 'Again! It went thataway! ✨'],
       },
+      // Hope: warm and hopeful. Believes in you, finds the bright side, cheers softly.
+      hope: {
+        greet: ['{greet}{n} 💗 Today has good things hiding in it. Let\'s find them!', '{greet}{n}! I had a feeling today would be a nice one, and here you are 💗', '*bounces* {greet}{n}! I believe in you already 💗'],
+        switched: "Hi{n}! I'm {pet} 💗 I'm here to remind you that you're doing better than you think.",
+        chatter: ['Small steps still move you forward{n} 💗', 'Whatever today brings, I\'m on your side 💗', 'You\'ve handled every hard day so far. That\'s a perfect record 🌷', 'Something good is on its way. I can feel it ✨', 'Remember why you started? I do. You\'ve got this 💗', 'Even a slow day is still a day you showed up 🌸'],
+        petted: ['*glows pink* That made my whole day 💗', 'Aww! You\'re the best kind of human 🥰', 'Hehe, warm fuzzy feeling unlocked 💗'],
+        fed: ['A snack from you? My heart is full 💗', '*happy nibbles* Thank you{n}! 🌸', 'Yum! Shared snacks taste better 💗'],
+        hungry: 'Hey{n}... a little snack would make me so happy 🍙💗',
+        nap: ['Quick nap to recharge my sparkle 💤💗', '*curls up* Wake me if you need a cheer 💤'],
+        woke: ['*stretches* I dreamt you had a great day. Let\'s make it true 💗', 'I\'m back! Did anything nice happen? 🌸'],
+        snoozedGrumpy: 'Okay, ten minutes. I\'ll be here, hoping you remember 🥺💗',
+        water: {
+          lines: ['Water time{n}! A happy body makes a happier you 💧💗', 'One glass of water, one small win 💧🌸', 'Sip with me? Future you says thank you 💧'],
+          upset: ['{you}, I\'m still hoping you\'ll drink some water 🥺💧', 'I\'m not upset... just a tiny bit worried about you 💧💗', 'Please? One sip. For me and for you 🥺'],
+          done: ['Yay! I knew you would 💗💧', 'That\'s one win already{n}! 🌸', 'Look at you taking care of yourself 💗'],
+        },
+        stretch: {
+          lines: ['Stretch with me? Arms up like you just won something 🙆💗', 'Tiny breaks, big days. Let\'s stretch 🙆🌸'],
+          upset: ['Your shoulders have been so brave all day, {you}. Let them stretch 🥺', 'I\'m still waiting with my arms up 🙆💗'],
+          done: ['Beautiful! Doesn\'t that feel better? 💗', 'Stretched and shining 🌸'],
+        },
+        eyes: {
+          lines: ['Look at something far away for 20 seconds. Maybe something pretty 🌷👀', 'Rest your eyes{n}. The screen will still be here 💗'],
+          upset: ['Your eyes deserve a little break, {you} 🥺👀', 'Just 20 seconds. I\'ll count with you 💗'],
+          done: ['Fresh eyes, fresh start 🌸', 'Thank you for being kind to your eyes 💗'],
+        },
+        drop: {
+          any: ['Ooh, I like it here! 🌸', 'New spot, new hope 💗', 'This feels like a lucky place ✨'],
+          far: ['Wheee! That was an adventure 💗', 'A whole journey! I\'m so happy 🌸'],
+          dizzy: ['Hehe, the world is spinning, but in a fun way 😵‍💫💗', 'Whoa! Okay, I\'m okay! 💗'],
+        },
+        goodnight: ['Good night{n} 💗 Tomorrow is a fresh page.', 'Sleep well. I\'m proud of you for today 🌙💗'],
+        welcomeBack: ['You\'re back! I was hoping you would be 💗', 'Welcome back{n}! The day just got brighter 🌸'],
+        nightShiftChatter: ['Late night? I\'m right here with you 💗', 'The world is quiet, but you\'re not alone 🌙💗'],
+        focusStart: ['{count} minutes of focus. I believe in you 💗', 'Go shine for {count} minutes! I\'ll keep quiet 🌸'],
+        focusDone: ['{count} minutes done! I knew you could 💗🏆', 'You did all {count} minutes! So proud of you 🌸🏆'],
+        achievement: ['{badge}! See? I told you you\'re amazing 💗🏆', 'You earned {badge}! Keep going, it suits you 🌸'],
+        playInvite: ['Want to play for a minute? A little fun is good for the heart 💗', 'Bubble break? I\'ll pop the first one 🫧💗'],
+        thanksReply: ['Always{n} 💗 I\'m on your side, every day.', 'Anytime. Better days are coming, and I\'ll be here for them 🌸'],
+        chaseCheer: ['You caught it! 💗', 'Again! You\'re so good at this 🌸'],
+        breatheAfter: ['There you go. A little lighter now? 💗', 'Breathing with you is my favourite thing 🌸'],
+      },
     },
 
     hi: {
@@ -238,6 +280,25 @@
         goodnight: ['शुभ रात्रि{n}। तारे पहरा देंगे 🌌💤'],
         welcomeBack: ['तुम कक्षा से लौट आए! ✨'],
         nightShiftChatter: ['ये मेरा पसंदीदा समय है! रात हमारी है 🌌', 'रात के उल्लू, एक हो जाओ! 🦉✨'],
+      },
+      hope: {
+        greet: ['{greet}{n} 💗 आज के दिन में अच्छी चीज़ें छुपी हैं। चलो ढूँढें!', '*उछलकर* {greet}{n}! मुझे तुम पर पहले से भरोसा है 💗'],
+        switched: 'हाय{n}! मैं {pet} हूँ 💗 तुम्हें याद दिलाने आई हूँ कि तुम सोचते हो उससे बेहतर कर रहे हो।'.replace('आई', '{g:आया|आई}'),
+        chatter: ['छोटे क़दम भी आगे ही ले जाते हैं{n} 💗', 'आज जो भी हो, मैं तुम्हारे साथ हूँ 💗', 'तुम अब तक हर मुश्किल दिन से निकले हो। पूरा रिकॉर्ड 🌷', 'कुछ अच्छा आने वाला है। मुझे महसूस हो रहा है ✨'],
+        petted: ['*गुलाबी चमक* मेरा पूरा दिन बन गया 💗', 'अरे! तुम सबसे अच्छे हो 🥰'],
+        fed: ['तुमसे स्नैक? दिल भर गया 💗', '*ख़ुशी से कुतरते हुए* शुक्रिया{n}! 🌸'],
+        snoozedGrumpy: 'ठीक है, दस मिनट। मैं यहीं हूँ, उम्मीद के साथ 🥺💗',
+        water: {
+          lines: ['पानी का समय{n}! ख़ुश शरीर, ख़ुश तुम 💧💗', 'एक गिलास पानी, एक छोटी जीत 💧🌸'],
+          upset: ['{you}, मैं अब भी उम्मीद कर रही हूँ कि तुम पानी पियोगे 🥺💧'.replace('कर रही', '{g:कर रहा|कर रही}'), 'नाराज़ नहीं हूँ... बस थोड़ी फ़िक्र है 💧💗'],
+          done: ['याय! मुझे पता था 💗💧', 'एक जीत हो गई{n}! 🌸'],
+        },
+        stretch: { lines: ['मेरे साथ स्ट्रेच करोगे? हाथ ऊपर, जैसे कुछ जीत लिया हो 🙆💗'], upset: ['तुम्हारे कंधों ने पूरा दिन हिम्मत दिखाई है, {you}। उन्हें खिंचने दो 🥺'], done: ['बहुत सुंदर! बेहतर लगा ना? 💗'] },
+        drop: { any: ['ओह, ये जगह अच्छी है! 🌸', 'नई जगह, नई उम्मीद 💗'] },
+        goodnight: ['शुभ रात्रि{n} 💗 कल एक नया पन्ना है।', 'अच्छे से सोना। आज के लिए मुझे तुम पर गर्व है 🌙💗'],
+        welcomeBack: ['तुम वापस आ गए! मुझे यही उम्मीद थी 💗'],
+        nightShiftChatter: ['देर रात? मैं यहीं तुम्हारे साथ हूँ 💗', 'दुनिया शांत है, पर तुम अकेले नहीं हो 🌙💗'],
+        thanksReply: ['हमेशा{n} 💗 मैं हर दिन तुम्हारे साथ हूँ।'],
       },
     },
 
@@ -311,8 +372,58 @@
         welcomeBack: ['Tum orbit se laut aaye! ✨'],
         nightShiftChatter: ['Ye mera favourite time hai! Raat humari hai 🌌', 'Night owls, ek ho jao! 🦉✨'],
       },
+      hope: {
+        greet: ['{greet}{n} 💗 Aaj ke din mein acchi cheezein chhupi hain. Chalo dhoondhein!', '*uchhal ke* {greet}{n}! Mujhe tum pe pehle se bharosa hai 💗'],
+        switched: 'Hi{n}! Main {pet} hoon 💗 Tumhe yaad dilane {g:aaya|aayi} hoon ki tum jitna sochte ho usse better kar rahe ho.',
+        chatter: ['Chhote steps bhi aage hi le jaate hain{n} 💗', 'Aaj jo bhi ho, main tumhare saath hoon 💗', 'Tum ab tak har mushkil din se nikle ho. 100% record 🌷', 'Kuch accha aane wala hai. Mujhe feel ho raha hai ✨'],
+        petted: ['*pink glow* Mera poora din ban gaya 💗', 'Aww! Tum sabse acche ho 🥰'],
+        fed: ['Tumse snack? Dil bhar gaya 💗', '*khushi se nibble* Thank you{n}! 🌸'],
+        snoozedGrumpy: 'Theek hai, dus minute. Main yahin hoon, umeed ke saath 🥺💗',
+        water: {
+          lines: ['Paani ka time{n}! Khush body, khush tum 💧💗', 'Ek glass paani, ek chhoti jeet 💧🌸'],
+          upset: ['{you}, main abhi bhi umeed kar {g:raha|rahi} hoon ki tum paani piyoge 🥺💧', 'Gussa nahi hoon... bas thodi fikar hai 💧💗'],
+          done: ['Yay! Mujhe pata tha 💗💧', 'Ek jeet ho gayi{n}! 🌸'],
+        },
+        stretch: { lines: ['Mere saath stretch karoge? Haath upar, jaise kuch jeet liya ho 🙆💗'], upset: ['Tumhare kandhon ne poore din himmat dikhayi hai, {you}. Unhe stretch hone do 🥺'], done: ['Bahut sundar! Better laga na? 💗'] },
+        drop: { any: ['Ooh, ye jagah acchi hai! 🌸', 'Nayi jagah, nayi umeed 💗'] },
+        goodnight: ['Good night{n} 💗 Kal ek naya page hai.', 'Acche se sona. Aaj ke liye mujhe tum pe proud hai 🌙💗'],
+        welcomeBack: ['Tum wapas aa gaye! Mujhe yahi umeed thi 💗'],
+        nightShiftChatter: ['Late night? Main yahin tumhare saath hoon 💗', 'Duniya shaant hai, par tum akele nahi ho 🌙💗'],
+        thanksReply: ['Hamesha{n} 💗 Main har din tumhare saath hoon.'],
+      },
     },
   };
+
+  // More small talk per buddy, so a chattier buddy doesn't repeat itself.
+  const MORE_CHATTER = {
+    en: {
+      smoke: ['*sits a little closer* ...is this okay?', 'I like the sound of you typing. It\'s cosy.', 'Um... you\'re my favourite human. Don\'t tell the others 👉👈', 'I practised saying something nice to you... you\'re doing great. Okay, that\'s it 🥺', 'If you need a break, I\'ll keep your seat warm 💛', '*soft hum* ...sorry, happy noise slipped out.'],
+      cinder: ['Quick! Name ONE thing you crushed today! 🔥', 'Shoulders down, chin up, CHAMPION MODE 💪', 'Every email you send is a rep. Keep lifting! 🏋️', 'I just did ten tiny push-ups for you. You\'re welcome 🔥', 'Hydrate, dominate, repeat! 💧🔥', 'You\'re on a streak today. Don\'t let it cool down! 🔥'],
+      mist: ['Notice your feet on the floor. You are here. That is enough 🌫️', 'The busiest rivers still pause in pools.', 'Soft eyes, soft shoulders, soft breath 🍃', 'Nothing needs to be rushed in this minute.', 'A tidy desk, a quiet mind. Maybe one small thing to tidy?', 'Listen... even the quiet has a sound 🌫️'],
+      dusk: ['Space fact: there are more stars than grains of sand on Earth ✨', 'Neutron stars spin hundreds of times a second. Sounds like your to-do list 🌀', 'If I were a constellation, I\'d be called "The Snack" 🍙✨', 'Space fact: footprints on the Moon will last millions of years 🌙', 'You and I are made of old starlight. Fancy, right? 🌟', 'The Sun is a star too. Daytime is just a very close star ☀️✨'],
+      hope: ['Today might surprise you in a good way 🌷', 'Proud of you for showing up, even when it\'s hard 💗', 'One kind thing for yourself today? You deserve it 🌸', 'Bad days don\'t last. You do 💗', 'I\'m keeping a little list of things you did well today. It\'s getting long 📝💗', 'You\'re closer than you think ✨'],
+    },
+    hi: {
+      smoke: ['*थोड़ा पास आकर* ...ठीक है ना?', 'तुम मेरे पसंदीदा इंसान हो। किसी को बताना मत 👉👈', 'ब्रेक चाहिए तो मैं तुम्हारी जगह सँभाल लूँगा 💛'.replace('लूँगा', '{g:लूँगा|लूँगी}')],
+      cinder: ['जल्दी! आज की एक जीत बताओ! 🔥', 'कंधे नीचे, ठोड़ी ऊपर, चैंपियन मोड 💪', 'पानी पियो, जीतो, दोहराओ! 💧🔥'],
+      mist: ['अपने पैरों को ज़मीन पर महसूस करो। तुम यहाँ हो। इतना काफ़ी है 🌫️', 'इस मिनट में कुछ भी जल्दी करना ज़रूरी नहीं।', 'नरम आँखें, नरम कंधे, नरम साँस 🍃'],
+      dusk: ['अंतरिक्ष तथ्य: धरती की रेत के दानों से ज़्यादा तारे हैं ✨', 'चाँद पर पैरों के निशान लाखों साल रहेंगे 🌙', 'हम सब पुरानी तारों की रोशनी से बने हैं 🌟'],
+      hope: ['आज शायद अच्छे से चौंका दे 🌷', 'बुरे दिन टिकते नहीं। तुम टिकते हो 💗', 'तुम सोचते हो उससे ज़्यादा क़रीब हो ✨'],
+    },
+    hinglish: {
+      smoke: ['*thoda paas aa ke* ...theek hai na?', 'Tum mere favourite insaan ho. Kisi ko batana mat 👉👈', 'Break chahiye toh main tumhari seat garam {g:rakhunga|rakhungi} 💛'],
+      cinder: ['Jaldi! Aaj ki ek jeet batao! 🔥', 'Kandhe neeche, chin upar, CHAMPION MODE 💪', 'Paani piyo, jeeto, repeat! 💧🔥'],
+      mist: ['Apne pairon ko zameen pe feel karo. Tum yahan ho. Itna kaafi hai 🌫️', 'Is minute mein kuch bhi jaldi karna zaroori nahi.', 'Naram aankhein, naram kandhe, naram saans 🍃'],
+      dusk: ['Space fact: Earth ki ret ke daanon se zyada taare hain ✨', 'Chaand pe footprints laakhon saal rahenge 🌙', 'Hum sab purani starlight se bane hain 🌟'],
+      hope: ['Aaj shayad accha surprise de 🌷', 'Bure din tikte nahi. Tum tikte ho 💗', 'Tum jitna sochte ho usse zyada kareeb ho ✨'],
+    },
+  };
+  for (const [lang, buddies] of Object.entries(MORE_CHATTER)) {
+    for (const [skin, lines] of Object.entries(buddies)) {
+      const p = PERSONA[lang][skin];
+      if (p) p.chatter = [...(p.chatter || []), ...lines];
+    }
+  }
 
   if (root.I18N) root.I18N.persona = PERSONA;
 })(typeof window !== 'undefined' ? window : globalThis);

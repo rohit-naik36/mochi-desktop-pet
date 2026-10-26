@@ -14,7 +14,7 @@
     /सेक्स|नंगा|नंगी|चुदाई|संभोग|कपड़े उतार|पोर्न|स्तन/,
   ];
   // Requests or remarks aimed at the buddy itself.
-  const AT_PET = /\b(you|u|ur|your|yours|you're|youre|with me|me your|tu|tum|tujhe|tumhe|tere|tera|teri|tumhare|tumhara|tumhari|tumse|tujhse|mere saath|mochi|cinder|mist|dusk)\b|तुम|तुझे|तुम्हें|तेरे|तेरा|तेरी|तुम्हारे|मेरे साथ/;
+  const AT_PET = /\b(you|u|ur|your|yours|you're|youre|with me|me your|tu|tum|tujhe|tumhe|tere|tera|teri|tumhare|tumhara|tumhari|tumse|tujhse|mere saath|mochi|cinder|mist|dusk|hope)\b|तुम|तुझे|तुम्हें|तेरे|तेरा|तेरी|तुम्हारे|मेरे साथ/;
   const REQUEST = /\b(send|show|let'?s|lets|wanna|want to|take off|strip|sleep with|have sex|make love|do it|karo|karein|karte hain|bhejo|dikhao)\b|भेजो|दिखाओ|करें|करो/;
 
   const FLIRTY = /\b(you'?re|you are|ur|u r|u are|so)\s+(so\s+)?(hot|sexy|seductive)\b|\b(sexy|hottie)\b|\btum\s+(bahut\s+|bohot\s+)?(hot|sexy)\b|तुम\s+(बहुत\s+)?(हॉट|सेक्सी)/;

@@ -11,7 +11,7 @@
   // Rude but not swearing; only counted when aimed at Mochi.
   const INSULTS = ['stupid', 'idiot', 'dumb', 'useless', 'shut up', 'annoying', 'hate you', 'ugly', 'loser', 'pagal', 'bewakoof', 'bevkoof', 'ullu', 'bakwas', 'bekaar', 'nikamma', 'chup', 'पागल', 'बेवकूफ़', 'बेवकूफ', 'उल्लू', 'बकवास', 'बेकार', 'निकम्मा', 'चुप'];
   // Words that point at the listener (Mochi).
-  const AT_YOU = ['you', 'u', 'ur', 'your', "you're", 'youre', 'yourself', 'mochi', 'cinder', 'mist', 'dusk', 'tu', 'tum', 'tujhe', 'tumhe', 'tera', 'teri', 'tere', 'tumhara', 'tumhari', 'tujhse', 'तू', 'तुम', 'तुझे', 'तुम्हें', 'तेरा', 'तेरी', 'तेरे', 'तुम्हारा', 'तुम्हारी'];
+  const AT_YOU = ['you', 'u', 'ur', 'your', "you're", 'youre', 'yourself', 'mochi', 'cinder', 'mist', 'dusk', 'hope', 'tu', 'tum', 'tujhe', 'tumhe', 'tera', 'teri', 'tere', 'tumhara', 'tumhari', 'tujhse', 'तू', 'तुम', 'तुझे', 'तुम्हें', 'तेरा', 'तेरी', 'तेरे', 'तुम्हारा', 'तुम्हारी'];
   // Words that point at someone or something else, which means it's venting.
   const OTHERS = ['he', 'she', 'they', 'him', 'her', 'them', 'boss', 'manager', 'client', 'team', 'colleague', 'coworker', 'work', 'job', 'deadline', 'traffic', 'life', 'this', 'that', 'it', 'wo', 'woh', 'uska', 'uski', 'usne', 'unhone', 'वो', 'उसका', 'उसकी', 'उसने', 'उन्होंने'];
 
