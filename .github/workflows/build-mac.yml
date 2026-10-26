@@ -56,6 +56,8 @@ jobs:
         run: |
           if [ -z "$CSC_LINK" ]; then
             echo "No signing secrets set, building an unsigned DMG for testing"
+            # An empty CSC_LINK makes electron-builder treat the repo folder as a certificate.
+            unset CSC_LINK CSC_KEY_PASSWORD
             export CSC_IDENTITY_AUTO_DISCOVERY=false
             npx electron-builder --mac --publish never
           else
