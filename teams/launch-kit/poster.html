@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mochi poster</title>
+<!-- A4 poster for pantries and lifts. Replace the brackets, open in a
+     browser and print (or save as PDF). Fonts fall back to system fonts
+     when offline. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Mukta:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --navy: #14213d; --sky: #e2edfa; --ember: #ffb36b; --muted: #4a5568; }
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #fff; color: var(--navy); font-family: Mukta, "Segoe UI", system-ui, sans-serif; }
+  .page { width: 210mm; height: 297mm; margin: 0 auto; padding: 18mm 16mm; display: flex; flex-direction: column; gap: 9mm;
+          background: linear-gradient(180deg, var(--sky) 0 46%, #fff 46%); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .top { display: flex; align-items: center; gap: 8mm; }
+  .top img { width: 52mm; height: 52mm; }
+  .eyebrow { font-weight: 600; letter-spacing: .12em; text-transform: uppercase; font-size: 11pt; color: var(--muted); margin: 0; }
+  h1 { font-family: "Baloo 2", system-ui, sans-serif; font-weight: 800; font-size: 40pt; line-height: 1.02; margin: 2mm 0 0; }
+  .lede { font-size: 15pt; line-height: 1.4; margin: 0; max-width: 165mm; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+  .card { background: #fff; border: 1.5px solid #dce5f0; border-radius: 6mm; padding: 5mm 6mm; }
+  .card h2 { font-family: "Baloo 2", system-ui, sans-serif; font-size: 16pt; margin: 0 0 1mm; }
+  .card p { margin: 0; font-size: 12pt; line-height: 1.4; color: var(--muted); }
+  .private { background: var(--navy); color: #fff; border-radius: 6mm; padding: 6mm 7mm; }
+  .private h2 { font-family: "Baloo 2", system-ui, sans-serif; font-size: 18pt; margin: 0 0 2mm; color: var(--ember); }
+  .private ul { margin: 0; padding-left: 5mm; font-size: 12.5pt; line-height: 1.5; }
+  .help { display: flex; gap: 6mm; align-items: center; border: 2px solid var(--ember); border-radius: 6mm; padding: 5mm 7mm; }
+  .help b { font-size: 13pt; }
+  .help p { margin: 0; font-size: 12pt; line-height: 1.45; }
+  .foot { margin-top: auto; display: flex; justify-content: space-between; font-size: 10pt; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="top">
+    <img src="../../docs/assets/img/icon-512.png" alt="Mochi, a soft round buddy with big eyes">
+    <div>
+      <p class="eyebrow">[Company] × Mochi</p>
+      <h1>Your new desk buddy is here</h1>
+    </div>
+  </div>
+  <p class="lede">Mochi sits in the corner of your screen and looks after the small things that slip on busy days. Look for it on your laptop from <b>[launch date]</b>.</p>
+
+  <div class="grid">
+    <div class="card"><h2>💧 Little breaks</h2><p>Water, a stretch and a rest for your eyes, and Mochi can tell a real break from a click.</p></div>
+    <div class="card"><h2>🔕 Quiet on calls</h2><p>Mochi goes silent when your mic or camera is on, and cheers you on before a big one.</p></div>
+    <div class="card"><h2>🍃 Feed me a worry</h2><p>Type what's on your mind. Mochi answers kindly and suggests one small next step.</p></div>
+    <div class="card"><h2>🌤️ How you feel</h2><p>A one-tap mood check-in, a gratitude jar and a focus timer, just for you.</p></div>
+  </div>
+
+  <div class="private">
+    <h2>Yours, and private</h2>
+    <ul>
+      <li>What you type to Mochi never leaves your laptop.</li>
+      <li>If you choose, weekly counts (never words) join your team's totals.</li>
+      <li>HR sees totals for groups of 8 or more only. Never names, never one person.</li>
+    </ul>
+  </div>
+
+  <div class="help">
+    <p><b>Need someone to talk to?</b><br>[EAP name]: [EAP number] (free and confidential)<br>Tele-MANAS: 14416, any time · Emergency: 112</p>
+  </div>
+
+  <div class="foot"><span>Questions? [HR contact]</span><span>mochicuddle.com</span></div>
+</div>
+</body>
+</html>
