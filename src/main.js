@@ -59,7 +59,7 @@ const defaults = {
   teams: null, // Mochi for Teams: { id, name, support, posh, teams, team, insights }
   insights: {}, // anonymous weekly counts, kept only while insights are on
   silent: { auto: true, until: 0 }, // quiet on calls; until = manual silent mode end (ms)
-  ai: { on: false, model: 'qwen3.5-2b' }, // offline AI replies (beta), off until the user turns it on
+  ai: { on: false, asked: false }, // offline AI replies (beta), off until the user turns it on
 };
 
 function loadState() {
@@ -196,6 +196,29 @@ function aiItem(M) {
       refreshTrayMenu();
     },
   };
+}
+
+// Asks once, a little after launch, whether to fetch the model. English only
+// for now, since that's what the small model writes well.
+function offerAi() {
+  if (state.ai.asked || state.ai.on || state.lang !== 'en' || Ai.status().state !== 'off') return;
+  state.ai.asked = true;
+  saveState();
+  dialog.showMessageBox({
+    type: 'question',
+    title: 'Mochi',
+    message: 'Want smarter replies?',
+    detail: 'Mochi can download a small AI model once (about 1.3 GB) to write more personal replies when you feed it a worry. It runs on this laptop, so your words never leave it. You can turn it off any time in Settings.',
+    buttons: ['Yes, download it', 'Not now'],
+    defaultId: 0,
+    cancelId: 1,
+  }).then(({ response }) => {
+    if (response !== 0) return;
+    state.ai.on = true;
+    saveState();
+    Ai.turnOn();
+    refreshTrayMenu();
+  });
 }
 
 let aiMenuAt = 0;
@@ -755,6 +778,7 @@ if (!gotLock) {
     if (process.env.MOCHI_DEBUG_BOARD) setTimeout(openBoard, 2000);
     // Tray label shows live stats, so refresh it now and then.
     setInterval(refreshTrayMenu, 60_000);
+    setTimeout(offerAi, 3 * 60_000);
     setInterval(reportActivity, 15_000);
     setInterval(checkCall, 15_000);
     // Manual silent mode ends on its own; tell the pet when it does.
