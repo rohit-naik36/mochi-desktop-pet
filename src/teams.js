@@ -38,9 +38,27 @@ function render(v) {
 
   const p = v.packet;
   const on = !!co.insights;
-  $('preview-off').classList.toggle('hidden', on);
-  $('preview').classList.toggle('hidden', !on);
+  $('insights-off').classList.toggle('hidden', on);
+  $('week').classList.toggle('hidden', !on);
   if (!on) return;
+
+  const sum = (o) => Object.values(o || {}).reduce((a, b) => a + b, 0);
+  const tiles = [
+    [p.activeDays, p.activeDays === 1 ? 'day with Mochi' : 'days with Mochi'],
+    [sum(p.moodCheckIns), 'mood check-ins'],
+    [p.reminders.away, 'real breaks'],
+    [p.calls.count, p.calls.count === 1 ? 'call' : 'calls'],
+  ];
+  const empty = tiles.every(([n]) => !n);
+  $('tiles').classList.toggle('hidden', empty);
+  $('week-empty').classList.toggle('hidden', !empty);
+  $('tiles').replaceChildren(...tiles.map(([n, k]) => {
+    const t = document.createElement('div'); t.className = 'tile';
+    const a = document.createElement('div'); a.className = 'v'; a.textContent = n;
+    const b = document.createElement('div'); b.className = 'k'; b.textContent = k;
+    t.append(a, b);
+    return t;
+  }));
   const rows = [
     ['Company', co.name],
     ['Team', p.team || 'Not chosen yet'],
@@ -52,8 +70,8 @@ function render(v) {
     ['Low moments', p.lowFeelings],
     ['Times support contacts were shown', p.supportShown],
     ['Reminders shown / done / snoozed', `${p.reminders.shown} / ${p.reminders.done} / ${p.reminders.snoozed}`],
-    ['Breaks with real time away from the keyboard', p.reminders.away],
-    ['Calls (count, total minutes)', `${p.calls.count}, ${p.calls.minutes} min`],
+    ['Breaks with real time away', p.reminders.away],
+    ['Calls', `${p.calls.count} (${p.calls.minutes} min)`],
     ['Features used', list(p.features, FEATURE)],
   ];
   $('preview').tBodies[0].replaceChildren(...rows.map(([k, val]) => {
