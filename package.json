@@ -72,7 +72,8 @@
       "entitlementsInherit": "build/entitlements.mac.plist",
       "extendInfo": {
         "LSUIElement": true
-      }
+      },
+      "x64ArchFiles": "Contents/Resources/app.asar.unpacked/node_modules/@node-llama-cpp/**"
     },
     "mas": {
       "entitlements": "build/entitlements.mas.plist",
