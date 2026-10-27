@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+<title>Mochi Pulse</title>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="page.css">
+</head>
+<body>
+<div class="wrap">
+<div class="mp">
+  <header class="mp-head" id="top">
+    <div class="mp-top">
+      <h1>Mochi Pulse</h1>
+      <label class="mp-pick">Showing
+        <select id="scope" aria-label="Team"></select>
+      </label>
+    </div>
+    <div class="mp-meta">
+      <span id="company-line">—</span>
+      <span class="mp-chip sample">Sample data for a demo</span>
+      <span class="mp-chip">Groups of 8 or more only</span>
+    </div>
+    <p class="mp-take" id="take">Over the last 4 weeks, average mood moved by <b data-source="summary" data-field="mood_change" class="dash-skeleton">—</b> points against the first month, and <b data-source="summary" data-field="late_last4" class="dash-skeleton">—</b> of active people were still using their laptop after bedtime. Mochi flagged <b data-source="issue_count" data-field="needs_action" class="dash-skeleton">—</b> issues for the wellness team below.</p>
+  </header>
+
+  <section class="mp-tiles" aria-label="Headline figures">
+    <div class="mp-card mp-tile">
+      <span class="k">Active people, latest week</span>
+      <span class="v dash-skeleton" data-source="weekly" data-field="active" data-row="11" data-fetchpriority="high">—</span>
+      <span class="d flat">of <span data-source="weekly" data-field="enrolled" data-row="11">—</span> enrolled</span>
+    </div>
+    <div class="mp-card mp-tile">
+      <span class="k">Average mood (1 to 5), last 4 weeks</span>
+      <span class="v dash-skeleton" data-source="summary" data-field="mood_last4">—</span>
+      <span class="d" id="d-mood"><span data-source="summary" data-field="mood_change">—</span> vs first 4 weeks</span>
+    </div>
+    <div class="mp-card mp-tile">
+      <span class="k">Breaks with real time away</span>
+      <span class="v dash-skeleton" data-source="summary" data-field="away_last4">—</span>
+      <span class="d" id="d-breaks"><span data-source="summary" data-field="away_change_pts">—</span> pts vs first 4 weeks · <span data-source="summary" data-field="breaks_last4">—</span> clicked Done</span>
+    </div>
+    <div class="mp-card mp-tile">
+      <span class="k">Active after bedtime (11 pm)</span>
+      <span class="v dash-skeleton" data-source="summary" data-field="late_last4">—</span>
+      <span class="d" id="d-late"><span data-source="summary" data-field="late_change_pts">—</span> pts vs first 4 weeks</span>
+    </div>
+    <div class="mp-card mp-tile">
+      <span class="k">Worry chats, last 4 weeks</span>
+      <span class="v dash-skeleton" data-source="summary" data-field="worry_last4">—</span>
+      <span class="d" id="d-worry"><span data-source="summary" data-field="worry_change">—</span> vs first 4 weeks</span>
+    </div>
+    <div class="mp-card mp-tile">
+      <span class="k">Hours on calls per person, weekly</span>
+      <span class="v dash-skeleton" data-source="summary" data-field="calls_last4">—</span>
+      <span class="d" id="d-calls"><span data-source="summary" data-field="calls_change">—</span> vs first 4 weeks</span>
+    </div>
+  </section>
+
+  <section class="mp-sec" id="issues">
+    <header>
+      <h2>Flagged for the wellness team</h2>
+      <p class="mp-note">Mochi checks every group of 8 or more people against simple rules (late nights with falling mood, skipped breaks, a worry theme on the rise) and suggests an initiative for each. Last 4 weeks against the first 4.</p>
+    </header>
+    <div class="mp-issues dash-skeleton" id="issue-list" data-source="issues" style="min-height:180px"></div>
+  </section>
+
+  <section class="mp-sec" id="emotions">
+    <header>
+      <h2>How people are feeling</h2>
+      <p class="mp-note">From optional mood check-ins and the topic of worry chats. Mochi counts the category on each laptop; what anyone typed never leaves it.</p>
+    </header>
+    <div class="mp-grid">
+      <div class="mp-card mp-wide">
+        <h3>Mood check-ins by week</h3>
+        <p class="mp-note">Share of check-ins at each mood. Hover a week to see its mix.</p>
+        <div class="mp-legend" id="mood-legend"></div>
+        <div class="mp-plot dash-skeleton" id="c-mood" data-source="emotions"></div>
+      </div>
+      <div class="mp-card">
+        <h3>What people worry about</h3>
+        <p class="mp-note">Share of worry chats by theme, first month against last month.</p>
+        <div class="mp-legend" id="theme-legend"></div>
+        <div class="mp-plot tall dash-skeleton" id="c-themes" data-source="themes"></div>
+      </div>
+      <div class="mp-card">
+        <h3>Active after bedtime</h3>
+        <p class="mp-note">Share of active people using their laptop after 11 pm on a work night.</p>
+        <div class="mp-plot dash-skeleton" id="c-late" data-source="habits"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mp-sec" id="engagement">
+    <header>
+      <h2>Usage and engagement</h2>
+      <p class="mp-note">Counts of what people do with Mochi, added up across the company. Team totals are rounded to the nearest 5.</p>
+    </header>
+    <div class="mp-grid">
+      <div class="mp-card">
+        <h3>Active people each week</h3>
+        <p class="mp-note">People who opened Mochi or answered a reminder that week.</p>
+        <div class="mp-plot dash-skeleton" id="c-active" data-source="weekly"></div>
+      </div>
+      <div class="mp-card">
+        <h3>Breaks: clicked Done vs really stepped away</h3>
+        <p class="mp-note">Out of all water, stretch and eye-rest reminders. "Stepped away" means no typing or mouse for 20 to 60 seconds after Done.</p>
+        <div class="mp-plot dash-skeleton" id="c-breaks" data-source="habits"></div>
+      </div>
+      <div class="mp-card">
+        <h3>Meeting load</h3>
+        <p class="mp-note">Average hours per week each person spent with the mic or camera in use. Mochi stays silent during calls.</p>
+        <div class="mp-plot dash-skeleton" id="c-calls" data-source="weekly"></div>
+      </div>
+      <div class="mp-card">
+        <h3>Features people use</h3>
+        <p class="mp-note">Share of active people who used each feature in the last 4 weeks.</p>
+        <div class="mp-plot tall dash-skeleton" id="c-features" data-source="features"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mp-sec" id="teams">
+    <header>
+      <h2>By team</h2>
+      <p class="mp-note">Last 4 weeks. Red marks a value past the alert line: mood down 0.3 or more, 20% or more after bedtime, or half of breaks skipped.</p>
+    </header>
+    <div class="mp-card">
+      <div class="mp-tablebox">
+        <table class="mp-table" id="t-teams" data-source="teams_all" data-row-key="team">
+          <thead><tr>
+            <th data-field="team">Team</th>
+            <th data-field="people">People</th>
+            <th data-field="active_share">Active</th>
+            <th data-field="avg_mood">Mood</th>
+            <th data-field="mood_change">Mood change</th>
+            <th data-field="late_night_share">After bedtime</th>
+            <th data-field="breaks_skipped">Breaks skipped</th>
+            <th data-field="top_theme">Top worry theme</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="mp-note"><span data-source="privacy" data-field="hidden_teams">—</span> team hidden because fewer than 8 people use Mochi there. Its numbers are not shown or counted per team.</p>
+    </div>
+  </section>
+
+  <section class="mp-sec" id="privacy">
+    <header>
+      <h2>What HR can and cannot see</h2>
+      <p class="mp-note">The same rules apply in every Mochi for Teams account.</p>
+    </header>
+    <div class="mp-privacy">
+      <div class="mp-card"><h3>Shared, as totals only</h3><ul>
+        <li>Mood check-in levels, counted per group</li>
+        <li>Worry chat themes, such as "deadlines", never the words</li>
+        <li>Reminders shown and acted on, focus sessions, feature use</li>
+        <li>How often Mochi showed support contacts</li>
+      </ul></div>
+      <div class="mp-card"><h3>Never leaves the laptop</h3><ul>
+        <li>Anything a person types to Mochi</li>
+        <li>Names, emails, device IDs or any single person's mood</li>
+        <li>Exact times or which day one person was low</li>
+      </ul></div>
+      <div class="mp-card"><h3>Safeguards</h3><ul>
+        <li>Each person opts in and can preview exactly what is sent</li>
+        <li>Groups under 8 people are hidden</li>
+        <li>Counts are rounded to the nearest 5</li>
+        <li>No one at the company can drill down to a person</li>
+      </ul></div>
+    </div>
+  </section>
+</div>
+
+
+</div>
+<script src="vendor/d3.min.js"></script>
+<script src="sample-data.js"></script>
+<script src="shim.js"></script>
+<script src="picker.js"></script>
+<script src="page.js"></script>
+</body>
+</html>
