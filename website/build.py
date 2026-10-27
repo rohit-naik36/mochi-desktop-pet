@@ -313,14 +313,14 @@ pages['teams.html'] = page('teams.html', 'Mochi for teams', 'Mochi for teams bri
         <div class="panel stack"><h3>Your helplines, built in</h3><p class="muted">Show your Employee Assistance Programme, HR contact and Internal Committee (POSH) details right where people need them, next to the national helplines.</p></div>
         <div class="panel stack"><h3>Licensed for every seat</h3><p class="muted">One licence key for the whole company, easy rollout to every laptop, and the reminders and schedule set to match your shifts.</p></div>
         <div class="panel stack"><h3>Anonymous team insights</h3><p class="muted">See, as team totals only, whether break habits and focus time are improving. Never anyone's worries, moods or name.</p></div>
-        <div class="panel stack"><h3>Made for shift work</h3><p class="muted">Night-shift aware out of the box, so support, operations and BPO teams get reminders on their own hours.</p></div>
-        <div class="panel stack"><h3>Three languages</h3><p class="muted">English, Hindi and Hinglish, so it feels natural for teams across India.</p></div>
+        <div class="panel stack"><h3>Made for shift work</h3><p class="muted">Night-shift aware, in English, Hindi and Hinglish, so support, operations and BPO teams across India get reminders on their own hours.</p></div>
+        <div class="panel stack"><h3>Smarter replies, kept private</h3><p class="muted">A small AI built into the company edition writes more personal replies on the laptop itself. Nothing goes to a cloud AI, so there is nothing new for IT to approve. English for now.</p></div>
         <div class="panel stack"><h3>Your branding</h3><p class="muted">A welcome message from your company and your wellbeing programme named in the app.</p></div>
       </div>
     </div></section>
     <section><div class="wrap"><div class="band"><span class="stars"></span><div class="split">
       <div class="stack"><p class="eyebrow">Privacy first</p><h2>Employees trust it because it doesn't report on them</h2><p class="lede">Mochi was built to keep everything personal on the employee's own laptop. That stays true for companies.</p></div>
-      <ul class="ticks"><li>Worries typed into Mochi are never saved or sent anywhere</li><li>Moods and gratitude notes stay on the device</li><li>Team insights are anonymous totals, with a minimum group size</li><li>No screen monitoring, no keystroke logging, no tracking of what people work on</li></ul>
+      <ul class="ticks"><li>Worries typed into Mochi are never saved or sent anywhere</li><li>Moods and gratitude notes stay on the device</li><li>Team insights are anonymous totals, with a minimum group size</li><li>The built-in AI runs on the laptop, never in the cloud</li><li>No screen monitoring, no keystroke logging, no tracking of what people work on</li></ul>
     </div></div></div></section>
     <section><div class="wrap">
       <div class="section-head"><p class="eyebrow">How a pilot works</p><h2>Start small with one team</h2></div>
@@ -351,7 +351,7 @@ pages['pricing.html'] = page('pricing.html', 'Pricing', 'Mochi is free for indiv
         <ul class="ticks"><li>All the buddies</li><li>Water, stretch and eye reminders</li><li>Feed me a worry and good-news parties</li><li>Focus timer, sleep schedule and play room</li><li>Points, streaks, 26 badges and the gratitude jar</li><li>English, Hindi and Hinglish</li><li>No ads and no account</li></ul>
         {store_btn()}</div>
       <div class="panel plan dark"><span class="tag" style="justify-self:start">Mochi for teams</span><p class="price">Per seat <small>billed yearly</small></p><p class="muted">For companies that want a wellbeing buddy on every desk.</p>
-        <ul class="ticks"><li>Everything in Personal</li><li>One licence key for the whole company</li><li>Your EAP, HR and POSH contacts in the app</li><li>Schedules set for your shifts</li><li>Anonymous team insights</li><li>Your company's welcome message</li><li>Help with rollout and a 4-week pilot</li></ul>
+        <ul class="ticks"><li>Everything in Personal</li><li>One licence key for the whole company</li><li>Your EAP, HR and POSH contacts in the app</li><li>Schedules set for your shifts</li><li>Smarter replies from a private, on-device AI</li><li>Anonymous team insights</li><li>Your company's welcome message</li><li>Help with rollout and a 4-week pilot</li></ul>
         <a class="btn btn-primary" href="teams.html#enquire">Ask for a quote</a></div>
     </div></section>
     <section><div class="wrap faq measure" style="max-width:780px">
@@ -508,7 +508,7 @@ pages['privacy.html'] = page('privacy.html', 'Privacy policy', 'How Mochi and mo
       <p>mochicuddle.com uses no cookies, analytics or trackers. Fonts are loaded from Google Fonts, which receives your IP address to deliver them. The site is hosted on a static host, which may keep standard server logs for security.</p>
       <p>If you use a form on this site, your message is passed to our inbox by Web3Forms (web3forms.com), a form delivery service. If you email us, it comes straight to our inbox. We receive only what you send and use it only to reply.</p>
       <h2>Mochi for teams</h2>
-      <p>The company edition keeps the same rule: worries, moods and gratitude notes stay on each employee's device. Any team insights are anonymous totals. Each company agreement describes exactly what is collected.</p>
+      <p>The company edition keeps the same rule: worries, moods and gratitude notes stay on each employee's device. The company edition also includes smarter replies, written by a small AI model that runs on each employee's laptop, so what they type is never sent over the internet. Any team insights are anonymous totals. Each company agreement describes exactly what is collected.</p>
       <h2>Children</h2><p>Mochi is rated for everyone, but it is made for working adults and does not knowingly collect information from anyone.</p>
       <h2>Changes</h2><p>If this policy changes, we will update this page and the date at the top.</p>
     </div></section>''')
