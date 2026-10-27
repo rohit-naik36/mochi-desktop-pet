@@ -64,3 +64,10 @@ test('an answer is an id and an option number, nothing else', () => {
   assert.ok(!JSON.stringify(p).includes('hate'));
   assert.ok(!('answer' in Insights.packet({}, { id: 'acme' }, Insights.weekKey(d))));
 });
+
+test('Mochi Pulse names the themes the same way as the app', () => {
+  const src = fs.readFileSync(path.join(__dirname, '../pulse/reports.js'), 'utf8');
+  const block = src.match(/const THEMES = \{([\s\S]*?)\};/)[1];
+  const pulse = Object.fromEntries([...block.matchAll(/'?([a-z-]+)'?: '([^']+)'/g)].map((m) => [m[1], m[2]]));
+  assert.deepStrictEqual(pulse, Object.fromEntries(Object.entries(Campaigns.THEMES).map(([k, t]) => [k, t.name])));
+});

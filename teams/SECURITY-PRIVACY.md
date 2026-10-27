@@ -15,6 +15,7 @@ Mochi runs on each employee's laptop. What people type, their moods and their gr
 | Words typed into Mochi (worries, names) | Never kept; read in memory to reply | Never | Not kept |
 | Moods, gratitude notes, settings, badges | The employee's laptop | Never | Until the app is uninstalled |
 | Weekly counts (mood levels, worry themes, reminders, breaks, calls, features) | Laptop, 8 weeks | Only if the employee opts in, one finished week at a time | 1 year on the server |
+| Answer to the company's weekly question (an option number, such as 2) | Laptop, 8 weeks | Only if the employee opts in to team totals, inside that week's counts | 1 year on the server |
 | Licence check: join code, hashed laptop id, app version, Entra tenant or domain | Laptop | Daily | Company and month only, while the company is a customer |
 | Company settings: name, support contacts, team names, welcome note | Server | Sent to the laptops | While the company is a customer |
 | HR Pulse keys | Server, as a SHA-256 hash only | | Until revoked |
@@ -28,6 +29,7 @@ There is no user account, no email address, no IP address stored, no analytics a
 - **Seat ids can't be traced.** The laptop sends a one-way hash of its Windows machine id. The server hashes it again with a secret before storing it, so even a stored value can't be matched to a laptop.
 - **Groups of 8 or more.** Pulse never shows a team, or a week, with fewer than 8 people. Counts are rounded to the nearest 5.
 - **Opt-in and visible.** Each person chooses on a one-time screen and can preview exactly what is sent in the Mochi for Teams window. They can turn it off or leave at any time.
+- **Weekly questions.** Answers are option numbers inside the weekly counts, shown only once 8 or more people in a group have answered. Questions are about work and the workplace; Little Smoke Studio declines questions about health conditions or anything that could single someone out.
 - **No drill-down.** There is no screen, export or query in Pulse that shows one person. The raw weekly files are not readable by HR at all.
 
 ## How it flows

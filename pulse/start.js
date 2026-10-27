@@ -18,6 +18,7 @@
 
   async function show(data, seats) {
     window.PULSE_SAMPLE = data;
+    window.PULSE_SEATS = seats || null;
     $('signin').hidden = true;
     $('app').hidden = false;
     document.querySelector('.mp-chip.sample').hidden = !data.sample;
@@ -34,7 +35,7 @@
       document.querySelectorAll('.mp > section').forEach((s) => { s.hidden = true; });
       return;
     }
-    for (const src of ['shim.js', 'picker.js', 'page.js']) await load(src);
+    for (const src of ['shim.js', 'picker.js', 'page.js', 'reports.js']) await load(src);
   }
 
   async function open(key) {
