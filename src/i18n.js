@@ -1003,6 +1003,66 @@
   };
   for (const lang of Object.keys(VCALLS)) merge(STRINGS[lang], VCALLS[lang]);
 
+  // "Notice which app I'm in": one playful line after a long stretch in the
+  // same kind of app. Only the kind of app is known, never what's in it.
+  const VAPPS = {
+    en: {
+      menu: {
+        noticeApps: "👀 Notice which app I'm in",
+        noticeAppsAsk: "Let {pet} notice which app you're in?",
+        noticeAppsDetail: "After a long stretch in the same app, like Excel or VS Code, {pet} will say something funny and remind you to take a break. Only the app's name is checked, never window titles, websites or what's on your screen. Nothing is saved or sent anywhere.",
+        noticeAppsYes: 'Yes, turn it on', noticeAppsNo: 'Not now',
+      },
+      apps: {
+        excel: ["Still in Excel{n}? The cells are starting to stare back 😅 Look away for 20 seconds?", "That's a lot of rows. Even VLOOKUP takes breaks. Stretch with me? 📊", "Spreadsheet marathon! Your eyes deserve a pivot table of water 💧"],
+        word: ["Long writing session{n}! Stand up, read the last line out loud, then come back ✍️", "The cursor has blinked about a million times. Blink back, and look far away for a bit 👀"],
+        slides: ["Deck life! The perfect font can wait one minute. Stretch? 🎞️", "If you nudge that box one more pixel, I'm calling a break 😄"],
+        mail: ["Inbox again{n}? It's like me: always hungry. Step away for a minute 📬", "Emails will keep coming. Your shoulders need a roll right now 🙆"],
+        chat: ["Lots of chatting{n}! Time for a sip of water before the next ping 💬", "Your messages can wait 60 seconds. Shoulders down, deep breath 💛"],
+        code: ["Deep in code{n}! The bug will still be there after a stretch, I promise 🐛", "Long build session. Rubber-duck it to me, then take a short walk? 🦆", "Your code compiles, but does your back? Quick stretch 💻"],
+        browser: ["How many tabs is it now{n}? 😄 Time to close a few and rest your eyes.", "Long browsing stretch! Look at something far away for 20 seconds 🌳"],
+        design: ["Pixel-perfect mode{n}! Step back, literally. Fresh eyes spot more 🎨", "Design marathon! Your wrist would love a little shake-out ✋"],
+      },
+    },
+    hi: {
+      menu: {
+        noticeApps: '👀 कौन सा ऐप खुला है, ये देखो',
+        noticeAppsAsk: '{pet} को देखने दें कि आप कौन सा ऐप चला रहे हैं?',
+        noticeAppsDetail: 'एक ही ऐप (जैसे Excel या VS Code) में बहुत देर रहने पर {pet} कुछ मज़ेदार कहेगा और ब्रेक याद दिलाएगा। सिर्फ़ ऐप का नाम देखा जाता है, विंडो का टाइटल, वेबसाइट या स्क्रीन पर क्या है, कभी नहीं। कुछ भी सेव या कहीं भेजा नहीं जाता।',
+        noticeAppsYes: 'हाँ, चालू करो', noticeAppsNo: 'अभी नहीं',
+      },
+      apps: {
+        excel: ['अभी भी Excel में{n}? सेल्स अब तुम्हें घूरने लगे हैं 😅 20 सेकंड दूर देखो?', 'इतनी सारी रो! VLOOKUP भी ब्रेक लेता है। मेरे साथ स्ट्रेच करें? 📊'],
+        word: ['लंबा लिखने का सेशन{n}! उठो, आख़िरी लाइन ज़ोर से पढ़ो, फिर वापस आओ ✍️'],
+        slides: ['परफ़ेक्ट फ़ॉन्ट एक मिनट रुक सकता है। स्ट्रेच करें? 🎞️'],
+        mail: ['फिर से इनबॉक्स{n}? ये मेरी तरह हमेशा भूखा रहता है। एक मिनट दूर हो जाओ 📬'],
+        chat: ['बहुत सारी बातें{n}! अगले मैसेज से पहले थोड़ा पानी पी लो 💬'],
+        code: ['कोड में डूबे हो{n}! बग स्ट्रेच के बाद भी वहीं मिलेगा, वादा 🐛', 'कोड तो चल रहा है, पर कमर? जल्दी से स्ट्रेच 💻'],
+        browser: ['अब कितने टैब खुले हैं{n}? 😄 कुछ बंद करो और आँखों को आराम दो।'],
+        design: ['पिक्सल-परफ़ेक्ट मोड{n}! थोड़ा पीछे हटो, नई नज़र ज़्यादा देखती है 🎨'],
+      },
+    },
+    hinglish: {
+      menu: {
+        noticeApps: '👀 Kaunsa app khula hai, ye dekho',
+        noticeAppsAsk: '{pet} ko dekhne dein ki aap kaunsa app chala rahe ho?',
+        noticeAppsDetail: 'Ek hi app (jaise Excel ya VS Code) mein bahut der rehne par {pet} kuch funny bolega aur break yaad dilayega. Sirf app ka naam dekha jata hai, window title, website ya screen pe kya hai, kabhi nahi. Kuch bhi save ya kahin bheja nahi jata.',
+        noticeAppsYes: 'Haan, on karo', noticeAppsNo: 'Abhi nahi',
+      },
+      apps: {
+        excel: ['Abhi bhi Excel mein{n}? Cells ab tumhe ghoorne lage hain 😅 20 second door dekho?', 'Itni saari rows! VLOOKUP bhi break leta hai. Stretch karein? 📊'],
+        word: ['Lamba writing session{n}! Utho, last line zor se padho, phir wapas aao ✍️'],
+        slides: ['Perfect font ek minute ruk sakta hai. Stretch? 🎞️', 'Wo box ek pixel aur khiskaya toh main break bulaunga 😄'],
+        mail: ['Phir se inbox{n}? Ye meri tarah hamesha bhookha rehta hai. Ek minute break 📬'],
+        chat: ['Bahut chatting ho gayi{n}! Agle ping se pehle thoda paani 💬'],
+        code: ['Code mein doobe ho{n}! Bug stretch ke baad bhi wahin milega, promise 🐛', 'Code toh compile ho raha hai, par kamar? Jaldi se stretch 💻'],
+        browser: ['Ab kitne tabs khule hain{n}? 😄 Kuch band karo aur aankhon ko rest do.'],
+        design: ['Pixel-perfect mode{n}! Thoda peeche hato, fresh nazar zyada dekhti hai 🎨'],
+      },
+    },
+  };
+  for (const lang of Object.keys(VAPPS)) merge(STRINGS[lang], VAPPS[lang]);
+
   // 11 -> "11 pm" in English; "11" in Hindi/Hinglish, which say "raat 11 baje".
   const hourLabel = (lang, h) => (lang === 'en' ? `${h % 12 || 12} ${h < 12 ? 'am' : 'pm'}` : String(h % 12 || 12));
 

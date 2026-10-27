@@ -27,7 +27,8 @@ Worries you type into **Feed me a worry** are never saved. Mochi reads them on y
 ## What Mochi does not do
 
 - No internet connection (except the one-time model download if you turn on Smarter replies): no accounts, servers, analytics, tracking, advertising or cloud sync.
-- No access to your files, camera, microphone, location, contacts or other apps.
+- No access to your files, camera, microphone, location or contacts.
+- **Notice which app I'm in** is off unless you turn it on. When it's on, Mochi checks the name of the app in front about once a minute (for example "Excel"), so it can make a joke and suggest a break after a long stretch. It never reads window titles, websites or what's on your screen, and the app name is never saved or sent anywhere, including to an employer.
 - To know when you're away, Mochi asks Windows how many seconds it has been since the mouse or keyboard was last used. It never sees what you type or where you click.
 - So its eyes can follow your mouse pointer, Mochi checks where the pointer is on screen a few times a second. That position is used only for the eyes, never saved and never sent anywhere.
 - No data shared with anyone, including the developer.

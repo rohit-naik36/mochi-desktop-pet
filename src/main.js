@@ -8,6 +8,7 @@ const Insights = require('./insights');
 const Company = require('./company');
 const Calls = require('./calls');
 const Ai = require('./ai');
+const Apps = require('./apps');
 
 const MIN_MS = 60_000;
 const WIN_W = 220;
@@ -59,6 +60,7 @@ const defaults = {
   teams: null, // Mochi for Teams: { id, name, support, posh, teams, team, insights }
   insights: {}, // anonymous weekly counts, kept only while insights are on
   silent: { auto: true, until: 0 }, // quiet on calls; until = manual silent mode end (ms)
+  apps: false, // notice which app is in front (name only) for playful lines; off by default
   ai: { on: false, asked: false }, // offline AI replies (beta), off until the user turns it on
 };
 
@@ -174,6 +176,55 @@ ipcMain.handle('ai-reply', (_e, req = {}) => {
   if (!state.ai.on || Ai.status().state !== 'ready' || !Ai.allowed(req.r, req.text)) return null;
   return Ai.reply({ text: req.text, lang: req.lang, name: state.userName, pet: state.name, skin: state.skin });
 });
+
+// ---------- notice which app I'm in (opt-in) ----------
+
+// Same kind of app for 90 minutes straight (2.5 hours if Mochi is set to
+// quiet) gets one playful line, at most every 45 minutes, never on a call,
+// in focus time or while hiding. Only the kind of app is kept, in memory.
+const APP_LONG_MIN = { quiet: 150, normal: 90, chatty: 60 };
+let appKind = null, appSince = 0, appLastLine = 0;
+
+function onApp(kind) {
+  const now = Date.now();
+  if (powerMonitor.getSystemIdleTime() >= 5 * 60 || kind !== appKind) { appKind = kind; appSince = now; return; }
+  if (!kind) return;
+  const need = (APP_LONG_MIN[state.chatty] || 90) * MIN_MS;
+  if (now - appSince < need || now - appLastLine < 45 * MIN_MS) return;
+  if (quietNow() || hidingUntil || state.focusUntil > now) return;
+  appLastLine = now;
+  appSince = now; // the next line for the same app waits another full stretch
+  send('action', 'app-' + kind);
+}
+
+function setApps(on) {
+  state.apps = on;
+  saveState();
+  appKind = null;
+  if (on) Apps.start(onApp); else Apps.stop();
+}
+
+function appsItem(M) {
+  return {
+    label: M('noticeApps'),
+    type: 'checkbox',
+    checked: !!state.apps,
+    click: (i) => {
+      if (!i.checked) return setApps(false);
+      const response = dialog.showMessageBoxSync({
+        type: 'question',
+        title: 'Mochi',
+        message: M('noticeAppsAsk'),
+        detail: M('noticeAppsDetail'),
+        buttons: [M('noticeAppsYes'), M('noticeAppsNo')],
+        defaultId: 0,
+        cancelId: 1,
+      });
+      setApps(response === 0);
+      refreshTrayMenu();
+    },
+  };
+}
 
 // One checkbox in Settings. Turning it on downloads the model once (the
 // label shows progress); turning it off keeps the file so it's instant next time.
@@ -529,6 +580,7 @@ function buildMenu() {
     { type: 'separator' },
     { label: M('settings'), submenu: [
       aiItem(M),
+      ...(Apps.supported() ? [appsItem(M)] : []),
       { label: state.teams ? '🏢 ' + state.teams.name : M('teams'), click: openTeams },
       { type: 'separator' },
       { label: M('schedule'), submenu: [
@@ -766,6 +818,7 @@ if (!gotLock) {
     loadState();
     state.ai = { ...defaults.ai, ...state.ai };
     Ai.init(app.getPath('userData'), state.ai, aiChanged);
+    if (state.apps && Apps.supported()) Apps.start(onApp);
     autoJoin();
     offerMoveToApplications();
     createWindow();
@@ -786,6 +839,6 @@ if (!gotLock) {
     powerMonitor.on('resume', reportActivity);
     powerMonitor.on('unlock-screen', reportActivity);
   });
-  app.on('before-quit', saveState);
+  app.on('before-quit', () => { Apps.stop(); saveState(); });
   app.on('window-all-closed', () => app.quit());
 }
