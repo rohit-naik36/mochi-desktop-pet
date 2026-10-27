@@ -11,7 +11,7 @@
   <header class="teams-head">
     <div>
       <h1>Mochi for Teams</h1>
-      <div class="muted">Your company's support contacts in Mochi, and anonymous team insights only if you say yes.</div>
+      <div class="muted">Your company's support, and your week with Mochi.</div>
     </div>
   </header>
 
@@ -26,44 +26,69 @@
     <p class="note">Trying it out? Use the demo code <b>MOCHI-DEMO-2026</b>.</p>
   </section>
 
+  <section id="consent" class="consent hidden">
+    <h2 class="co-name">One thing before we start</h2>
+    <p>Mochi can add your counts to your team's totals, so <span class="co-short"></span> can see how the team is doing and plan support where it's needed.</p>
+    <ul class="never">
+      <li>Your company sees team totals only, for teams of <span class="min-group"></span> or more.</li>
+      <li>Never your words, your name, or anything that points to you.</li>
+      <li>You can change your mind any time under Privacy.</li>
+    </ul>
+    <div class="row">
+      <button id="consent-yes" type="button">Yes, add my counts</button>
+      <button id="consent-no" type="button" class="ghost">No thanks</button>
+    </div>
+  </section>
+
   <div id="joined" class="hidden">
-    <section>
-      <h2 id="co-name"></h2>
-      <div id="co-demo" class="pill hidden">Demo company</div>
-      <p class="note">When you share something heavy with Mochi, these come first:</p>
+    <section class="co">
+      <div class="co-top">
+        <div>
+          <h2 id="co-name" class="co-name"></h2>
+          <span id="co-demo" class="pill hidden">Demo company</span>
+        </div>
+        <label class="field">Your team
+          <select id="team"><option value="">Choose your team</option></select>
+        </label>
+      </div>
+      <p class="note">If things get heavy, you're not alone. These are here for you:</p>
       <div id="co-support" class="contacts"></div>
-      <label class="field">Your team
-        <select id="team"><option value="">Choose your team</option></select>
-      </label>
     </section>
 
-    <section>
-      <h2>Anonymous insights</h2>
-      <label class="toggle">
+    <section id="week">
+      <h2>Your week with Mochi</h2>
+      <div id="tiles" class="tiles"></div>
+      <p id="week-empty" class="empty hidden">Your week starts here. Check in on your mood, take a real break, and it all shows up here.</p>
+    </section>
+
+    <section id="privacy" class="hidden">
+      <h2>Privacy</h2>
+      <label class="switch">
         <input type="checkbox" id="insights">
-        <span>Add my counts to my team's anonymous totals</span>
+        <span class="track" aria-hidden="true"></span>
+        <span class="label"><b>Add my counts to my team's totals</b><span class="note">Team totals only, never your words or name.</span></span>
       </label>
-      <p class="note">Off by default. Turning it off deletes what was counted on this laptop. HR only sees totals for teams of <span id="min-group"></span> or more people, rounded to the nearest <span id="round-to"></span>.</p>
+      <details class="more">
+        <summary>See exactly what's added this week</summary>
+        <table id="preview" class="preview"><tbody></tbody></table>
+        <p class="note">That's everything: no name, email or device ID. Your company only sees totals for teams of <span class="min-group"></span> or more people, rounded to the nearest <span id="round-to"></span>.</p>
+      </details>
+      <details class="more">
+        <summary>What never leaves this laptop</summary>
+        <ul class="never">
+          <li>Anything you type to Mochi. Worries are sorted into a theme here and the words are thrown away.</li>
+          <li>Your name, email or anything that identifies this laptop.</li>
+          <li>Which day or time you felt low.</li>
+          <li>Anything said on a call, or which app you used. Mochi only checks whether the mic or camera is on, to stay quiet.</li>
+          <li>Your gratitude jar, focus history and achievements.</li>
+        </ul>
+      </details>
     </section>
 
-    <section id="preview-box">
-      <h2>What this laptop adds to your team's totals this week</h2>
-      <p id="preview-off" class="note">Nothing. Insights are off.</p>
-      <table id="preview" class="preview hidden"><tbody></tbody></table>
-      <p class="note">This is everything. There is no name, email or device ID in it, and HR never sees one person's counts, only team totals. Nothing is sent until your company's Mochi Pulse dashboard is set up.</p>
-    </section>
-
-    <section>
-      <h2>Never leaves this laptop</h2>
-      <ul class="never">
-        <li>Anything you type to Mochi. Worries are sorted into a theme on this laptop and the words are thrown away.</li>
-        <li>Your name, email or anything that identifies this laptop.</li>
-        <li>Which day or time you felt low.</li>
-        <li>Anything said on a call, or which app you call in. Mochi only checks whether the mic or camera is in use, to stay quiet.</li>
-        <li>Your gratitude jar, focus history or achievements.</li>
-      </ul>
-      <button id="leave" class="ghost">Leave company</button>
-    </section>
+    <div class="foot">
+      <button id="privacy-btn" class="link" type="button" aria-expanded="false">Privacy</button>
+      <button id="leave" class="link" type="button">Leave company</button>
+    </div>
   </div>
 
   <script src="teams.js"></script>
