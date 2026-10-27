@@ -39,17 +39,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Cache the bundled AI model
-        uses: actions/cache@v4
-        with:
-          path: models
-          key: model-${{ hashFiles('src/ai-models.json') }}
-      - name: Fetch the bundled AI model
-        run: node tools/fetch-model.mjs
 
+      # The free builds carry no AI model: models/ stays empty until the
+      # company installer step below.
       - name: Build installer and portable exe
         shell: pwsh
         run: |
+          New-Item -ItemType Directory -Force models | Out-Null
           $extra = @()
           if ($env:SIGN_ENDPOINT) {
             Write-Host "Signing with Azure Artifact Signing"
@@ -68,12 +64,40 @@ jobs:
         shell: pwsh
         run: npx electron-builder --win appx --publish never
 
+      # Mochi for Teams: the same app with the offline AI model inside, for
+      # IT to deploy through Intune. Not published to the Store.
+      - name: Cache the AI model
+        uses: actions/cache@v4
+        with:
+          path: models
+          key: model-${{ hashFiles('src/ai-models.json') }}
+      - name: Fetch the AI model
+        run: node tools/fetch-model.mjs
+      - name: Build Mochi for Teams installer
+        shell: pwsh
+        run: |
+          $extra = @()
+          if ($env:SIGN_ENDPOINT) {
+            $extra += "-c.win.azureSignOptions.endpoint=$env:SIGN_ENDPOINT"
+            $extra += "-c.win.azureSignOptions.codeSigningAccountName=$env:SIGN_ACCOUNT"
+            $extra += "-c.win.azureSignOptions.certificateProfileName=$env:SIGN_PROFILE"
+            $extra += "-c.win.azureSignOptions.publisherName=$env:SIGN_PUBLISHER"
+          }
+          npx electron-builder --win nsis --publish never '-c.nsis.artifactName=Mochi-Teams-Setup-${version}.exe' @extra
+
       - uses: actions/upload-artifact@v4
         with:
           name: mochi-windows
           path: |
-            dist/*.exe
+            dist/Mochi Setup *.exe
+            dist/Mochi-Portable-*.exe
             dist/*.appx
+      # Kept off the public release: Little Smoke Studio hands it to each
+      # company's IT team.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mochi-teams-windows
+          path: dist/Mochi-Teams-Setup-*.exe
 
       - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/') || inputs.tag != ''
@@ -81,5 +105,6 @@ jobs:
         with:
           tag_name: ${{ inputs.tag || github.ref_name }}
           files: |
-            dist/*.exe
+            dist/Mochi Setup *.exe
+            dist/Mochi-Portable-*.exe
             dist/*.appx

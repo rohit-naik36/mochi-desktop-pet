@@ -126,7 +126,7 @@ const PET_CY = WIN_H - 61;
 // hides and the same buddy appears in the layer at the same spot.
 function openPlay(game) {
   if (hidingUntil) return;
-  if (game === 'worry' && state.ai.on) Ai.warm(); // ready by the time they've typed
+  if (game === 'worry' && aiOn()) Ai.warm(); // ready by the time they've typed
   if (playWin && !playWin.isDestroyed()) { playWin.focus(); return; }
   const pb = win.getBounds();
   const wa = screen.getDisplayMatching(pb).workArea;
@@ -173,9 +173,13 @@ ipcMain.handle('get-state', () => state);
 
 // ---------- offline AI (beta) ----------
 
+// Smarter replies ship only in the company installer and work while the
+// company licence is active.
+const aiOn = () => state.ai.on && teamsOn();
+
 // The written reply is always ready first; the model may only reword it.
 ipcMain.handle('ai-reply', (_e, req = {}) => {
-  if (!state.ai.on || Ai.status().state !== 'ready' || !Ai.allowed(req.r, req.text)) return null;
+  if (!aiOn() || Ai.status().state !== 'ready' || !Ai.allowed(req.r, req.text)) return null;
   return Ai.reply({ text: req.text, lang: req.lang, name: state.userName, pet: state.name, skin: state.skin });
 });
 
@@ -229,10 +233,11 @@ function appsItem(M) {
   };
 }
 
-// One checkbox in Settings, on by default. Hidden in builds without the model.
+// One checkbox in Settings, on by default. Hidden in builds without the
+// model and outside a company.
 function aiItem(M) {
   const s = Ai.status();
-  if (s.state === 'missing') return null;
+  if (s.state === 'missing' || !teamsOn()) return null;
   const note = s.state === 'error' ? M('smarterFailed') : '';
   return {
     label: M('smarter') + (note ? ` (${note})` : ''),
@@ -707,7 +712,7 @@ function showHelp() {
   const M = (key) => I18N.t(state.lang, 'menu.' + key, { name: state.userName, pet: state.name, gender: state.petGender });
   const Tp = (key) => I18N.t(state.lang, 'tips.' + key, { pet: state.name });
   const rows = [['worry'], ['feed'], ['play'], ['nap'], ['focus'], ...(teamsOn() ? [['silent'], ['bigCall']] : []), ['mood'], ['gratitude'], ['board'],
-    ['settings', null], ...(Ai.status().state === 'missing' ? [] : [['smarter']]), ['noticeApps'], ['teams'], ['schedule'], ['buddy'], ['name'], ['gender'], ['language'], ['chatty'], ['wander'], ['reminders'], ...(process.windowsStore ? [] : [[IS_MAC ? 'startupMac' : 'startup', 'startup']])];
+    ['settings', null], ...(Ai.status().state === 'missing' || !teamsOn() ? [] : [['smarter']]), ['noticeApps'], ['teams'], ['schedule'], ['buddy'], ['name'], ['gender'], ['language'], ['chatty'], ['wander'], ['reminders'], ...(process.windowsStore ? [] : [[IS_MAC ? 'startupMac' : 'startup', 'startup']])];
   const detail = rows.map(([k, t]) => (t === null ? '\n' + M(k) : `• ${M(k).replace(/\s*\(.*\)$/, '')}: ${Tp(t || k)}`)).join('\n');
   dialog.showMessageBox({ type: 'info', title: 'Mochi', message: M('helpTitle'), detail, buttons: ['OK'] });
 }

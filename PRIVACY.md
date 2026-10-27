@@ -22,7 +22,7 @@ To remember things between sessions, Mochi keeps one file on your own PC (in you
 
 Worries you type into **Feed me a worry** are never saved. Mochi reads them on your computer to write a reply, then forgets them.
 
-**Smarter replies (beta)** uses a small open AI model (Qwen3.5) that is installed with Mochi. It writes replies on your computer, so your worries are never sent anywhere. You can turn it off in Settings.
+**Smarter replies (beta)**, in the Mochi for Teams edition, uses a small open AI model (Qwen3.5) that is installed with Mochi. It writes replies on your computer, so your worries are never sent anywhere. You can turn it off in Settings.
 
 ## What Mochi does not do
 
