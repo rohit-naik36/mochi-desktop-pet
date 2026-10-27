@@ -11,7 +11,7 @@
   <header class="teams-head">
     <div>
       <h1>Mochi for Teams</h1>
-      <div class="muted">Your company's support contacts in Mochi, and anonymous team insights only if you say yes.</div>
+      <div class="muted">Your company's support, and your week with Mochi.</div>
     </div>
   </header>
 
@@ -26,6 +26,20 @@
     <p class="note">Trying it out? Use the demo code <b>MOCHI-DEMO-2026</b>.</p>
   </section>
 
+  <section id="consent" class="consent hidden">
+    <h2 class="co-name">One thing before we start</h2>
+    <p>Mochi can add your counts to your team's totals, so <span class="co-short"></span> can see how the team is doing and plan support where it's needed.</p>
+    <ul class="never">
+      <li>Your company sees team totals only, for teams of <span class="min-group"></span> or more.</li>
+      <li>Never your words, your name, or anything that points to you.</li>
+      <li>You can change your mind any time under Privacy.</li>
+    </ul>
+    <div class="row">
+      <button id="consent-yes" type="button">Yes, add my counts</button>
+      <button id="consent-no" type="button" class="ghost">No thanks</button>
+    </div>
+  </section>
+
   <div id="joined" class="hidden">
     <section class="co">
       <div class="co-top">
@@ -37,32 +51,29 @@
           <select id="team"><option value="">Choose your team</option></select>
         </label>
       </div>
-      <p class="note">If you share something heavy with Mochi, these come first:</p>
+      <p class="note">If things get heavy, you're not alone. These are here for you:</p>
       <div id="co-support" class="contacts"></div>
     </section>
 
-    <section>
+    <section id="week">
+      <h2>Your week with Mochi</h2>
+      <div id="tiles" class="tiles"></div>
+      <p id="week-empty" class="empty hidden">Your week starts here. Check in on your mood, take a real break, and it all shows up here.</p>
+    </section>
+
+    <section id="privacy" class="hidden">
+      <h2>Privacy</h2>
       <label class="switch">
         <input type="checkbox" id="insights">
         <span class="track" aria-hidden="true"></span>
-        <span class="label"><b>Anonymous insights</b><span class="note">Add my counts to my team's totals. Off by default.</span></span>
+        <span class="label"><b>Add my counts to my team's totals</b><span class="note">Team totals only, never your words or name.</span></span>
       </label>
-      <p id="insights-off" class="note">Mochi isn't counting anything for your company. Turn this on to help your HR team see how the team is doing, without seeing you.</p>
-    </section>
-
-    <section id="week" class="hidden">
-      <h2>This week, your laptop adds</h2>
-      <div id="tiles" class="tiles"></div>
-      <p id="week-empty" class="empty hidden">Nothing yet this week. Mochi counts as you go: mood check-ins, breaks and calls.</p>
       <details class="more">
-        <summary>See exactly what's shared</summary>
+        <summary>See exactly what's added this week</summary>
         <table id="preview" class="preview"><tbody></tbody></table>
-        <p class="note">That's everything: no name, email or device ID. HR only sees totals for teams of <span id="min-group"></span> or more people, rounded to the nearest <span id="round-to"></span>, never one person's counts. Nothing is sent until your company's Mochi Pulse is set up.</p>
+        <p class="note">That's everything: no name, email or device ID. Your company only sees totals for teams of <span class="min-group"></span> or more people, rounded to the nearest <span id="round-to"></span>.</p>
       </details>
-    </section>
-
-    <section>
-      <details class="more" open>
+      <details class="more">
         <summary>What never leaves this laptop</summary>
         <ul class="never">
           <li>Anything you type to Mochi. Worries are sorted into a theme here and the words are thrown away.</li>
@@ -74,7 +85,10 @@
       </details>
     </section>
 
-    <button id="leave" class="link">Leave company</button>
+    <div class="foot">
+      <button id="privacy-btn" class="link" type="button" aria-expanded="false">Privacy</button>
+      <button id="leave" class="link" type="button">Leave company</button>
+    </div>
   </div>
 
   <script src="teams.js"></script>

@@ -41,9 +41,14 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 .empty { background: #2a2a38; border-radius: 12px; padding: 12px; font-size: 13px; color: #cfcde0; margin: 0; }
 
 .more summary { cursor: pointer; font-size: 13px; color: #b9b7d0; margin-top: 10px; list-style: revert; }
-section > .more:first-child summary { margin-top: 0; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; font-weight: 650; }
+
 .preview { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 8px; }
 .preview td { padding: 5px 2px; border-bottom: 1px solid #2f2f3e; vertical-align: top; }
 .preview td:last-child { text-align: right; color: #ecebf5; font-variant-numeric: tabular-nums; }
 .preview td:first-child { color: #b9b7d0; }
 .never { margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.5; color: #cfcde0; }
+.consent p { font-size: 14px; line-height: 1.5; color: #cfcde0; margin: 6px 0; }
+.consent .row { margin-top: 14px; }
+button.ghost { background: transparent; color: #cfcde0; border: 1px solid #3a3a4c; }
+.foot { display: flex; gap: 16px; }
+.more summary { margin-top: 12px; }

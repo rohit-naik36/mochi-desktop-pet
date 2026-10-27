@@ -237,9 +237,11 @@ function setSilent(min) {
 
 // ---------- Mochi for Teams ----------
 
-// Counts only, and only once the person has turned insights on.
+// Counts only, kept on this laptop while the person is in a company: they
+// show as "your week" in the Teams window. Only when insights are on are
+// they added to the team's totals.
 function noteInsight(kind, value) {
-  if (!state.teams || !state.teams.insights) return;
+  if (!state.teams) return;
   Insights.record(state.insights, kind, value, new Date(), state.schedule === 'night' ? null : state.bedtime);
   if (teamsWin && !teamsWin.isDestroyed()) teamsWin.webContents.send('teams', teamsView());
 }
@@ -267,7 +269,7 @@ ipcMain.handle('teams-get', () => teamsView());
 ipcMain.handle('teams-join', (_e, code) => {
   const c = Company.lookup(code, app.getPath('userData'));
   if (!c) return { ok: false };
-  state.teams = { ...c, team: null, insights: false, joinedAt: Progress.dayKey() };
+  state.teams = { ...c, team: null, insights: false, asked: false, joinedAt: Progress.dayKey() };
   state.insights = {};
   teamsChanged();
   return { ok: true };
@@ -277,7 +279,7 @@ ipcMain.on('teams-set', (_e, partial = {}) => {
   if (typeof partial.team === 'string' && state.teams.teams.includes(partial.team)) state.teams.team = partial.team;
   if (typeof partial.insights === 'boolean') {
     state.teams.insights = partial.insights;
-    if (!partial.insights) state.insights = {}; // turning it off deletes what was counted
+    state.teams.asked = true; // the one-time consent screen has been answered
   }
   teamsChanged();
 });
@@ -293,9 +295,11 @@ function autoJoin() {
   if (state.teams) return;
   const c = Company.fromFile(app.getPath('userData'));
   if (c && c.autoJoin) {
-    state.teams = { ...c, team: null, insights: false, joinedAt: Progress.dayKey() };
+    state.teams = { ...c, team: null, insights: false, asked: false, joinedAt: Progress.dayKey() };
     saveState();
   }
+  // Ask once, on a friendly screen, before anything is added to team totals.
+  if (state.teams && state.teams.asked === false) setTimeout(openTeams, 8000);
 }
 
 let teamsWin = null;
