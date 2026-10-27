@@ -255,6 +255,7 @@ h2 .tag, h3 .tag { vertical-align: middle; margin-left: 8px; font-size: .68rem; 
 
 /* forms */
 form.enquiry { display: grid; gap: 16px; }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 .field { display: grid; gap: 6px; }
 .field label { font-weight: 700; }
 .field input, .field select, .field textarea { font: inherit; color: var(--ink); background: var(--sky); border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px; width: 100%; }

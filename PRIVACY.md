@@ -1,6 +1,6 @@
 # Mochi privacy policy
 
-_Last updated: 24 October 2026_
+_Last updated: 28 October 2026_
 
 Mochi is a desktop pet that keeps you company while you work. This policy explains what it stores and what it doesn't.
 
@@ -32,6 +32,15 @@ Worries you type into **Feed me a worry** are never saved. Mochi reads them on y
 - To know when you're away, Mochi asks Windows how many seconds it has been since the mouse or keyboard was last used. It never sees what you type or where you click.
 - So its eyes can follow your mouse pointer, Mochi checks where the pointer is on screen a few times a second. That position is used only for the eyes, never saved and never sent anywhere.
 - No data shared with anyone, including the developer.
+
+## Mochi for Teams (company edition)
+
+If your employer gives you Mochi for Teams, two small things are sent to the Mochi for Teams server (hosted by Supabase in Mumbai, India). Nothing else changes.
+
+- **A daily licence check.** It contains your company's join code, a one-way hash of your computer's id (so one laptop counts as one seat), the app version and, on Windows, which company Microsoft Entra tenant or domain the laptop is joined to. The server adds a secret to the hash before keeping it and stores only the company and the month. It sends back your company's support contacts, team list and welcome note.
+- **Weekly team totals, only if you turn them on.** Counts for one finished week: mood check-ins by level, worry themes (never the words), reminders shown and done, real breaks, late nights, calls and features used. No name, email or computer id is attached, and each week is sent at a random time apart from the licence check. The Mochi for Teams window shows exactly what would be sent. Your company sees totals for groups of 8 or more people, rounded to the nearest 5, never one person's numbers.
+
+Weekly totals are kept for a year. Seat records are kept while your company is a customer. Leaving the company in Mochi stops both.
 
 ## Your control
 

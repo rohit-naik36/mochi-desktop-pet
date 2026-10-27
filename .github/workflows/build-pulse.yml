@@ -1,0 +1,25 @@
+name: Build Mochi Pulse
+
+# Mochi Pulse is the HR app for Mochi for Teams. It is built on its own so
+# Mochi's installer never carries the HR view.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['pulse/**', '.github/workflows/build-pulse.yml']
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build installer and portable exe
+        run: npx electron-builder --config pulse/electron-builder.yml --win nsis portable --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mochi-pulse-windows
+          path: dist-pulse/*.exe

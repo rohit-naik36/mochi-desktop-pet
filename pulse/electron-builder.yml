@@ -1,0 +1,28 @@
+# Builds Mochi Pulse, the HR app, from this repo:
+#   npx electron-builder --config pulse/electron-builder.yml --win nsis portable
+appId: com.mochi.pulse
+productName: Mochi Pulse
+copyright: Copyright © 2026 Unorthologic LLP
+extraMetadata:
+  name: mochi-pulse
+  productName: Mochi Pulse
+  main: pulse/main.js
+  description: Mochi Pulse, team wellbeing totals for HR teams using Mochi for Teams.
+files:
+  - pulse/**/*
+  - "!pulse/tools/**"
+  - "!pulse/electron-builder.yml"
+directories:
+  output: dist-pulse
+  buildResources: pulse
+win:
+  icon: pulse/icon.png
+  target: [nsis, portable]
+nsis:
+  oneClick: true
+  shortcutName: Mochi Pulse
+portable:
+  artifactName: Mochi-Pulse-Portable-${version}.exe
+mac:
+  icon: pulse/icon.png
+  category: public.app-category.business
