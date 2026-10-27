@@ -23,7 +23,9 @@
     "appId": "com.mochi.desktoppet",
     "productName": "Mochi",
     "files": [
-      "src/**/*"
+      "src/**/*",
+      "!node_modules/@node-llama-cpp/*cuda*/**",
+      "!node_modules/node-llama-cpp/llama/gitRelease.bundle"
     ],
     "directories": {
       "buildResources": "build",
@@ -97,6 +99,13 @@
         "en-US"
       ],
       "artifactName": "Mochi-Store-${version}.${ext}"
-    }
+    },
+    "asarUnpack": [
+      "node_modules/node-llama-cpp/**",
+      "node_modules/@node-llama-cpp/**"
+    ]
+  },
+  "dependencies": {
+    "node-llama-cpp": "3.22.2"
   }
 }

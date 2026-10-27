@@ -7,6 +7,7 @@ const Progress = require('./progress');
 const Insights = require('./insights');
 const Company = require('./company');
 const Calls = require('./calls');
+const Ai = require('./ai');
 
 const MIN_MS = 60_000;
 const WIN_W = 220;
@@ -58,6 +59,7 @@ const defaults = {
   teams: null, // Mochi for Teams: { id, name, support, posh, teams, team, insights }
   insights: {}, // anonymous weekly counts, kept only while insights are on
   silent: { auto: true, until: 0 }, // quiet on calls; until = manual silent mode end (ms)
+  ai: { on: false, model: 'qwen3.5-2b' }, // offline AI replies (beta), off until the user turns it on
 };
 
 function loadState() {
@@ -164,6 +166,35 @@ function openPlay(game) {
 }
 
 ipcMain.handle('get-state', () => state);
+
+// ---------- offline AI (beta) ----------
+
+// The written reply is always ready first; the model may only reword it.
+ipcMain.handle('ai-reply', (_e, req = {}) => {
+  if (!state.ai.on || Ai.status().state !== 'ready' || !Ai.allowed(req.r, req.text)) return null;
+  return Ai.reply({ text: req.text, lang: req.lang, name: state.userName, pet: state.name, skin: state.skin });
+});
+
+function aiMenu() {
+  const s = Ai.status();
+  const m = Ai.MODELS[s.model];
+  const items = [{ label: 'Writes replies on this laptop. Your words never leave it.', enabled: false }];
+  if (s.state === 'downloading') items.push({ label: `Downloading ${m.name}… ${s.progress}%`, enabled: false });
+  else if (state.ai.on && s.state === 'ready') items.push({ label: 'Turn off', click: () => { state.ai.on = false; saveState(); Ai.turnOff(); } });
+  else items.push({ label: s.state === 'downloaded' ? 'Turn on' : `Turn on (one-time download, about ${(m.approxMB / 1000).toFixed(1)} GB)`, click: () => { state.ai.on = true; saveState(); Ai.turnOn(); } });
+  if (s.state === 'error') items.push({ label: 'Download failed. Try again later.', enabled: false });
+  if (s.state !== 'downloading') items.push({ label: 'Smaller model (faster, simpler)', type: 'checkbox', checked: s.model === 'qwen3.5-0.8b', click: (i) => { state.ai.model = i.checked ? 'qwen3.5-0.8b' : 'qwen3.5-2b'; saveState(); Ai.remove().then(() => { Ai.init(app.getPath('userData'), state.ai, aiChanged); if (state.ai.on) Ai.turnOn(); refreshTrayMenu(); }); } });
+  if (s.state === 'ready' || s.state === 'downloaded') items.push({ type: 'separator' }, { label: 'Remove the model and free space', click: () => { state.ai.on = false; saveState(); Ai.remove(); } });
+  return items;
+}
+
+let aiMenuAt = 0;
+function aiChanged(s) {
+  // Download progress arrives often; rebuild the menu at most once a second.
+  if (s.state === 'downloading' && Date.now() - aiMenuAt < 1000) return;
+  aiMenuAt = Date.now();
+  if (tray) refreshTrayMenu();
+}
 
 // ---------- points and badges ----------
 
@@ -461,6 +492,7 @@ function buildMenu() {
       { label: M('chase'), click: () => openPlay('chase') },
     ] },
     { label: M('worry'), click: () => openPlay('worry') },
+    { label: '✨ Smarter replies (beta)' + (state.ai.on && Ai.status().state === 'ready' ? ' ✓' : ''), submenu: aiMenu() },
     { label: M('nap'), click: () => send('action', 'sleep') },
     { label: M('schedule'), submenu: [
       ...[22, 23, 0, 1].map((h) => ({
@@ -695,6 +727,8 @@ if (!gotLock) {
     // in the bundle does this too; this covers `npm start`).
     if (IS_MAC) app.dock?.hide();
     loadState();
+    state.ai = { ...defaults.ai, ...state.ai };
+    Ai.init(app.getPath('userData'), state.ai, aiChanged);
     autoJoin();
     offerMoveToApplications();
     createWindow();

@@ -1,0 +1,26 @@
+name: Offline AI test
+
+# Experiment: downloads the small open models and checks how well and how
+# fast they word Mochi's replies on an ordinary CPU. Results land on the
+# run's Summary page.
+on:
+  workflow_dispatch:
+    inputs:
+      models:
+        description: Models to try (space separated)
+        default: 'hf:unsloth/Qwen3.5-0.8B-GGUF:Q4_K_M hf:unsloth/Qwen3.5-2B-GGUF:Q4_K_M hf:unsloth/Qwen3.5-4B-GGUF:Q4_K_M'
+  pull_request:
+    paths: ['src/ai*.js', 'tools/ai-eval.mjs', '.github/workflows/ai-eval.yml']
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node tools/ai-eval.mjs ${{ inputs.models || 'hf:unsloth/Qwen3.5-0.8B-GGUF:Q4_K_M hf:unsloth/Qwen3.5-2B-GGUF:Q4_K_M' }}
