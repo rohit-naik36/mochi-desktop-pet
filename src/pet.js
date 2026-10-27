@@ -110,7 +110,7 @@ function minuteTick() {
   });
   dailyCheckIns();
   scheduleTick();
-  if (asleep || focusUntil > Date.now()) return; // no tummy grumbles while you sleep or focus
+  if (asleep || focusUntil > Date.now() || hushed()) return; // no tummy grumbles while you sleep, focus or talk
   if (S.hunger > 75 && !bubbleSticky && Math.random() < 0.15) {
     say(T('hungry'), { actions: [{ label: T('feedBtn'), primary: true, run: feed }, { label: T('laterBtn') }], sticky: true });
   }
@@ -171,6 +171,8 @@ window.pet.onAction((a) => {
   else if (a === 'focus-stop') stopFocus();
   else if (a === 'mood') askMood();
   else if (a === 'gratitude') askGratitude();
+  else if (a === 'big-call') bigCall();
+  else if (a.startsWith('sneaky-') && !bubbleSticky && !hushed()) { float('👀'); say(T('sneaky.' + a.slice(7)), { ms: 7000 }); }
   else if (a === 'schedule-changed') {
     if (asleep === 'bed' && (S.schedule === 'night' || !inBedtime())) wakeUp(0);
     setMode('happy', 1200);
@@ -209,11 +211,13 @@ function fireNudge(key) {
   if (!S.nudges[key]) return scheduleNudge(key, nd.every());
   if (bubbleSticky || upsetKey) return scheduleNudge(key, 2); // don't stack reminders
   if (focusUntil > Date.now()) return scheduleNudge(key, (focusUntil - Date.now()) / MIN + 1); // wait for the break
+  if (hushed()) return scheduleNudge(key, 3); // on a call or in silent mode: try again after
   if (asleep) return scheduleNudge(key, nd.every()); // you're away or it's bedtime
   if (idleSec >= 5 * 60) return scheduleNudge(key, 5); // nobody at the desk right now
   if (mode === 'sleep') setMode('idle', 0);
   if (nd.anim) setMode(nd.anim, 3200);
   say(T(key + '.lines'), { sticky: true, actions: nudgeButtons(key) });
+  window.pet.insight('shown', key);
   clearTimeout(upsetTimers[key]);
   upsetTimers[key] = setTimeout(() => getUpset(key), UPSET_AFTER_MIN * MIN);
   scheduleNudge(key, nd.every());
@@ -251,11 +255,65 @@ function nudgeDone(key) {
 }
 
 function nudgeSnoozed(key) {
+  window.pet.insight('snoozed', key);
   clearTimeout(upsetTimers[key]);
   const wasUpset = calmDown();
   setMode('idle', 3000);
   if (wasUpset) say(T('snoozedGrumpy'), { ms: 2500 });
   scheduleNudge(key, 10);
+}
+
+// ---------- calls and silent mode ----------
+
+// On a call (the mic or camera is in use) or in silent mode, Mochi fades and
+// holds every reminder and line until it's over. Nothing about the call is
+// seen or heard; main only says "in use" or not.
+let onCall = false;
+let quietUntil = 0;
+let bigCallAt = 0;
+function hushed() { return onCall || quietUntil > Date.now(); }
+
+window.pet.onQuiet((q) => {
+  const was = onCall;
+  onCall = !!q.call;
+  quietUntil = q.until || 0;
+  document.body.classList.toggle('hushed', hushed());
+  if (hushed() && (!was || q.manual === 'on')) {
+    if (upsetKey) calmDown();
+    hideBubble(true);
+    if (q.manual === 'on') { float('🤫'); }
+  }
+  if (q.manual === 'off') say(T('silentEnd'), { ms: 3500 });
+  if (was && !onCall && !hushed()) afterCall(q.endedMin || 0);
+});
+
+function afterCall(min) {
+  if (Date.now() - bigCallAt < 3 * H) {
+    bigCallAt = 0;
+    const reply = (k) => () => say(T('bigCallHow.' + k), k === 'tough'
+      ? { sticky: true, actions: [{ label: T('menu.worry'), primary: true, run: () => window.pet.openPlay('worry') }, { label: T('okay') }] }
+      : { ms: 5000 });
+    return say(T('bigCallAsk'), { sticky: true, actions: [
+      { label: '😄', run: reply('great') }, { label: '😐', run: reply('okay') }, { label: '😞', run: reply('tough') },
+    ] });
+  }
+  if (min >= 20) {
+    setMode('stretch', 2000);
+    say(T('callDone', { count: min }), { sticky: true, actions: [
+      { label: T('stretchNow'), primary: true, run: () => nudgeDone('stretch') },
+      { label: T('laterBtn') },
+    ] });
+  }
+}
+
+function bigCall() {
+  bigCallAt = Date.now();
+  setMode('happy', 1500);
+  float('⭐');
+  say(T('bigCallPep'), { sticky: true, actions: [
+    { label: T('breathe1'), primary: true, run: () => window.pet.openPlay('breathe') },
+    { label: T('gotThis'), run: () => { float('💪'); say(T('gotThisReply'), { ms: 3500 }); } },
+  ] });
 }
 
 // ---------- focus with me ----------
@@ -327,7 +385,7 @@ const today = () => window.Progress.dayKey();
 // evening asks for one good thing. Both can also be opened from the menu.
 let startedAt = Date.now();
 function dailyCheckIns() {
-  if (bubbleSticky || upsetKey || focusUntil > Date.now() || mode === 'sleep') return;
+  if (bubbleSticky || upsetKey || focusUntil > Date.now() || hushed() || mode === 'sleep') return;
   if (Date.now() - startedAt < 10 * MIN) return; // let them settle in first
   const h = new Date().getHours();
   const moods = S.moods || {};
@@ -348,6 +406,7 @@ function saveMood(score) {
   S.moods = { ...(S.moods || {}), [today()]: score };
   window.pet.save({ moods: S.moods });
   window.pet.track('mood');
+  window.pet.insight('mood', score);
   setMode(score >= 4 ? 'happy' : 'idle', 1500);
   if (score >= 4) float(pick(['☀️', '💛', '✨']));
   const jar = S.gratitude || [];
@@ -648,7 +707,7 @@ async function reactToSpot(distance) {
 
 function scheduleChatter() {
   setTimeout(() => {
-    if (!bubbleSticky && mode !== 'sleep' && !(focusUntil > Date.now())) {
+    if (!bubbleSticky && mode !== 'sleep' && !(focusUntil > Date.now()) && !hushed()) {
       const h = new Date().getHours();
       let line;
       if (S.schedule === 'night' && (h >= 22 || h < 6) && Math.random() < 0.5) line = T('nightShiftChatter');
@@ -770,7 +829,7 @@ const ACTS = {
 };
 (function doSomething() {
   setTimeout(() => {
-    const free = S && !dragging && !asleep && !upsetKey && !bubbleSticky && mode !== 'sleep' && !(focusUntil > Date.now());
+    const free = S && !dragging && !asleep && !upsetKey && !bubbleSticky && mode !== 'sleep' && !(focusUntil > Date.now()) && !hushed();
     // Only while you're at the computer, and not over a bubble.
     if (free && idleSec < 120 && bubble.classList.contains('hidden')) {
       const own = ACTS[S.skin] || [];
@@ -869,4 +928,6 @@ window.pet.onState((s) => {
   scheduleChatter();
   setInterval(minuteTick, MIN);
   if (S.focusUntil > Date.now()) startFocus(S.focusMin || 25, S.focusUntil); // pick up where we left off
+  quietUntil = (S.silent && S.silent.until) || 0;
+  document.body.classList.toggle('hushed', hushed());
 });

@@ -637,7 +637,7 @@
   // Focus timer, mood check-in, gratitude jar, points and badges.
   const V08 = {
     en: {
-      menu: { board: '🏆 Achievement board', focus: '🛡️ Focus with me', focusMin: '{count} minutes', focusStop: '🛡️ Stop focusing ({count} min left)', mood: '🌤️ How I feel today', gratitude: '🫙 Gratitude jar' },
+      menu: { teams: '🏢 Mochi for Teams', board: '🏆 Achievement board', focus: '🛡️ Focus with me', focusMin: '{count} minutes', focusStop: '🛡️ Stop focusing ({count} min left)', mood: '🌤️ How I feel today', gratitude: '🫙 Gratitude jar' },
       focusStart: ["Focus mode on! {count} minutes. I'll guard you from distractions 🛡️", "Okay, {count} minutes of deep work. I'll be quiet as a cloud. Go! 🛡️", "Shields up{n}! See you in {count} minutes 🛡️"],
       focusShh: ['Shh, we\'re focusing 🤫', 'Pets after the timer! Eyes on the prize 🤫', "*whispers* You've got this. Back to it 🤫"],
       focusDone: ['DING! {count} minutes of focus{n}! 🏆 Break time?', 'You did it! {count} solid minutes. I\'m so proud of you 🏆', 'Focus session complete! Your brain just did a whole workout 🏆'],
@@ -937,6 +937,71 @@
     },
   };
   for (const lang of Object.keys(V091)) merge(STRINGS[lang], V091[lang]);
+
+  // Calls and silent mode: quiet while you talk, a pep talk before a big call.
+  const VCALLS = {
+    en: {
+      menu: { silent: '🔕 Silent mode', silentAuto: 'Go quiet during calls automatically', silent30: 'For 30 minutes', silent60: 'For 1 hour', silentOn: 'Until I turn it off', silentOff: 'Turn silent mode off', bigCall: '⭐ Big call coming up' },
+      silentEnd: ["I'm back! Did you miss me? 💛", 'Silent mode over. Hi again{n} ☁️'],
+      callDone: ['That was a {count}-minute call{n}. Stand up and stretch for a minute?', 'Call done! {count} minutes of talking. Stretch and a sip of water? 💧', 'Phew, {count} minutes! Your shoulders deserve a little stretch 🙆'],
+      stretchNow: 'Stretch now',
+      bigCallPep: ["You've prepared for this{n}. Slow breath in, slower breath out. You've got it ⭐", 'Big call? They want it to go well too. Speak slowly, smile once, and you will be great 💛', "Before you join: shoulders down, one deep breath. I'm cheering for you from here ⭐", "Remember the last time you were nervous and it went fine? Same energy{n}. Go! ⭐"],
+      breathe1: 'Breathe for 1 min', gotThis: 'I got this!',
+      gotThisReply: ['Go get them! 💪', "That's the spirit! Tell me how it went ⭐"],
+      bigCallAsk: 'How did the big call go{n}?',
+      bigCallHow: {
+        great: ['I knew it! 🎉 Proud of you{n}.', 'YES! Told you that you had it 🎉'],
+        okay: ['Okay is good. You showed up, and that counts 💛', 'Not every call is a movie scene. You did it, and that matters 💛'],
+        tough: ["Ugh, I'm sorry{n}. Tough calls happen to everyone, even the best. Want to feed me the worry?", "That sounds hard. It's one call, not the whole story. Want to tell me about it?"],
+      },
+      sneaky: {
+        eyes: ['Hehe, you clicked Done but your eyes kept working 😄 Next time, 20 seconds looking far away?', 'Caught you! 👀 Eye rest means looking away from the screen, even for 20 seconds.'],
+        water: ["Did the water actually happen{n}? 😄 I didn't see you leave. Sip some now?", 'Sneaky! 💧 Clicking Done is not the same as drinking water.'],
+        stretch: ["You said Done, but you never left the keyboard 😄 One real stretch? I'll wait.", 'Hmm, that was a very still stretch 🙆 Stand up for one minute?'],
+      },
+    },
+    hi: {
+      menu: { silent: '🔕 साइलेंट मोड', silentAuto: 'कॉल के दौरान अपने आप चुप रहो', silent30: '30 मिनट के लिए', silent60: '1 घंटे के लिए', silentOn: 'जब तक मैं बंद न करूँ', silentOff: 'साइलेंट मोड बंद करो', bigCall: '⭐ ज़रूरी कॉल आने वाली है' },
+      silentEnd: ['मैं वापस आ {g:गया|गई}! याद किया? 💛'],
+      callDone: ['{count} मिनट की कॉल थी{n}। एक मिनट उठकर स्ट्रेच करें?', 'कॉल ख़त्म! {count} मिनट बात की। थोड़ा पानी और स्ट्रेच? 💧'],
+      stretchNow: 'अभी स्ट्रेच करो',
+      bigCallPep: ['तुमने इसकी तैयारी की है{n}। धीरे साँस लो, और धीरे छोड़ो। तुम कर लोगे ⭐', 'ज़रूरी कॉल? सामने वाले भी चाहते हैं कि अच्छी जाए। धीरे बोलो, एक बार मुस्कुराओ 💛'],
+      breathe1: '1 मिनट साँस लो', gotThis: 'मैं तैयार हूँ!',
+      gotThisReply: ['जाओ, छा जाओ! 💪', 'यही तो! बताना कैसी रही ⭐'],
+      bigCallAsk: 'ज़रूरी कॉल कैसी रही{n}?',
+      bigCallHow: {
+        great: ['मुझे पता था! 🎉 तुम पर गर्व है{n}।'],
+        okay: ['ठीक भी अच्छा है। तुमने किया, यही मायने रखता है 💛'],
+        tough: ['ओह, माफ़ करना{n}। मुश्किल कॉल सबके साथ होती हैं। मुझे वो चिंता खिलाओगे?'],
+      },
+      sneaky: {
+        eyes: ['हेहे, Done दबाया पर आँखें काम करती रहीं 😄 अगली बार 20 सेकंड दूर देखना?'],
+        water: ['पानी सच में पिया{n}? 😄 मैंने तुम्हें उठते नहीं देखा।'],
+        stretch: ['Done तो कहा, पर कीबोर्ड छोड़ा ही नहीं 😄 एक सच्चा स्ट्रेच?'],
+      },
+    },
+    hinglish: {
+      menu: { silent: '🔕 Silent mode', silentAuto: 'Call ke time apne aap chup raho', silent30: '30 minute ke liye', silent60: '1 ghante ke liye', silentOn: 'Jab tak main band na karun', silentOff: 'Silent mode band karo', bigCall: '⭐ Important call aane wali hai' },
+      silentEnd: ['Main wapas aa {g:gaya|gayi}! Yaad kiya? 💛'],
+      callDone: ['{count} minute ki call thi{n}. Ek minute uthke stretch karein?', 'Call khatam! {count} minute baat ki. Thoda paani aur stretch? 💧'],
+      stretchNow: 'Abhi stretch karo',
+      bigCallPep: ['Tumne iski taiyari ki hai{n}. Dheere saans lo, aur dheere chhodo. Tum kar loge ⭐', 'Important call? Saamne wale bhi chahte hain ki achhi jaaye. Dheere bolo, ek baar smile karo 💛'],
+      breathe1: '1 minute saans lo', gotThis: 'Main ready hoon!',
+      gotThisReply: ['Jao, chha jao! 💪', 'Yehi toh! Batana kaisi rahi ⭐'],
+      bigCallAsk: 'Important call kaisi rahi{n}?',
+      bigCallHow: {
+        great: ['Mujhe pata tha! 🎉 Proud of you{n}.'],
+        okay: ['Theek bhi achha hai. Tumne kiya, wahi matter karta hai 💛'],
+        tough: ['Oh, sorry{n}. Tough calls sabke saath hoti hain. Mujhe wo tension khilaoge?'],
+      },
+      sneaky: {
+        eyes: ['Hehe, Done dabaya par aankhen kaam karti rahi 😄 Next time 20 second door dekhna?'],
+        water: ['Paani sach mein piya{n}? 😄 Maine tumhe uthte nahi dekha.'],
+        stretch: ['Done toh bola, par keyboard chhoda hi nahi 😄 Ek sachcha stretch?'],
+      },
+    },
+  };
+  for (const lang of Object.keys(VCALLS)) merge(STRINGS[lang], VCALLS[lang]);
 
   // 11 -> "11 pm" in English; "11" in Hindi/Hinglish, which say "raat 11 baje".
   const hourLabel = (lang, h) => (lang === 'en' ? `${h % 12 || 12} ${h < 12 ? 'am' : 'pm'}` : String(h % 12 || 12));

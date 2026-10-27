@@ -347,6 +347,15 @@ function Worry() {
     setTimeout(() => text.focus(), 50);
   }
 
+  // Mochi for Teams: the company's own EAP and HR come first, and someone
+  // who was hurt at work also sees the company's POSH committee.
+  function withCompany(r) {
+    const co = S.teams;
+    if (!co) return;
+    if (r.helplines) r.helplines = [...co.support, ...r.helplines];
+    else if (r.topic === 'harm') r.helplines = [co.posh, ...co.support].filter(Boolean);
+  }
+
   function showReply(r) {
     text.classList.add('hidden');
     btn.classList.add('hidden');
@@ -408,6 +417,8 @@ function Worry() {
     if (heart.kind) return sweetTalk(heart, lang);
     const tr = text.getBoundingClientRect();
     const r = window.WorryEater.respond(words, S.userName, S.lang || 'en', S.petGender);
+    window.play.insight('worry', r.topic); // the theme only, never the words
+    withCompany(r);
     r.text = words;
     if (r.celebrate) return celebrate(r, tr);
     mood('eat');
