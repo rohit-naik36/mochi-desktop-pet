@@ -24,7 +24,7 @@
   }
 
   function blank() {
-    return { days: [], late: [], moods: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }, themes: {}, low: 0, support: 0, shown: {}, done: {}, snoozed: {}, away: {}, features: {}, calls: 0, callMin: 0 };
+    return { days: [], late: [], moods: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }, themes: {}, low: 0, support: 0, shown: {}, done: {}, snoozed: {}, away: {}, features: {}, calls: 0, callMin: 0, answer: null };
   }
 
   function week(store, d) {
@@ -48,9 +48,10 @@
     return h >= bedtime || h < 5;
   }
 
-  // kind: 'mood' | 'worry' | 'shown' | 'done' | 'snoozed' | 'away' | 'feature' | 'call'
+  // kind: 'mood' | 'worry' | 'shown' | 'done' | 'snoozed' | 'away' | 'feature' | 'call' | 'answer'
   // value: a mood 1-5, a worry topic id, a reminder key, a feature name, or a
-  // call's length in minutes. 'away' means the keyboard and mouse really went
+  // call's length in minutes, or { q, a }: the company's check-in question id
+  // and the option number picked. 'away' means the keyboard and mouse really went
   // quiet after "Done" on a break.
   // Anything else is ignored, so free text can never end up stored here.
   function record(store, kind, value, d = new Date(), bedtime = 23) {
@@ -70,6 +71,9 @@
       if (m > 0 && m < 24 * 60) { w.calls += 1; w.callMin += m; }
     } else if (kind === 'shown' || kind === 'done' || kind === 'snoozed' || kind === 'away') {
       if (NUDGES.includes(value)) w[kind][value] = (w[kind][value] || 0) + 1;
+    } else if (kind === 'answer') {
+      const q = value && value.q, a = value && value.a;
+      if (typeof q === 'string' && /^[a-z0-9-]{1,40}$/.test(q) && Number.isInteger(a) && a >= 0 && a < 5) w.answer = { q, a };
     } else if (kind === 'feature') {
       if (FEATURES.includes(value)) w.features[value] = (w.features[value] || 0) + 1;
     }
@@ -95,6 +99,7 @@
       reminders: { shown: sum(w.shown), done: sum(w.done), away: sum(w.away), snoozed: sum(w.snoozed) },
       calls: { count: w.calls, minutes: w.callMin },
       features: { ...w.features },
+      ...(w.answer ? { answer: { ...w.answer } } : {}),
     };
   }
 

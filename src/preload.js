@@ -24,4 +24,7 @@ contextBridge.exposeInMainWorld('pet', {
   onAchievement: (fn) => ipcRenderer.on('achievement', (_e, id) => fn(id)),
   onQuiet: (fn) => ipcRenderer.on('quiet', (_e, q) => fn(q)),
   onActivity: (fn) => ipcRenderer.on('activity', (_e, idleSec) => fn(idleSec)),
+  onCompany: (fn) => ipcRenderer.on('company', (_e, m) => fn(m)),
+  companyShown: (kind, id, shown) => ipcRenderer.send('company-shown', kind, id, shown),
+  openTeams: () => ipcRenderer.send('open-teams'),
 });

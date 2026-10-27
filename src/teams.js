@@ -21,6 +21,32 @@ function contactLine(c) {
 }
 
 let privacyOpen = false;
+let changing = false; // showing the options again to change an answer
+
+const dateLabel = (d) => new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+
+function renderQuestion(q, insightsOn) {
+  $('question').classList.toggle('hidden', !q);
+  if (!q) return;
+  $('q-text').textContent = q.text;
+  $('q-off').classList.toggle('hidden', insightsOn);
+  const answered = q.answer != null && !changing;
+  $('q-done').classList.toggle('hidden', !answered || !insightsOn);
+  if (answered) {
+    $('q-done').textContent = q.answer >= 0 ? `You answered "${q.options[q.answer]}". Thank you! ` : 'You skipped this one. ';
+    const again = document.createElement('button');
+    again.type = 'button'; again.className = 'link inline';
+    again.textContent = q.answer >= 0 ? 'Change my answer' : 'Answer after all';
+    again.addEventListener('click', () => { changing = true; if (last) render(last); });
+    $('q-done').append(again);
+  }
+  const buttons = insightsOn && !answered ? [
+    ...q.options.map((o, i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = o; b.addEventListener('click', () => { changing = false; window.teams.answer(q.id, i); }); return b; }),
+    ...(q.answer == null ? [Object.assign(document.createElement('button'), { type: 'button', className: 'skip', textContent: 'Skip' })] : []),
+  ] : [];
+  for (const b of buttons) if (b.className === 'skip') b.addEventListener('click', () => window.teams.answer(q.id, -1));
+  $('q-options').replaceChildren(...buttons);
+}
 
 function render(v) {
   const co = v.company;
@@ -46,6 +72,17 @@ function render(v) {
   $('insights').checked = !!co.insights;
   $('privacy').classList.toggle('hidden', !privacyOpen);
   $('privacy-btn').setAttribute('aria-expanded', String(privacyOpen));
+
+  // The company's wellness campaign this week, if any.
+  const camp = v.campaign;
+  $('campaign').classList.toggle('hidden', !camp);
+  if (camp) {
+    $('campaign-name').textContent = camp.name;
+    $('campaign-dates').textContent = `${dateLabel(camp.start)} to ${dateLabel(camp.end)}`;
+    $('campaign-note').textContent = camp.note || '';
+    $('campaign-note').classList.toggle('hidden', !camp.note);
+  }
+  renderQuestion(v.question, !!co.insights);
 
   // Your week: this person's own counts, shown to them alone.
   const p = v.packet;
@@ -80,6 +117,7 @@ function render(v) {
     ['Breaks with real time away', p.reminders.away],
     ['Calls', `${p.calls.count} (${p.calls.minutes} min)`],
     ['Features used', list(p.features, FEATURE)],
+    ['Answer to the weekly question', p.answer && v.question && v.question.id === p.answer.q ? v.question.options[p.answer.a] : p.answer ? `Option ${p.answer.a + 1}` : 'None'],
   ] : [['Nothing', 'Adding to team totals is off']];
   $('preview').tBodies[0].replaceChildren(...rows.map(([k, val]) => {
     const tr = document.createElement('tr');
