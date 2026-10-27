@@ -1063,6 +1063,93 @@
   };
   for (const lang of Object.keys(VAPPS)) merge(STRINGS[lang], VAPPS[lang]);
 
+  // One-line explanations for the tray menu: tooltips on Mac, and the
+  // "What does everything do?" list on every system.
+  const VTIPS = {
+    en: {
+      menu: { help: '❓ What does everything do?', helpTitle: 'What everything in the menu does' },
+      tips: {
+        worry: "Type what's bothering you. Mochi eats it and replies like a friend.",
+        feed: 'Give Mochi a snack to keep it happy and full.',
+        play: 'Mini games to unwind: breathing, bubble pop and chase the light.',
+        nap: 'Mochi takes a short nap.',
+        focus: 'Mochi guards a 25 or 50 minute focus session and holds reminders until your break.',
+        silent: 'Keeps Mochi quiet, automatically during calls or for a set time.',
+        bigCall: 'A pep talk before an important call, and a check-in after.',
+        mood: 'Log how you feel today. It stays on this computer.',
+        gratitude: 'Save one good thing from today, to read back on hard days.',
+        board: 'Your points, streaks and badges.',
+        smarter: 'A small AI on this laptop writes more personal worry replies. One-time download; your words never leave.',
+        noticeApps: 'After a long stretch in one app, Mochi jokes about it and suggests a break. Checks the app name only.',
+        teams: "Join your company's Mochi with a code to see its support contacts.",
+        schedule: 'When Mochi goes to bed, or night-shift mode if you work nights.',
+        buddy: 'Pick a buddy. Each one has its own look and personality.',
+        name: 'Tell Mochi what to call you.',
+        gender: 'How your buddy talks about itself (matters in Hindi and Hinglish).',
+        language: 'English, Hindi or Hinglish.',
+        chatty: 'How often Mochi talks on its own.',
+        wander: 'Lets Mochi stroll along the bottom of your screen.',
+        reminders: 'Water, stretch and 20-20-20 eye rest reminders.',
+        startup: 'Open Mochi automatically when your computer starts.',
+      },
+    },
+    hi: {
+      menu: { help: '❓ कौन सा बटन क्या करता है?', helpTitle: 'मेन्यू में हर चीज़ क्या करती है' },
+      tips: {
+        worry: 'जो परेशान कर रहा है, लिखो। Mochi उसे खा लेता है और दोस्त की तरह जवाब देता है।',
+        feed: 'Mochi को स्नैक दो, ताकि वो खुश और भरा रहे।',
+        play: 'आराम के छोटे खेल: साँस, बुलबुले और रोशनी पकड़ो।',
+        nap: 'Mochi थोड़ी देर सो जाता है।',
+        focus: '25 या 50 मिनट फ़ोकस, Mochi ब्रेक तक रिमाइंडर रोक कर रखता है।',
+        silent: 'Mochi को चुप रखता है, कॉल के दौरान अपने आप या कुछ देर के लिए।',
+        bigCall: 'ज़रूरी कॉल से पहले हौसला, और बाद में हाल-चाल।',
+        mood: 'आज कैसा लग रहा है, लिखो। ये इसी कंप्यूटर पर रहता है।',
+        gratitude: 'आज की एक अच्छी बात सेव करो, मुश्किल दिनों में पढ़ने के लिए।',
+        board: 'तुम्हारे पॉइंट्स, स्ट्रीक और बैज।',
+        smarter: 'इस लैपटॉप पर एक छोटा AI ज़्यादा अपने जैसे जवाब लिखता है। एक बार डाउनलोड; तुम्हारे शब्द कहीं नहीं जाते।',
+        noticeApps: 'एक ही ऐप में बहुत देर रहने पर Mochi मज़ाक करता है और ब्रेक याद दिलाता है। सिर्फ़ ऐप का नाम देखता है।',
+        teams: 'कोड से अपनी कंपनी का Mochi जोड़ो और उसके सपोर्ट कॉन्टैक्ट देखो।',
+        schedule: 'Mochi कब सोए, या रात की शिफ़्ट वाला मोड।',
+        buddy: 'अपना दोस्त चुनो। हर एक का अपना रूप और स्वभाव है।',
+        name: 'Mochi को बताओ तुम्हें क्या बुलाए।',
+        gender: 'तुम्हारा दोस्त अपने बारे में कैसे बोले।',
+        language: 'English, हिंदी या Hinglish।',
+        chatty: 'Mochi अपने आप कितना बोले।',
+        wander: 'Mochi स्क्रीन के नीचे घूमता रहे।',
+        reminders: 'पानी, स्ट्रेच और 20-20-20 आँखों के आराम के रिमाइंडर।',
+        startup: 'कंप्यूटर चालू होते ही Mochi अपने आप खुले।',
+      },
+    },
+    hinglish: {
+      menu: { help: '❓ Kaunsa option kya karta hai?', helpTitle: 'Menu mein har cheez kya karti hai' },
+      tips: {
+        worry: 'Jo pareshan kar raha hai, likho. Mochi use kha leta hai aur dost ki tarah reply karta hai.',
+        feed: 'Mochi ko snack do, taaki wo khush aur bhara rahe.',
+        play: 'Relax karne ke chhote games: breathing, bubble pop aur light pakdo.',
+        nap: 'Mochi thodi der so jata hai.',
+        focus: '25 ya 50 minute focus, Mochi break tak reminders rok ke rakhta hai.',
+        silent: 'Mochi ko chup rakhta hai, call ke time apne aap ya kuch der ke liye.',
+        bigCall: 'Important call se pehle pep talk, aur baad mein haal-chaal.',
+        mood: 'Aaj kaisa lag raha hai, likho. Ye isi computer pe rehta hai.',
+        gratitude: 'Aaj ki ek achhi baat save karo, mushkil din pe padhne ke liye.',
+        board: 'Tumhare points, streaks aur badges.',
+        smarter: 'Is laptop pe ek chhota AI zyada personal replies likhta hai. Ek baar download; tumhare words kahin nahi jaate.',
+        noticeApps: 'Ek hi app mein bahut der rehne pe Mochi joke karta hai aur break yaad dilata hai. Sirf app ka naam dekhta hai.',
+        teams: 'Code se apni company ka Mochi join karo aur uske support contacts dekho.',
+        schedule: 'Mochi kab soye, ya night shift mode.',
+        buddy: 'Apna buddy chuno. Har ek ka apna look aur nature hai.',
+        name: 'Mochi ko batao tumhe kya bulaye.',
+        gender: 'Tumhara buddy apne baare mein kaise bole (Hindi aur Hinglish mein farak padta hai).',
+        language: 'English, Hindi ya Hinglish.',
+        chatty: 'Mochi apne aap kitna bole.',
+        wander: 'Mochi screen ke neeche ghoomta rahe.',
+        reminders: 'Paani, stretch aur 20-20-20 aankhon ke rest ke reminders.',
+        startup: 'Computer start hote hi Mochi apne aap khule.',
+      },
+    },
+  };
+  for (const lang of Object.keys(VTIPS)) merge(STRINGS[lang], VTIPS[lang]);
+
   // 11 -> "11 pm" in English; "11" in Hindi/Hinglish, which say "raat 11 baje".
   const hourLabel = (lang, h) => (lang === 'en' ? `${h % 12 || 12} ${h < 12 ? 'am' : 'pm'}` : String(h % 12 || 12));
 

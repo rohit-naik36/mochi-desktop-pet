@@ -207,6 +207,7 @@ function setApps(on) {
 function appsItem(M) {
   return {
     label: M('noticeApps'),
+    toolTip: I18N.t(state.lang, 'tips.noticeApps'),
     type: 'checkbox',
     checked: !!state.apps,
     click: (i) => {
@@ -237,6 +238,7 @@ function aiItem(M) {
   else if (s.state === 'error') note = M('smarterFailed');
   return {
     label: M('smarter') + (note ? ` (${note})` : ''),
+    toolTip: I18N.t(state.lang, 'tips.smarter'),
     type: 'checkbox',
     checked: on,
     enabled: s.state !== 'downloading',
@@ -536,6 +538,8 @@ function buildTray() {
 
 function buildMenu() {
   const M = (key, count) => I18N.t(state.lang, 'menu.' + key, { name: state.userName, pet: state.name, gender: state.petGender, count });
+  // Hover text on Mac (Windows tray menus don't show tooltips; the help item covers both).
+  const tip = (key) => ({ toolTip: I18N.t(state.lang, 'tips.' + key, { pet: state.name }) });
   const toggle = (key, label) => ({
     label,
     type: 'checkbox',
@@ -551,39 +555,39 @@ function buildMenu() {
   }
   return Menu.buildFromTemplate([
     { label: `${state.name}  ❤ ${Math.round(state.happiness)}  🍙 ${Math.round(100 - state.hunger)}  ⭐ ${state.stats.points}`, enabled: false },
-    { label: M('worry'), click: () => openPlay('worry') },
-    { label: M('feed'), click: () => send('action', 'feed') },
-    { label: M('play'), submenu: [
+    { label: M('worry'), ...tip('worry'), click: () => openPlay('worry') },
+    { label: M('feed'), ...tip('feed'), click: () => send('action', 'feed') },
+    { label: M('play'), ...tip('play'), submenu: [
       { label: M('playTime'), click: () => openPlay() },
       { type: 'separator' },
       { label: M('breathe'), click: () => openPlay('breathe') },
       { label: M('bubbles'), click: () => openPlay('bubbles') },
       { label: M('chase'), click: () => openPlay('chase') },
     ] },
-    { label: M('nap'), click: () => send('action', 'sleep') },
+    { label: M('nap'), ...tip('nap'), click: () => send('action', 'sleep') },
     { type: 'separator' },
     state.focusUntil > Date.now()
       ? { label: M('focusStop', Math.ceil((state.focusUntil - Date.now()) / MIN_MS)), click: () => send('action', 'focus-stop') }
-      : { label: M('focus'), submenu: [25, 50].map((m) => ({ label: M('focusMin', m), click: () => send('action', 'focus-' + m) })) },
-    { label: M('silent') + (quietNow() ? ' ✓' : ''), submenu: [
+      : { label: M('focus'), ...tip('focus'), submenu: [25, 50].map((m) => ({ label: M('focusMin', m), click: () => send('action', 'focus-' + m) })) },
+    { label: M('silent') + (quietNow() ? ' ✓' : ''), ...tip('silent'), submenu: [
       { label: M('silentAuto'), type: 'checkbox', checked: state.silent.auto, click: (item) => { state.silent.auto = item.checked; saveState(); if (!item.checked && onCall) { onCall = false; sendQuiet(); } } },
       { type: 'separator' },
       ...(state.silent.until > Date.now()
         ? [{ label: M('silentOff'), click: () => setSilent(0) }]
         : [{ label: M('silent30'), click: () => setSilent(30) }, { label: M('silent60'), click: () => setSilent(60) }, { label: M('silentOn'), click: () => setSilent(-1) }]),
       { type: 'separator' },
-      { label: M('bigCall'), click: () => send('action', 'big-call') },
+      { label: M('bigCall'), ...tip('bigCall'), click: () => send('action', 'big-call') },
     ] },
-    { label: M('mood'), click: () => send('action', 'mood') },
-    { label: M('gratitude'), click: () => send('action', 'gratitude') },
-    { label: M('board'), click: openBoard },
+    { label: M('mood'), ...tip('mood'), click: () => send('action', 'mood') },
+    { label: M('gratitude'), ...tip('gratitude'), click: () => send('action', 'gratitude') },
+    { label: M('board'), ...tip('board'), click: openBoard },
     { type: 'separator' },
     { label: M('settings'), submenu: [
       aiItem(M),
       ...(Apps.supported() ? [appsItem(M)] : []),
-      { label: state.teams ? '🏢 ' + state.teams.name : M('teams'), click: openTeams },
+      { label: state.teams ? '🏢 ' + state.teams.name : M('teams'), ...tip('teams'), click: openTeams },
       { type: 'separator' },
-      { label: M('schedule'), submenu: [
+      { label: M('schedule'), ...tip('schedule'), submenu: [
         ...[22, 23, 0, 1].map((h) => ({
           label: M('bedAt', I18N.hourLabel(state.lang, h)),
           type: 'radio',
@@ -593,7 +597,7 @@ function buildMenu() {
         { type: 'separator' },
         { label: M('nightShift'), type: 'radio', checked: state.schedule === 'night', click: () => setSchedule('night') },
       ] },
-      { label: M('buddy'), submenu: SKINS.map((sk) => ({
+      { label: M('buddy'), ...tip('buddy'), submenu: SKINS.map((sk) => ({
         label: sk.label,
         type: 'radio',
         checked: state.skin === sk.id,
@@ -607,29 +611,29 @@ function buildMenu() {
           send('action', 'switched');
         },
       })) },
-      { label: state.userName ? M('changeName') : M('name'), click: () => send('action', 'ask-name') },
-      { label: M('gender'), submenu: ['male', 'female', 'nonbinary'].map((g) => ({
+      { label: state.userName ? M('changeName') : M('name'), ...tip('name'), click: () => send('action', 'ask-name') },
+      { label: M('gender'), ...tip('gender'), submenu: ['male', 'female', 'nonbinary'].map((g) => ({
         label: I18N.t(state.lang, 'gender.' + g),
         type: 'radio',
         checked: state.petGender === g,
         click: () => { state.petGender = g; saveState(); refreshTrayMenu(); send('state', state); send('action', 'gender-changed'); },
       })) },
-      { label: M('language'), submenu: I18N.LANGS.map((l) => ({
+      { label: M('language'), ...tip('language'), submenu: I18N.LANGS.map((l) => ({
         label: l.label,
         type: 'radio',
         checked: state.lang === l.id,
         click: () => { state.lang = l.id; saveState(); refreshTrayMenu(); send('state', state); send('action', 'switched'); },
       })) },
-      { label: M('chatty'), submenu: ['quiet', 'normal', 'chatty'].map((c) => ({
+      { label: M('chatty'), ...tip('chatty'), submenu: ['quiet', 'normal', 'chatty'].map((c) => ({
         label: M('chatty_' + c),
         type: 'radio',
         checked: (state.chatty || 'normal') === c,
         click: () => { state.chatty = c; saveState(); send('state', state); },
       })) },
-      { label: M('wander'), type: 'checkbox', checked: state.walking,
+      { label: M('wander'), ...tip('wander'), type: 'checkbox', checked: state.walking,
         click: (i) => { state.walking = i.checked; saveState(); send('state', state); } },
       { type: 'separator' },
-      { label: M('reminders'), submenu: [
+      { label: M('reminders'), ...tip('reminders'), submenu: [
         toggle('water', M('water', state.waterEveryMin)),
         toggle('stretch', M('stretch', state.stretchEveryMin)),
         toggle('eyes', M('eyes', state.eyesEveryMin)),
@@ -637,15 +641,26 @@ function buildMenu() {
       // Store (MSIX) builds can't register to start with Windows this way.
       // On macOS (including the sandboxed App Store build) the app registers
       // itself as a login item through SMAppService.
-      ...(process.windowsStore ? [] : [IS_MAC ? { label: M('startupMac'), type: 'checkbox',
+      ...(process.windowsStore ? [] : [IS_MAC ? { label: M('startupMac'), ...tip('startup'), type: 'checkbox',
         checked: app.getLoginItemSettings({ type: 'mainAppService' }).status === 'enabled',
-        click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked, type: 'mainAppService' }) } : { label: M('startup'), type: 'checkbox',
+        click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked, type: 'mainAppService' }) } : { label: M('startup'), ...tip('startup'), type: 'checkbox',
         checked: app.getLoginItemSettings().openAtLogin,
         click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked }) }]),
     ] },
+    { label: M('help'), click: showHelp },
     { label: M('bringBack'), click: () => { const wa = workArea(); placeAt(wa.x + wa.width - WIN_W - 40, wa.y + wa.height - WIN_H); } },
     { label: M('quit'), click: () => app.quit() },
   ]);
+}
+
+// Plain list of what each menu item does, since Windows menus can't show tooltips.
+function showHelp() {
+  const M = (key) => I18N.t(state.lang, 'menu.' + key, { name: state.userName, pet: state.name, gender: state.petGender });
+  const Tp = (key) => I18N.t(state.lang, 'tips.' + key, { pet: state.name });
+  const rows = [['worry'], ['feed'], ['play'], ['nap'], ['focus'], ['silent'], ['bigCall'], ['mood'], ['gratitude'], ['board'],
+    ['settings', null], ['smarter'], ['noticeApps'], ['teams'], ['schedule'], ['buddy'], ['name'], ['gender'], ['language'], ['chatty'], ['wander'], ['reminders'], ...(process.windowsStore ? [] : [[IS_MAC ? 'startupMac' : 'startup', 'startup']])];
+  const detail = rows.map(([k, t]) => (t === null ? '\n' + M(k) : `• ${M(k).replace(/\s*\(.*\)$/, '')}: ${Tp(t || k)}`)).join('\n');
+  dialog.showMessageBox({ type: 'info', title: 'Mochi', message: M('helpTitle'), detail, buttons: ['OK'] });
 }
 
 function setSchedule(schedule, bedtime = state.bedtime) {
