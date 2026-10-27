@@ -98,7 +98,7 @@
     timer = setInterval(show, 4800);
   }
 
-  // Enquiry forms send to our inbox through FormSubmit, right from the page.
+  // Enquiry forms send to our inbox right from the page.
   for (const form of document.querySelectorAll('form[data-mailto]')) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -112,12 +112,22 @@
       const tell = (msg) => { if (note) { note.textContent = msg; note.hidden = false; } };
       button.disabled = true;
       tell('Sending…');
+      // Give up after 15 seconds so the form never sits on "Sending…".
+      const stop = new AbortController();
+      const timer = setTimeout(() => stop.abort(), 15000);
       try {
-        const res = await fetch(`https://formsubmit.co/ajax/${form.dataset.mailto}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ ...fields, _subject: subject, _replyto: fields.email, _template: 'table', _captcha: 'false' }),
-        });
+        // Web3Forms when the form carries an access key, FormSubmit otherwise.
+        const res = form.dataset.key
+          ? await fetch('https://api.web3forms.com/submit', {
+              method: 'POST', signal: stop.signal,
+              headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+              body: JSON.stringify({ ...fields, access_key: form.dataset.key, subject, from_name: 'mochicuddle.com', replyto: fields.email }),
+            })
+          : await fetch(`https://formsubmit.co/ajax/${form.dataset.mailto}`, {
+              method: 'POST', signal: stop.signal,
+              headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+              body: JSON.stringify({ ...fields, _subject: subject, _replyto: fields.email, _template: 'table', _captcha: 'false' }),
+            });
         const out = await res.json().catch(() => ({}));
         if (!res.ok || String(out.success) !== 'true') throw new Error(out.message || res.status);
         form.reset();
@@ -125,6 +135,7 @@
       } catch {
         tell(`Sorry, that didn't send. Please try again in a minute, or write to ${form.dataset.mailto}.`);
       } finally {
+        clearTimeout(timer);
         button.disabled = false;
       }
     });

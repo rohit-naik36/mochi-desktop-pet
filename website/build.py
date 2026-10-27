@@ -9,6 +9,10 @@ from pathlib import Path
 
 SITE = 'https://mochicuddle.com'
 EMAIL = 'hello@mochicuddle.com'
+# Web3Forms access key for the enquiry forms (emailed to EMAIL by web3forms.com).
+# Empty means the forms use FormSubmit instead.
+FORM_KEY = ''
+FORM_ATTR = f' data-key="{FORM_KEY}"' if FORM_KEY else ''
 STORE = 'https://apps.microsoft.com/detail/9P81ZJPTQ47Q'
 RELEASES = 'https://github.com/rohit-naik36/mochi-desktop-pet/releases/latest'
 STUDIO = 'Little Smoke Studio'
@@ -329,7 +333,7 @@ pages['teams.html'] = page('teams.html', 'Mochi for teams', 'Mochi for teams bri
     </div></section>
     ''' + f'''<section id="enquire"><div class="wrap split">
       <div class="stack"><p class="eyebrow">Enquire</p><h2>Bring Mochi to your team</h2><p class="lede">Tell us a little about your company and we will get back to you within two working days.</p><p class="muted">Prefer email? Write to <a href="mailto:{EMAIL}">{EMAIL}</a>.</p></div>
-      <form class="panel enquiry" data-mailto="{EMAIL}" data-subject="Mochi for teams enquiry">
+      <form class="panel enquiry" data-mailto="{EMAIL}"{FORM_ATTR} data-subject="Mochi for teams enquiry">
         <div class="two"><div class="field"><label for="t-name">Your name</label><input id="t-name" name="name" required autocomplete="name"></div><div class="field"><label for="t-email">Work email</label><input id="t-email" name="email" type="email" required autocomplete="email"></div></div>
         <div class="two"><div class="field"><label for="t-company">Company</label><input id="t-company" name="company" required autocomplete="organization"></div><div class="field"><label for="t-size">Team size</label><select id="t-size" name="size"><option>Under 50</option><option>50 to 250</option><option>250 to 1,000</option><option>Over 1,000</option></select></div></div>
         <div class="field"><label for="t-msg">What would you like Mochi to help with?</label><textarea id="t-msg" name="message" placeholder="For example: break habits for our night-shift support team"></textarea></div>
@@ -438,7 +442,7 @@ pages['contact.html'] = page('contact.html', 'Contact', 'Contact the Mochi team 
         <p class="muted">We usually reply within two working days.</p>
         <dl class="kv"><dt>Companies</dt><dd><a href="teams.html#enquire">Mochi for teams enquiry</a></dd><dt>Press</dt><dd><a href="press.html">Press kit</a></dd><dt>In crisis?</dt><dd>Please don't wait for an email. Call Tele-MANAS on 14416 or 112. <a href="safety.html">More helplines</a></dd></dl>
       </div>
-      <form class="panel enquiry" data-mailto="{EMAIL}" data-subject="Hello from mochicuddle.com">
+      <form class="panel enquiry" data-mailto="{EMAIL}"{FORM_ATTR} data-subject="Hello from mochicuddle.com">
         <div class="two"><div class="field"><label for="c-name">Your name</label><input id="c-name" name="name" required autocomplete="name"></div><div class="field"><label for="c-email">Email</label><input id="c-email" name="email" type="email" required autocomplete="email"></div></div>
         <div class="field"><label for="c-topic">Topic</label><select id="c-topic" name="topic"><option>Help with the app</option><option>Mochi for teams</option><option>Press</option><option>Partnership</option><option>Something else</option></select></div>
         <div class="field"><label for="c-msg">Message</label><textarea id="c-msg" name="message" required></textarea></div>
