@@ -175,18 +175,27 @@ ipcMain.handle('ai-reply', (_e, req = {}) => {
   return Ai.reply({ text: req.text, lang: req.lang, name: state.userName, pet: state.name, skin: state.skin });
 });
 
-function aiMenu() {
+// One checkbox in Settings. Turning it on downloads the model once (the
+// label shows progress); turning it off keeps the file so it's instant next time.
+function aiItem(M) {
   const s = Ai.status();
-  const m = Ai.MODELS[s.model];
-  const items = [{ label: 'Writes replies on this laptop. Your words never leave it.', enabled: false }];
-  if (s.state === 'downloading') items.push({ label: `Downloading ${m.name}… ${s.progress}%`, enabled: false });
-  else if (state.ai.on && s.state === 'ready') items.push({ label: 'Turn off', click: () => { state.ai.on = false; saveState(); Ai.turnOff(); } });
-  else items.push({ label: s.state === 'downloaded' ? '▶ Turn on' : `▶ Turn on (one-time download, about ${(m.approxMB / 1000).toFixed(1)} GB)`, click: () => { state.ai.on = true; saveState(); Ai.turnOn(); } });
-  if (state.ai.on && s.state === 'ready') items.splice(1, 0, { label: s.loaded ? 'Ready ✓ (replies marked ✨ were written by AI)' : 'Starting up…', enabled: false });
-  if (s.state === 'error') items.push({ label: s.error && s.error.startsWith('could not start') ? 'Couldn\'t start on this laptop: ' + s.error.slice(17) : 'Download failed. Try again later.', enabled: false });
-  if (s.state !== 'downloading') items.push({ label: 'Use the smaller model instead (lower quality)', type: 'checkbox', checked: s.model === 'qwen3.5-0.8b', click: (i) => { state.ai.model = i.checked ? 'qwen3.5-0.8b' : 'qwen3.5-2b'; saveState(); Ai.remove().then(() => { Ai.init(app.getPath('userData'), state.ai, aiChanged); if (state.ai.on) Ai.turnOn(); refreshTrayMenu(); }); } });
-  if (s.state === 'ready' || s.state === 'downloaded') items.push({ type: 'separator' }, { label: 'Remove the model and free space', click: () => { state.ai.on = false; saveState(); Ai.remove(); } });
-  return items;
+  const on = state.ai.on;
+  let note = '';
+  if (on && s.state === 'downloading') note = M('smarterGet', s.progress);
+  else if (on && s.state === 'ready' && !s.loaded) note = M('smarterStarting');
+  else if (s.state === 'error') note = M('smarterFailed');
+  return {
+    label: M('smarter') + (note ? ` (${note})` : ''),
+    type: 'checkbox',
+    checked: on,
+    enabled: s.state !== 'downloading',
+    click: (i) => {
+      state.ai.on = i.checked;
+      saveState();
+      if (i.checked) Ai.turnOn(); else Ai.turnOff();
+      refreshTrayMenu();
+    },
+  };
 }
 
 let aiMenuAt = 0;
@@ -468,23 +477,7 @@ function buildMenu() {
   }
   return Menu.buildFromTemplate([
     { label: `${state.name}  ❤ ${Math.round(state.happiness)}  🍙 ${Math.round(100 - state.hunger)}  ⭐ ${state.stats.points}`, enabled: false },
-    { label: M('board'), click: openBoard },
-    { label: state.teams ? '🏢 ' + state.teams.name : M('teams'), click: openTeams },
-    { type: 'separator' },
-    { label: M('silent') + (quietNow() ? ' ✓' : ''), submenu: [
-      { label: M('silentAuto'), type: 'checkbox', checked: state.silent.auto, click: (item) => { state.silent.auto = item.checked; saveState(); if (!item.checked && onCall) { onCall = false; sendQuiet(); } } },
-      { type: 'separator' },
-      ...(state.silent.until > Date.now()
-        ? [{ label: M('silentOff'), click: () => setSilent(0) }]
-        : [{ label: M('silent30'), click: () => setSilent(30) }, { label: M('silent60'), click: () => setSilent(60) }, { label: M('silentOn'), click: () => setSilent(-1) }]),
-    ] },
-    { label: M('bigCall'), click: () => send('action', 'big-call') },
-    state.focusUntil > Date.now()
-      ? { label: M('focusStop', Math.ceil((state.focusUntil - Date.now()) / MIN_MS)), click: () => send('action', 'focus-stop') }
-      : { label: M('focus'), submenu: [25, 50].map((m) => ({ label: M('focusMin', m), click: () => send('action', 'focus-' + m) })) },
-    { label: M('mood'), click: () => send('action', 'mood') },
-    { label: M('gratitude'), click: () => send('action', 'gratitude') },
-    { type: 'separator' },
+    { label: M('worry'), click: () => openPlay('worry') },
     { label: M('feed'), click: () => send('action', 'feed') },
     { label: M('play'), submenu: [
       { label: M('playTime'), click: () => openPlay() },
@@ -493,69 +486,88 @@ function buildMenu() {
       { label: M('bubbles'), click: () => openPlay('bubbles') },
       { label: M('chase'), click: () => openPlay('chase') },
     ] },
-    { label: M('worry'), click: () => openPlay('worry') },
-    { label: '✨ Smarter replies (beta)' + (state.ai.on && Ai.status().state === 'ready' ? ' ✓' : ''), submenu: aiMenu() },
     { label: M('nap'), click: () => send('action', 'sleep') },
-    { label: M('schedule'), submenu: [
-      ...[22, 23, 0, 1].map((h) => ({
-        label: M('bedAt', I18N.hourLabel(state.lang, h)),
-        type: 'radio',
-        checked: state.schedule !== 'night' && state.bedtime === h,
-        click: () => setSchedule('day', h),
-      })),
+    { type: 'separator' },
+    state.focusUntil > Date.now()
+      ? { label: M('focusStop', Math.ceil((state.focusUntil - Date.now()) / MIN_MS)), click: () => send('action', 'focus-stop') }
+      : { label: M('focus'), submenu: [25, 50].map((m) => ({ label: M('focusMin', m), click: () => send('action', 'focus-' + m) })) },
+    { label: M('silent') + (quietNow() ? ' ✓' : ''), submenu: [
+      { label: M('silentAuto'), type: 'checkbox', checked: state.silent.auto, click: (item) => { state.silent.auto = item.checked; saveState(); if (!item.checked && onCall) { onCall = false; sendQuiet(); } } },
       { type: 'separator' },
-      { label: M('nightShift'), type: 'radio', checked: state.schedule === 'night', click: () => setSchedule('night') },
+      ...(state.silent.until > Date.now()
+        ? [{ label: M('silentOff'), click: () => setSilent(0) }]
+        : [{ label: M('silent30'), click: () => setSilent(30) }, { label: M('silent60'), click: () => setSilent(60) }, { label: M('silentOn'), click: () => setSilent(-1) }]),
+      { type: 'separator' },
+      { label: M('bigCall'), click: () => send('action', 'big-call') },
     ] },
-    { label: M('buddy'), submenu: SKINS.map((sk) => ({
-      label: sk.label,
-      type: 'radio',
-      checked: state.skin === sk.id,
-      click: () => {
-        state.skin = sk.id;
-        state.name = sk.name;
-        saveState();
-        tray.setToolTip(`${state.name} the desktop pet`);
-        refreshTrayMenu();
-        send('state', state);
-        send('action', 'switched');
-      },
-    })) },
-    { label: state.userName ? M('changeName') : M('name'), click: () => send('action', 'ask-name') },
-    { label: M('gender'), submenu: ['male', 'female', 'nonbinary'].map((g) => ({
-      label: I18N.t(state.lang, 'gender.' + g),
-      type: 'radio',
-      checked: state.petGender === g,
-      click: () => { state.petGender = g; saveState(); refreshTrayMenu(); send('state', state); send('action', 'gender-changed'); },
-    })) },
-    { label: M('language'), submenu: I18N.LANGS.map((l) => ({
-      label: l.label,
-      type: 'radio',
-      checked: state.lang === l.id,
-      click: () => { state.lang = l.id; saveState(); refreshTrayMenu(); send('state', state); send('action', 'switched'); },
-    })) },
-    { label: M('chatty'), submenu: ['quiet', 'normal', 'chatty'].map((c) => ({
-      label: M('chatty_' + c),
-      type: 'radio',
-      checked: (state.chatty || 'normal') === c,
-      click: () => { state.chatty = c; saveState(); send('state', state); },
-    })) },
-    { label: M('wander'), type: 'checkbox', checked: state.walking,
-      click: (i) => { state.walking = i.checked; saveState(); send('state', state); } },
+    { label: M('mood'), click: () => send('action', 'mood') },
+    { label: M('gratitude'), click: () => send('action', 'gratitude') },
+    { label: M('board'), click: openBoard },
     { type: 'separator' },
-    { label: M('reminders'), submenu: [
-      toggle('water', M('water', state.waterEveryMin)),
-      toggle('stretch', M('stretch', state.stretchEveryMin)),
-      toggle('eyes', M('eyes', state.eyesEveryMin)),
+    { label: M('settings'), submenu: [
+      aiItem(M),
+      { label: state.teams ? '🏢 ' + state.teams.name : M('teams'), click: openTeams },
+      { type: 'separator' },
+      { label: M('schedule'), submenu: [
+        ...[22, 23, 0, 1].map((h) => ({
+          label: M('bedAt', I18N.hourLabel(state.lang, h)),
+          type: 'radio',
+          checked: state.schedule !== 'night' && state.bedtime === h,
+          click: () => setSchedule('day', h),
+        })),
+        { type: 'separator' },
+        { label: M('nightShift'), type: 'radio', checked: state.schedule === 'night', click: () => setSchedule('night') },
+      ] },
+      { label: M('buddy'), submenu: SKINS.map((sk) => ({
+        label: sk.label,
+        type: 'radio',
+        checked: state.skin === sk.id,
+        click: () => {
+          state.skin = sk.id;
+          state.name = sk.name;
+          saveState();
+          tray.setToolTip(`${state.name} the desktop pet`);
+          refreshTrayMenu();
+          send('state', state);
+          send('action', 'switched');
+        },
+      })) },
+      { label: state.userName ? M('changeName') : M('name'), click: () => send('action', 'ask-name') },
+      { label: M('gender'), submenu: ['male', 'female', 'nonbinary'].map((g) => ({
+        label: I18N.t(state.lang, 'gender.' + g),
+        type: 'radio',
+        checked: state.petGender === g,
+        click: () => { state.petGender = g; saveState(); refreshTrayMenu(); send('state', state); send('action', 'gender-changed'); },
+      })) },
+      { label: M('language'), submenu: I18N.LANGS.map((l) => ({
+        label: l.label,
+        type: 'radio',
+        checked: state.lang === l.id,
+        click: () => { state.lang = l.id; saveState(); refreshTrayMenu(); send('state', state); send('action', 'switched'); },
+      })) },
+      { label: M('chatty'), submenu: ['quiet', 'normal', 'chatty'].map((c) => ({
+        label: M('chatty_' + c),
+        type: 'radio',
+        checked: (state.chatty || 'normal') === c,
+        click: () => { state.chatty = c; saveState(); send('state', state); },
+      })) },
+      { label: M('wander'), type: 'checkbox', checked: state.walking,
+        click: (i) => { state.walking = i.checked; saveState(); send('state', state); } },
+      { type: 'separator' },
+      { label: M('reminders'), submenu: [
+        toggle('water', M('water', state.waterEveryMin)),
+        toggle('stretch', M('stretch', state.stretchEveryMin)),
+        toggle('eyes', M('eyes', state.eyesEveryMin)),
+      ] },
+      // Store (MSIX) builds can't register to start with Windows this way.
+      // On macOS (including the sandboxed App Store build) the app registers
+      // itself as a login item through SMAppService.
+      ...(process.windowsStore ? [] : [IS_MAC ? { label: M('startupMac'), type: 'checkbox',
+        checked: app.getLoginItemSettings({ type: 'mainAppService' }).status === 'enabled',
+        click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked, type: 'mainAppService' }) } : { label: M('startup'), type: 'checkbox',
+        checked: app.getLoginItemSettings().openAtLogin,
+        click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked }) }]),
     ] },
-    // Store (MSIX) builds can't register to start with Windows this way.
-    // On macOS (including the sandboxed App Store build) the app registers
-    // itself as a login item through SMAppService.
-    ...(process.windowsStore ? [] : [IS_MAC ? { label: M('startupMac'), type: 'checkbox',
-      checked: app.getLoginItemSettings({ type: 'mainAppService' }).status === 'enabled',
-      click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked, type: 'mainAppService' }) } : { label: M('startup'), type: 'checkbox',
-      checked: app.getLoginItemSettings().openAtLogin,
-      click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked }) }]),
-    { type: 'separator' },
     { label: M('bringBack'), click: () => { const wa = workArea(); placeAt(wa.x + wa.width - WIN_W - 40, wa.y + wa.height - WIN_H); } },
     { label: M('quit'), click: () => app.quit() },
   ]);

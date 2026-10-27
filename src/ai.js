@@ -26,7 +26,7 @@ function fileFor(id) { return path.join(dir, id + '.gguf'); }
 function init(userData, saved, cb) {
   dir = path.join(userData, 'models');
   onStatus = cb || onStatus;
-  const id = saved && MODELS[saved.model] ? saved.model : DEFAULT;
+  const id = process.env.MOCHI_AI_MODEL in MODELS ? process.env.MOCHI_AI_MODEL : DEFAULT;
   status = { state: 'off', model: id, progress: 0, error: null, loaded: false };
   if (saved && saved.on && fs.existsSync(fileFor(id))) { setStatus({ state: 'ready' }); warm(); }
   else if (fs.existsSync(fileFor(id))) setStatus({ state: 'downloaded' });
