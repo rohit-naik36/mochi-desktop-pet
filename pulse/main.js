@@ -7,6 +7,9 @@ const path = require('path');
 
 app.setAppUserModelId('com.mochi.pulse');
 
+// Base address of the Teams server's functions (see server/ADMIN.md).
+const SERVER = '';
+
 function open() {
   const win = new BrowserWindow({
     width: 1320,
@@ -18,7 +21,8 @@ function open() {
     icon: path.join(__dirname, 'icon.png'),
     webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true },
   });
-  win.loadFile(path.join(__dirname, 'index.html'));
+  // The Teams server address; MOCHI_SERVER overrides it for testing.
+  win.loadFile(path.join(__dirname, 'index.html'), { query: { server: process.env.MOCHI_SERVER || SERVER } });
   // Nothing inside the app navigates away or opens windows; links go to the browser.
   win.webContents.on('will-navigate', (e) => e.preventDefault());
   win.webContents.setWindowOpenHandler(({ url }) => {

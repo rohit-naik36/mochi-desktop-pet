@@ -2,6 +2,10 @@
 // A company joins with a code. IT can also roll Mochi out with a
 // mochi-teams.json file (see teams/IT-ROLLOUT.md) so people join without
 // typing anything. Insights stay off until each person turns them on.
+//
+// With the Teams server set up, the code is checked there: the laptop counts
+// as one seat for the month and gets the company's current contacts, teams
+// and welcome note. The demo code always works, even offline.
 const fs = require('fs');
 const path = require('path');
 
@@ -29,6 +33,7 @@ function clean(raw) {
     id: str(raw.id || raw.code, 60).toLowerCase(),
     code: str(raw.code, 40).toUpperCase(),
     name: str(raw.name, 80),
+    welcome: str(raw.welcome, 300),
     demo: !!raw.demo,
     support: (Array.isArray(raw.support) ? raw.support : []).map(contact).filter(Boolean).slice(0, 4),
     posh: contact(raw.posh),
@@ -62,4 +67,41 @@ function lookup(code, userData) {
   return file && file.code === c ? file : null;
 }
 
-module.exports = { lookup, fromFile, clean, DEMO_CODE };
+// ---------- the Teams server ----------
+
+// Base address of the server's functions, for example
+// https://<project>.supabase.co/functions/v1 (see server/ADMIN.md).
+const SERVER = process.env.MOCHI_SERVER || '';
+
+async function call(fn, body) {
+  if (!SERVER) return { status: 0, body: {} };
+  try {
+    const res = await fetch(`${SERVER}/${fn}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(15000),
+    });
+    return { status: res.status, body: await res.json().catch(() => ({})) };
+  } catch {
+    return { status: 0, body: {} }; // offline or the server is down
+  }
+}
+
+// -> { ok: true, company } | { ok: false, reason: 'offline' | 'unknown-code' | 'not-company-laptop' | ... }
+async function checkin(code, install, account = {}, version = '') {
+  const { status, body } = await call('checkin', { code: str(code, 40).toUpperCase().replace(/\s+/g, ''), install, tenant: account.tenant || '', domain: account.domain || '', version });
+  if (status === 200 && body.ok) {
+    const company = clean(body.company);
+    if (company) return { ok: true, company, graceDays: Number(body.graceDays) || 45 };
+  }
+  return { ok: false, reason: status === 0 ? 'offline' : String(body.reason || 'server') };
+}
+
+// One finished week of counts, on its own, with no laptop id.
+async function sendTotals(code, team, week, packet) {
+  const { status } = await call('totals', { code, team, week, packet });
+  return status === 200 || status === 400; // 400: too old or not allowed, don't retry
+}
+
+module.exports = { lookup, fromFile, clean, checkin, sendTotals, hasServer: () => !!SERVER, DEMO_CODE };

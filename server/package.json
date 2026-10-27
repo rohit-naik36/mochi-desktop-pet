@@ -1,0 +1,11 @@
+{
+  "name": "mochi-teams-server",
+  "private": true,
+  "description": "Mochi for Teams server: Supabase Edge Functions and database. Tests run with Bun against a local Postgres.",
+  "scripts": {
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "postgres": "3.4.5"
+  }
+}

@@ -34,6 +34,10 @@ function render(v) {
   document.querySelectorAll('.co-short').forEach((e) => { e.textContent = co.name; });
   $('co-name').textContent = co.name;
   $('co-demo').classList.toggle('hidden', !co.demo);
+  $('co-paused').classList.toggle('hidden', !co.lapsed);
+  $('paused-note').classList.toggle('hidden', !co.lapsed);
+  $('co-welcome').textContent = co.welcome || '';
+  $('co-welcome').classList.toggle('hidden', !co.welcome);
   $('co-support').replaceChildren(...[...co.support, co.posh].filter(Boolean).map(contactLine));
   const sel = $('team');
   sel.replaceChildren(new Option('Choose your team', ''));
@@ -86,15 +90,27 @@ function render(v) {
   }));
 }
 
+const JOIN_ERRORS = {
+  'unknown-code': "That code didn't match a company. Check it with your HR or IT team.",
+  'not-company-laptop': 'Your company has Mochi for Teams on work laptops only. Try again on your work laptop, signed in with your work account.',
+  offline: "Mochi couldn't reach the internet just now. Check your connection and try again.",
+  server: 'Something went wrong on our side. Please try again in a few minutes.',
+};
+
 let last = null;
 const show = (v) => { last = v; render(v); };
 
 $('join-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const r = await window.teams.join($('code').value);
+  const btn = $('join-btn');
   const msg = $('join-msg');
+  btn.disabled = true;
+  msg.className = 'note';
+  msg.textContent = 'Checking…';
+  const r = await window.teams.join($('code').value);
+  btn.disabled = false;
   msg.className = 'note' + (r.ok ? '' : ' err');
-  msg.textContent = r.ok ? '' : "That code didn't match a company. Check it with your HR or IT team.";
+  msg.textContent = r.ok ? '' : JOIN_ERRORS[r.reason] || JOIN_ERRORS['unknown-code'];
 });
 $('team').addEventListener('change', (e) => window.teams.set({ team: e.target.value }));
 $('insights').addEventListener('change', (e) => window.teams.set({ insights: e.target.checked }));
