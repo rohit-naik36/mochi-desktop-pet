@@ -22,11 +22,11 @@ To remember things between sessions, Mochi keeps one file on your own PC (in you
 
 Worries you type into **Feed me a worry** are never saved. Mochi reads them on your computer to write a reply, then forgets them.
 
-**Smarter replies (beta)** is off unless you turn it on. When you do, Mochi downloads a small open AI model (Qwen3.5) from Hugging Face once and keeps it on your computer. The model writes replies on your computer too. Your worries are never sent anywhere, and you can remove the model from the same menu.
+**Smarter replies (beta)** uses a small open AI model (Qwen3.5) that is installed with Mochi. It writes replies on your computer, so your worries are never sent anywhere. You can turn it off in Settings.
 
 ## What Mochi does not do
 
-- No internet connection (except the one-time model download if you turn on Smarter replies): no accounts, servers, analytics, tracking, advertising or cloud sync.
+- No internet connection (apart from Mochi for Teams, below, if your employer uses it): no accounts, analytics, tracking, advertising or cloud sync.
 - No access to your files, camera, microphone, location or contacts.
 - **Notice which app I'm in** is off unless you turn it on. When it's on, Mochi checks the name of the app in front about once a minute (for example "Excel"), so it can make a joke and suggest a break after a long stretch. It never reads window titles, websites or what's on your screen, and the app name is never saved or sent anywhere, including to an employer.
 - To know when you're away, Mochi asks Windows how many seconds it has been since the mouse or keyboard was last used. It never sees what you type or where you click.

@@ -86,7 +86,7 @@
       explicit1: "Whoa, no 🙈 Sweet talk is lovely, but that kind of talk isn't something I do. Let's keep it wholesome, okay?",
       explicit2: 'I mean it{n}. No sexual talk, please. One more time and I\'ll go hide for a bit.',
       // menu
-      menu: { feed: 'Feed', play: 'Play', playTime: 'Play time', breathe: 'Breathe with me', bubbles: 'Bubble pop', chase: 'Chase the light', worry: '🍃 Feed me a worry', nap: 'Nap time', buddy: 'Choose your buddy', name: 'Tell me your name', changeName: 'Change my name ({you})', wander: 'Let it wander', moveToApps: 'Move Mochi to your Applications folder?', moveToAppsDetail: 'Right now Mochi is running from the download. Moving it installs it properly, so it stays after a restart and can open at login.', moveYes: 'Move to Applications', moveNo: 'Not now', chatty: 'How chatty', chatty_quiet: 'Quiet', chatty_normal: 'Normal', chatty_chatty: 'Chatty', reminders: 'Reminders', water: 'Drink water (every {count} min)', stretch: 'Stretch break (every {count} min)', eyes: '20-20-20 eye rest (every {count} min)', startup: 'Start with Windows', startupMac: 'Open at login', language: 'Language', bringBack: 'Bring pet back', settings: '⚙️ Settings', smarter: '✨ Smarter replies (beta)', smarterGet: 'downloading {count}%', smarterStarting: 'starting up', smarterFailed: "couldn't start", quit: 'Quit', hidingNow: '{pet} is hiding... back soon', gender: '{pet} is a...' },
+      menu: { feed: 'Feed', play: 'Play', playTime: 'Play time', breathe: 'Breathe with me', bubbles: 'Bubble pop', chase: 'Chase the light', worry: '🍃 Feed me a worry', nap: 'Nap time', buddy: 'Choose your buddy', name: 'Tell me your name', changeName: 'Change my name ({you})', wander: 'Let it wander', moveToApps: 'Move Mochi to your Applications folder?', moveToAppsDetail: 'Right now Mochi is running from the download. Moving it installs it properly, so it stays after a restart and can open at login.', moveYes: 'Move to Applications', moveNo: 'Not now', chatty: 'How chatty', chatty_quiet: 'Quiet', chatty_normal: 'Normal', chatty_chatty: 'Chatty', reminders: 'Reminders', water: 'Drink water (every {count} min)', stretch: 'Stretch break (every {count} min)', eyes: '20-20-20 eye rest (every {count} min)', startup: 'Start with Windows', startupMac: 'Open at login', language: 'Language', bringBack: 'Bring pet back', settings: '⚙️ Settings', smarter: '✨ Smarter replies (beta)', smarterFailed: "couldn't start", quit: 'Quit', hidingNow: '{pet} is hiding... back soon', gender: '{pet} is a...' },
     },
 
     hi: {
@@ -1079,7 +1079,7 @@
         mood: 'Log how you feel today. It stays on this computer.',
         gratitude: 'Save one good thing from today, to read back on hard days.',
         board: 'Your points, streaks and badges.',
-        smarter: 'A small AI on this laptop writes more personal worry replies. One-time download; your words never leave.',
+        smarter: 'A small AI built into Mochi writes more personal worry replies, right on this laptop. Your words never leave it.',
         noticeApps: 'After a long stretch in one app, Mochi jokes about it and suggests a break. Checks the app name only.',
         teams: "Join your company's Mochi with a code to see its support contacts.",
         schedule: 'When Mochi goes to bed, or night-shift mode if you work nights.',
@@ -1106,7 +1106,7 @@
         mood: 'आज कैसा लग रहा है, लिखो। ये इसी कंप्यूटर पर रहता है।',
         gratitude: 'आज की एक अच्छी बात सेव करो, मुश्किल दिनों में पढ़ने के लिए।',
         board: 'तुम्हारे पॉइंट्स, स्ट्रीक और बैज।',
-        smarter: 'इस लैपटॉप पर एक छोटा AI ज़्यादा अपने जैसे जवाब लिखता है। एक बार डाउनलोड; तुम्हारे शब्द कहीं नहीं जाते।',
+        smarter: 'Mochi में बना एक छोटा AI इसी लैपटॉप पर ज़्यादा अपने जैसे जवाब लिखता है। तुम्हारे शब्द कहीं नहीं जाते।',
         noticeApps: 'एक ही ऐप में बहुत देर रहने पर Mochi मज़ाक करता है और ब्रेक याद दिलाता है। सिर्फ़ ऐप का नाम देखता है।',
         teams: 'कोड से अपनी कंपनी का Mochi जोड़ो और उसके सपोर्ट कॉन्टैक्ट देखो।',
         schedule: 'Mochi कब सोए, या रात की शिफ़्ट वाला मोड।',
@@ -1133,7 +1133,7 @@
         mood: 'Aaj kaisa lag raha hai, likho. Ye isi computer pe rehta hai.',
         gratitude: 'Aaj ki ek achhi baat save karo, mushkil din pe padhne ke liye.',
         board: 'Tumhare points, streaks aur badges.',
-        smarter: 'Is laptop pe ek chhota AI zyada personal replies likhta hai. Ek baar download; tumhare words kahin nahi jaate.',
+        smarter: 'Mochi mein bana ek chhota AI isi laptop pe zyada personal replies likhta hai. Tumhare words kahin nahi jaate.',
         noticeApps: 'Ek hi app mein bahut der rehne pe Mochi joke karta hai aur break yaad dilata hai. Sirf app ka naam dekhta hai.',
         teams: 'Code se apni company ka Mochi join karo aur uske support contacts dekho.',
         schedule: 'Mochi kab soye, ya night shift mode.',

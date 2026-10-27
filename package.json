@@ -27,6 +27,9 @@
       "!node_modules/@node-llama-cpp/*cuda*/**",
       "!node_modules/node-llama-cpp/llama/gitRelease.bundle"
     ],
+    "extraResources": [
+      { "from": "models", "to": "models", "filter": ["*.gguf"] }
+    ],
     "directories": {
       "buildResources": "build",
       "output": "dist"

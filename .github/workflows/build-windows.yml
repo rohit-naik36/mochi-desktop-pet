@@ -39,6 +39,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Cache the bundled AI model
+        uses: actions/cache@v4
+        with:
+          path: models
+          key: model-${{ hashFiles('src/ai-models.json') }}
+      - name: Fetch the bundled AI model
+        run: node tools/fetch-model.mjs
 
       - name: Build installer and portable exe
         shell: pwsh
