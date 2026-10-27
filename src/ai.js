@@ -102,13 +102,13 @@ async function run({ text, lang, name, pet, skin }) {
   if (status.state !== 'ready') return null;
   const { L, sequence } = await load();
   const { system, user } = Prompt.messages({ text, lang, name, pet, skin });
-  const chat = new L.LlamaChatSession({ contextSequence: sequence, systemPrompt: system, autoDisposeSequence: false });
+  const chat = new L.LlamaChatSession({ contextSequence: sequence, systemPrompt: system, autoDisposeSequence: false, chatWrapper: new L.QwenChatWrapper({ variation: '3.5', thoughts: 'discourage' }) });
   try {
     const raw = await chat.prompt(user, { grammar, maxTokens: 160, temperature: 0.7, budgets: { thoughtTokens: 0 } });
-    return Prompt.check(grammar.parse(raw), lang);
+    return Prompt.check(Prompt.parse(raw), lang);
   } finally {
     chat.dispose({ disposeSequence: false });
-    sequence.clearHistory();
+    await sequence.clearHistory();
   }
 }
 

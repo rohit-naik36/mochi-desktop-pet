@@ -3,7 +3,7 @@
 //   node tools/ai-eval.mjs hf:unsloth/Qwen3.5-2B-GGUF:Q4_K_M [more models]
 import { createRequire } from 'module';
 import fs from 'fs';
-import { getLlama, resolveModelFile, LlamaChatSession } from 'node-llama-cpp';
+import { getLlama, resolveModelFile, LlamaChatSession, QwenChatWrapper } from 'node-llama-cpp';
 
 const require = createRequire(import.meta.url);
 const Prompt = require('../src/ai-prompt.js');
@@ -66,19 +66,19 @@ for (const uri of models) {
     asked++;
     const skin = SKINS[i % SKINS.length];
     const { system, user } = Prompt.messages({ text, lang, name: 'Rohit', pet: 'Mochi', skin });
-    const chat = new LlamaChatSession({ contextSequence: sequence, systemPrompt: system, autoDisposeSequence: false });
+    const chat = new LlamaChatSession({ contextSequence: sequence, systemPrompt: system, autoDisposeSequence: false, chatWrapper: new QwenChatWrapper({ variation: '3.5', thoughts: 'discourage' }) });
     const s0 = Date.now();
     let raw = '', ok = null;
     try {
       raw = await chat.prompt(user, { grammar, maxTokens: 160, temperature: 0.7, budgets: { thoughtTokens: 0 } });
-      ok = Prompt.check(grammar.parse(raw), lang);
+      ok = Prompt.check(Prompt.parse(raw), lang);
     } catch (e) { raw = 'ERROR ' + e.message; }
     const sec = (Date.now() - s0) / 1000;
     chat.dispose({ disposeSequence: false });
-    sequence.clearHistory();
+    await sequence.clearHistory();
     secs.push(sec);
     if (ok && sec <= 9) pass++;
-    log(`| ${i + 1} | ${lang} | ${skin} | ${sec.toFixed(1)} | ${ok ? (sec <= 9 ? 'pass' : 'too slow') : 'rejected'} | ${clean(ok ? ok.comfort + ' / ' + ok.step : raw)} |`);
+    log(`| ${i + 1} | ${lang} | ${skin} | ${sec.toFixed(1)} | ${ok ? (sec <= 9 ? 'pass' : 'too slow') : 'rejected'} | ${clean(ok ? ok.comfort + ' / ' + ok.step : 'RAW ' + JSON.stringify(raw))} |`);
   }
   secs.sort((a, b) => a - b);
   log(`\n**${pass} of ${asked} usable** (passed checks within 9 s). Median ${secs[Math.floor(secs.length / 2)].toFixed(1)} s, slowest ${secs.at(-1).toFixed(1)} s.`);

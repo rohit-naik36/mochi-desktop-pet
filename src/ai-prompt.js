@@ -68,6 +68,15 @@
     return { comfort, step };
   }
 
-  root.MochiAI = { AI_TOPICS, allowed, messages, SCHEMA, check };
+  // Small models sometimes wrap the JSON in extra text, so take the first
+  // {...} block and read the two fields from it.
+  function parse(raw) {
+    const s = String(raw || ''), a = s.indexOf('{'), b = s.lastIndexOf('}');
+    if (a >= 0 && b > a) { try { return JSON.parse(s.slice(a, b + 1)); } catch {} }
+    const f = (k) => (s.match(new RegExp('"' + k + '"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"')) || [])[1];
+    return f('comfort') && f('step') ? { comfort: JSON.parse('"' + f('comfort') + '"'), step: JSON.parse('"' + f('step') + '"') } : null;
+  }
+
+  root.MochiAI = { AI_TOPICS, allowed, messages, SCHEMA, check, parse };
   if (typeof module !== 'undefined') module.exports = root.MochiAI;
 })(typeof window !== 'undefined' ? window : globalThis);
