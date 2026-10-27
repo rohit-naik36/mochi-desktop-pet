@@ -425,7 +425,7 @@ function Worry() {
     // and the next step for everyday worries while Mochi eats. Anything it
     // gets wrong, or too slowly, falls back to the written reply.
     const aiAsk = window.MochiAI && window.MochiAI.allowed(r, words) && !rude.profane
-      ? window.play.aiReply({ text: words, lang: r.lang, r: { topic: r.topic, serious: !!r.serious, gentle: !!r.gentle, celebrate: !!r.celebrate, helplines: !!r.helplines } }).catch(() => null)
+      ? window.play.aiReply({ text: words, lang: r.lang, r: { lang: r.lang, topic: r.topic, serious: !!r.serious, gentle: !!r.gentle, celebrate: !!r.celebrate, helplines: !!r.helplines } }).catch(() => null)
       : null;
     mood('eat');
     [...words].forEach((ch, i) => {

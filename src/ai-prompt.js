@@ -24,8 +24,12 @@
   // stays out of it and Mochi's careful written reply is used.
   const HEAVY = /(hopeless|worthless|pointless|give up|giving up|can'?t go on|no way out|nothing will|end it|hurt myself|bekaar|bekar|koi fayda nahi|kuch theek nahi|sab khatam|jeena|haar gaya|haar gayi|बेकार|कोई फायदा नहीं|सब खत्म|जीना|हार ग)/i;
 
-  function allowed(r, text = '') {
-    return !!r && AI_TOPICS.includes(r.topic) && !r.serious && !r.gentle && !r.celebrate && !r.helplines && !HEAVY.test(text);
+  // In tests the small models wrote good English but muddled Hindi and
+  // Hinglish, so those keep Mochi's written replies for now.
+  const AI_LANGS = ['en'];
+
+  function allowed(r, text = '', langs = AI_LANGS) {
+    return !!r && langs.includes(r.lang) && AI_TOPICS.includes(r.topic) && !r.serious && !r.gentle && !r.celebrate && !r.helplines && !HEAVY.test(text);
   }
 
   function messages({ text, lang = 'en', name = '', pet = 'Mochi', skin = 'smoke' }) {
@@ -48,7 +52,7 @@
     required: ['comfort', 'step'],
   };
 
-  const BLOCK = /(suicid|kill|die\b|dying|self[- ]?harm|overdose|pill|medicin|medicat|tablet|alcohol|drunk|drink (?:beer|wine|whisky|whiskey)|drugs?\b|weed|smok|cigar|diagnos|therap|lawyer|sue\b|invest|loan|crypto|dawa|daaru|sharab|nasha|मरना|मर जा|मौत|आत्महत्या|दवा|शराब|नशा)/i;
+  const BLOCK = /\b(suicid|kill(?:ed|ing|s)?\b|die\b|dying|self[- ]?harm|overdose|pills?\b|medicin|medicat|tablets?\b|alcohol|drunk|drink (?:beer|wine|whisky|whiskey)|drugs?\b|weed\b|smok|cigar|diagnos|therap|lawyer|sue\b|invest|loans?\b|crypto|dawa|daaru|sharab|nasha)|मरना|मर जा|मौत|आत्महत्या|दवा|शराब|नशा/i;
 
   // Returns {comfort, step} when the answer is safe to show, else null.
   function check(out, lang = 'en') {
@@ -77,6 +81,6 @@
     return f('comfort') && f('step') ? { comfort: JSON.parse('"' + f('comfort') + '"'), step: JSON.parse('"' + f('step') + '"') } : null;
   }
 
-  root.MochiAI = { AI_TOPICS, allowed, messages, SCHEMA, check, parse };
+  root.MochiAI = { AI_TOPICS, AI_LANGS, allowed, messages, SCHEMA, check, parse };
   if (typeof module !== 'undefined') module.exports = root.MochiAI;
 })(typeof window !== 'undefined' ? window : globalThis);

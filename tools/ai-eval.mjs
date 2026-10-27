@@ -62,7 +62,7 @@ for (const uri of models) {
   let pass = 0, asked = 0, secs = [];
   for (const [i, [lang, text]] of WORRIES.entries()) {
     const r = Worry.respond(text, 'Rohit', lang, 'male');
-    if (!Prompt.allowed(r, text)) { log(`| ${i + 1} | ${lang} | | | kept written (${r.topic}) | ${clean(r.comfort)} |`); continue; }
+    if (!Prompt.allowed(r, text, ['en', 'hi', 'hinglish'])) { log(`| ${i + 1} | ${lang} | | | kept written (${r.topic}) | ${clean(r.comfort)} |`); continue; }
     asked++;
     const skin = SKINS[i % SKINS.length];
     const { system, user } = Prompt.messages({ text, lang, name: 'Rohit', pet: 'Mochi', skin });
