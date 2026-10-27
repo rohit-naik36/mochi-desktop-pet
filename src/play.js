@@ -363,7 +363,7 @@ function Worry() {
     reply.classList.toggle('serious', !!r.serious);
     parts.opener.textContent = r.opener;
     parts.reflect.textContent = r.reflect;
-    parts.comfort.textContent = r.comfort;
+    parts.comfort.textContent = r.comfort + (r.ai ? ' ✨' : '');
     parts.step.textContent = r.step;
     parts.ask.textContent = r.ask || '';
     parts.helplines.innerHTML = '';
@@ -449,7 +449,7 @@ function Worry() {
     setTimeout(() => tone(220, 0.25, 'sine', 0.06, 0.6), total - 200);
     setTimeout(async () => {
       const ai = aiAsk && await aiAsk;
-      if (ai) Object.assign(r, { comfort: ai.comfort, step: ai.step });
+      if (ai) Object.assign(r, { comfort: ai.comfort, step: ai.step, ai: true });
       // Swearing about a situation is just venting: acknowledge the feeling.
       if (rude.profane && !r.serious) r.comfort = L(r.lang, 'ventNote') + ' ' + r.comfort;
       mood(r.serious || r.gentle ? 'idle' : 'happy');

@@ -16,7 +16,7 @@ const DEFAULT = 'qwen3.5-2b';
 const REPLY_MS = 9000; // slower than this and Mochi uses its written reply
 
 let dir = null;
-let status = { state: 'off', model: DEFAULT, progress: 0, error: null };
+let status = { state: 'off', model: DEFAULT, progress: 0, error: null, loaded: false };
 let onStatus = () => {};
 let llama = null, model = null, context = null, session = null, grammar = null, busy = Promise.resolve();
 
@@ -27,8 +27,8 @@ function init(userData, saved, cb) {
   dir = path.join(userData, 'models');
   onStatus = cb || onStatus;
   const id = saved && MODELS[saved.model] ? saved.model : DEFAULT;
-  status = { state: 'off', model: id, progress: 0, error: null };
-  if (saved && saved.on && fs.existsSync(fileFor(id))) setStatus({ state: 'ready' });
+  status = { state: 'off', model: id, progress: 0, error: null, loaded: false };
+  if (saved && saved.on && fs.existsSync(fileFor(id))) { setStatus({ state: 'ready' }); warm(); }
   else if (fs.existsSync(fileFor(id))) setStatus({ state: 'downloaded' });
 }
 
@@ -67,6 +67,7 @@ async function download(id = status.model) {
     if (hash.digest('hex') !== f.lfs.oid) throw new Error('download check failed');
     fs.renameSync(tmp, fileFor(id));
     setStatus({ state: 'ready', progress: 100 });
+    warm();
   } catch (e) {
     fs.rmSync(tmp, { force: true });
     setStatus({ state: 'error', error: String(e.message || e) });
@@ -92,7 +93,20 @@ async function unload() {
 }
 
 // One reply at a time; a fresh chat each time so nothing is remembered.
+// Loads the model in the background once it's on, so the first worry
+// doesn't wait for it. Until it's loaded, Mochi uses the written reply.
+let warming = null;
+function warm() {
+  if (session || warming || status.state !== 'ready') return;
+  setStatus({ loaded: false });
+  warming = load()
+    .then(() => setStatus({ loaded: true, error: null }))
+    .catch((e) => { unload(); setStatus({ state: 'error', error: 'could not start: ' + String(e.message || e).slice(0, 120) }); })
+    .finally(() => { warming = null; });
+}
+
 function reply(req) {
+  if (!session) { warm(); return Promise.resolve(null); }
   const job = busy.then(() => run(req)).catch(() => null);
   busy = job.then(() => {}, () => {});
   return Promise.race([job, new Promise((r) => setTimeout(() => r(null), REPLY_MS))]);
@@ -112,8 +126,8 @@ async function run({ text, lang, name, pet, skin }) {
   }
 }
 
-async function turnOff() { await unload(); setStatus({ state: fs.existsSync(fileFor(status.model)) ? 'downloaded' : 'off' }); }
-async function turnOn() { if (fs.existsSync(fileFor(status.model))) setStatus({ state: 'ready' }); else download(); }
-async function remove() { await unload(); fs.rmSync(dir, { recursive: true, force: true }); setStatus({ state: 'off', progress: 0 }); }
+async function turnOff() { await unload(); setStatus({ state: fs.existsSync(fileFor(status.model)) ? 'downloaded' : 'off', loaded: false }); }
+async function turnOn() { if (fs.existsSync(fileFor(status.model))) { setStatus({ state: 'ready', error: null }); warm(); } else download(); }
+async function remove() { await unload(); fs.rmSync(dir, { recursive: true, force: true }); setStatus({ state: 'off', progress: 0, loaded: false }); }
 
 module.exports = { MODELS, init, turnOn, turnOff, remove, reply, allowed: Prompt.allowed, status: () => status };

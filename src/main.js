@@ -182,7 +182,8 @@ function aiMenu() {
   if (s.state === 'downloading') items.push({ label: `Downloading ${m.name}… ${s.progress}%`, enabled: false });
   else if (state.ai.on && s.state === 'ready') items.push({ label: 'Turn off', click: () => { state.ai.on = false; saveState(); Ai.turnOff(); } });
   else items.push({ label: s.state === 'downloaded' ? 'Turn on' : `Turn on (one-time download, about ${(m.approxMB / 1000).toFixed(1)} GB)`, click: () => { state.ai.on = true; saveState(); Ai.turnOn(); } });
-  if (s.state === 'error') items.push({ label: 'Download failed. Try again later.', enabled: false });
+  if (state.ai.on && s.state === 'ready') items.splice(1, 0, { label: s.loaded ? 'Ready ✓ (replies marked ✨ were written by AI)' : 'Starting up…', enabled: false });
+  if (s.state === 'error') items.push({ label: s.error && s.error.startsWith('could not start') ? 'Couldn\'t start on this laptop: ' + s.error.slice(17) : 'Download failed. Try again later.', enabled: false });
   if (s.state !== 'downloading') items.push({ label: 'Smaller model (faster, simpler)', type: 'checkbox', checked: s.model === 'qwen3.5-0.8b', click: (i) => { state.ai.model = i.checked ? 'qwen3.5-0.8b' : 'qwen3.5-2b'; saveState(); Ai.remove().then(() => { Ai.init(app.getPath('userData'), state.ai, aiChanged); if (state.ai.on) Ai.turnOn(); refreshTrayMenu(); }); } });
   if (s.state === 'ready' || s.state === 'downloaded') items.push({ type: 'separator' }, { label: 'Remove the model and free space', click: () => { state.ai.on = false; saveState(); Ai.remove(); } });
   return items;
@@ -192,6 +193,7 @@ let aiMenuAt = 0;
 function aiChanged(s) {
   // Download progress arrives often; rebuild the menu at most once a second.
   if (s.state === 'downloading' && Date.now() - aiMenuAt < 1000) return;
+  if (s.state === 'error') console.error('[ai]', s.error);
   aiMenuAt = Date.now();
   if (tray) refreshTrayMenu();
 }
