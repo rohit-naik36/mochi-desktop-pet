@@ -98,8 +98,7 @@
     timer = setInterval(show, 4800);
   }
 
-  // Enquiry forms send to our inbox through FormSubmit. If that fails, the
-  // visitor's own email app opens with the message filled in instead.
+  // Enquiry forms send to our inbox through FormSubmit, right from the page.
   for (const form of document.querySelectorAll('form[data-mailto]')) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -124,9 +123,7 @@
         form.reset();
         tell('Thanks! Your message is on its way. We reply within two working days.');
       } catch {
-        const body = Object.entries(fields).map(([k, v]) => `${k[0].toUpperCase() + k.slice(1)}: ${v}`).join('\n');
-        location.href = `mailto:${form.dataset.mailto}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        tell(`We couldn't send that from here, so your email app should open instead. If it doesn't, write to ${form.dataset.mailto}.`);
+        tell(`Sorry, that didn't send. Please try again in a minute, or write to ${form.dataset.mailto}.`);
       } finally {
         button.disabled = false;
       }
