@@ -47,6 +47,7 @@ Laptop (Mochi)                       Mochi for Teams server (Mumbai)          HR
 - **In transit:** HTTPS (TLS 1.2+) for every call.
 - **At rest:** encrypted by the hosting provider (AES-256).
 - **Access:** row level security is on for every table with no public policies, so nothing is readable through the public API. Only the three server functions can read or write. Pulse keys are random 32-character keys, stored hashed, one per HR person, revocable.
+- **Abuse limits:** the server refuses requests over 16 KB, and accepts at most twice a company's seat count of weekly packets each week, so a leaked join code can't flood the totals. A leaked code can also be replaced at once, with the old one kept working for a short handover period.
 - **Admin access:** only Little Smoke Studio, with two-factor sign-in to the hosting console **[confirm 2FA is on]**.
 - **App:** distributed through the Microsoft Store (signed and malware-scanned by Microsoft). It needs no admin rights and opens no inbound ports. It does not read files, the screen, keystrokes or other apps' content. Silent mode checks only whether the microphone or camera is in use (yes or no).
 - **Code:** the source is in a private-by-licence repository; every change runs automated tests.
@@ -54,7 +55,7 @@ Laptop (Mochi)                       Mochi for Teams server (Mumbai)          HR
 
 ## Retention and deletion
 
-- Weekly totals: deleted after 1 year.
+- Weekly totals: deleted after 1 year, by a clean-up job that runs every Sunday.
 - Seat records: kept while the company is a customer, for billing.
 - When a company leaves, all its data (settings, seats, totals and keys) is deleted on request, within 30 days **[confirm]**.
 - An employee can delete everything on their laptop by uninstalling Mochi. Totals already sent have no id, so they can't be singled out for deletion, which is also why they can't identify anyone.
@@ -78,6 +79,7 @@ Laptop (Mochi)                       Mochi for Teams server (Mumbai)          HR
 | Can a manager identify a person? | No. Groups under 8 are hidden, numbers are rounded, and there is no per-person data on the server. |
 | Network requirements | Outbound HTTPS to `*.supabase.co` only. |
 | What if the server is down? | Mochi keeps working. Company features pause only after 45 days without a check. |
+| How strong is the company-laptop lock? | It stops company features on personal laptops in everyday use: the laptop reports the Entra tenant or domain it is joined to, and the server compares it with yours. It is a policy control, not device attestation; someone who copies the code and fakes those values on purpose could still join, which only adds one anonymous seat. Your MDM's own compliance rules remain the real guarantee. |
 | Pen test? | Not yet **[confirm before claiming one]**. |
 
 ## Data processing agreement: outline

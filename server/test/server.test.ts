@@ -2,7 +2,7 @@
 // (for example postgres://postgres@localhost:5432/postgres).
 import { afterAll, beforeAll, expect, test } from 'bun:test';
 import postgres from 'postgres';
-import { readFileSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { checkin, totals, pulse, sha256, lockPasses, cleanPacket, cleanAnswer, mondayOf } from '../supabase/functions/_shared/core.ts';
 
 const url = process.env.TEST_DATABASE_URL;
@@ -19,7 +19,7 @@ beforeAll(async () => {
   await admin.unsafe(`create database ${DB}`);
   const u = new URL(url); u.pathname = '/' + DB;
   sql = postgres(u.toString(), { onnotice: () => {} });
-  for (const m of ['20261027000000_teams.sql', '20261028000000_campaigns_questions.sql']) {
+  for (const m of readdirSync(new URL('../supabase/migrations/', import.meta.url)).sort()) {
     await sql.unsafe(readFileSync(new URL('../supabase/migrations/' + m, import.meta.url), 'utf8'));
   }
   await sql`insert into companies (id, name, code, old_code, old_code_until, seats, welcome, support, posh, teams)
@@ -157,4 +157,22 @@ test('Pulse shows question totals for 8 or more answers only', async () => {
   expect(p.campaigns.map((c: any) => c.id)).toEqual(['old', 'water-nov']); // past ones too, for reports
   const [row] = await sql`select data from packets where data ? 'answer' limit 1`;
   expect(Object.keys(row.data.answer).sort()).toEqual(['a', 'q']); // nothing else rides along
+});
+
+test('totals stop at twice the seats each week', async () => {
+  await sql`insert into companies (id, name, code, seats, teams) values ('tiny', 'Tiny LLP', 'TINY-2026', 2, '[]')`;
+  const send = () => totals(sql, { code: 'TINY-2026', week: '2026-11-09', packet: { days: 3 } }, TODAY);
+  for (let i = 0; i < 4; i++) expect((await send()).status).toBe(200);
+  expect((await send()).body).toMatchObject({ ok: false, reason: 'week-full' });
+  const other = await totals(sql, { code: 'TINY-2026', week: '2026-11-02', packet: { days: 3 } }, TODAY);
+  expect(other.status).toBe(200); // a new week starts fresh
+});
+
+test('only the server can run the yearly clean-up', async () => {
+  const [{ ok }] = await sql`select has_function_privilege('public', 'prune_packets()', 'execute') as ok`;
+  expect(ok).toBe(false);
+  await sql`insert into packets (company_id, team, week, data) values ('tiny', null, current_date - interval '60 weeks', '{}')`;
+  await sql`select prune_packets()`;
+  const [{ n }] = await sql`select count(*)::int as n from packets where week < current_date - interval '53 weeks'`;
+  expect(n).toBe(0);
 });

@@ -121,8 +121,10 @@ const PET_CY = WIN_H - 61;
 
 // Play mode: a transparent layer over the whole work area. The desktop pet
 // hides and the same buddy appears in the layer at the same spot.
+const GAMES = ['breathe', 'bubbles', 'chase', 'worry'];
 function openPlay(game) {
   if (hidingUntil) return;
+  if (!GAMES.includes(game)) game = undefined;
   if (playWin && !playWin.isDestroyed()) { playWin.focus(); return; }
   const pb = win.getBounds();
   const wa = screen.getDisplayMatching(pb).workArea;
@@ -172,6 +174,8 @@ ipcMain.handle('get-state', () => state);
 // Any window reports an activity here; new badges are announced by the pet
 // (or in the play layer if it's open) and the board refreshes.
 ipcMain.on('track', (_e, event, n = 1) => {
+  if (typeof event !== 'string') return;
+  n = Math.max(1, Math.min(100, Math.round(Number(n)) || 1));
   if (Insights.NUDGES.includes(event)) { noteInsight('done', event); checkAway(event); }
   else noteInsight('feature', event);
   const unlocked = Progress.record(state.stats, event, n);
@@ -457,8 +461,10 @@ function openTeams() {
       preload: path.join(__dirname, 'teams-preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
     },
   });
+  teamsWin.setMenu(null);
   teamsWin.loadFile(path.join(__dirname, 'teams.html'));
   teamsWin.on('closed', () => { teamsWin = null; });
 }
@@ -531,6 +537,7 @@ ipcMain.on('pet-hide', () => {
 // The buddy comes back to the desktop wherever play left it.
 ipcMain.on('play-done', (_e, x, y) => {
   if (!playWin) return;
+  if (!num(x, y)) { playWin.close(); return; }
   const wa = playWin._wa;
   placeAt(wa.x + x - PET_CX, wa.y + y - PET_CY);
   state.x = win.getBounds().x; state.y = win.getBounds().y;
@@ -538,7 +545,14 @@ ipcMain.on('play-done', (_e, x, y) => {
   playWin.close();
 });
 // Games report happiness gains; the desktop pet applies and saves them.
-ipcMain.on('play-reward', (_e, delta) => send('reward', { delta }));
+ipcMain.on('play-reward', (_e, delta) => {
+  const clean = {};
+  for (const k of ['happiness', 'hunger', 'energy']) {
+    const v = delta && delta[k];
+    if (Number.isFinite(v)) clean[k] = Math.max(-20, Math.min(20, v));
+  }
+  send('reward', { delta: clean });
+});
 
 function trayIcon() {
   // On a Mac, a black-and-white "Template" icon that macOS tints to match a
@@ -712,7 +726,8 @@ function placeAt(x, y) {
 
 
 // Wandering sends absolute positions so slow sub-pixel drift isn't lost to rounding.
-ipcMain.on('move-to', (_e, x, y) => placeAt(x, y));
+const num = (...v) => v.every(Number.isFinite);
+ipcMain.on('move-to', (_e, x, y) => { if (num(x, y)) placeAt(x, y); });
 
 // Smooth glide used when Mochi gets upset and floats to the middle, and back.
 let glideTimer = null;
@@ -746,6 +761,7 @@ ipcMain.on('glide-home', () => {
 ipcMain.on('focus-pet', () => win.focus());
 
 ipcMain.on('move-by', (_e, dx, dy) => {
+  if (!num(dx, dy)) return;
   const { x, y } = win.getBounds();
   placeAt(x + dx, y + dy);
 });
@@ -794,8 +810,14 @@ ipcMain.on('drag-done', () => {
   if (process.env.MOCHI_DEBUG) console.log('dropped at', JSON.stringify(win.getBounds()));
 });
 
+// The pet page may change only its own fields; company, insights and
+// settings are owned here.
+const PET_KEYS = ['happiness', 'hunger', 'energy', 'focusUntil', 'focusMin', 'moods', 'gratitude',
+  'sleepLog', 'askedNight', 'schedule', 'stayUp', 'userName', 'petGender'];
 ipcMain.on('save-state', (_e, partial) => {
-  Object.assign(state, partial);
+  if (partial && typeof partial === 'object') {
+    for (const k of PET_KEYS) if (k in partial) state[k] = partial[k];
+  }
   if (!upsetHome) ({ x: state.x, y: state.y } = win.getBounds()); // not the temporary centre spot
   saveState();
   refreshTrayMenu();

@@ -154,6 +154,11 @@ export async function totals(sql: Sql, body: any, today = new Date()): Promise<O
   const data: Record<string, unknown> = cleanPacket(body?.packet);
   const answer = cleanAnswer(c.questions, week, body?.packet?.answer);
   if (answer) data.answer = answer;
+  // Each laptop sends one packet a week. A cap of twice the seats (or 5,000
+  // when no seat count is set) stops a leaked code from flooding the totals.
+  const cap = Number(c.seats) > 0 ? Number(c.seats) * 2 : 5000;
+  const [{ n }] = await sql`select count(*)::int as n from packets where company_id = ${c.id} and week = ${week}`;
+  if (n >= cap) return no(429, 'week-full');
   await sql`insert into packets (company_id, team, week, data) values (${c.id}, ${team}, ${week}, ${sql.json(data)})`;
   return ok({});
 }

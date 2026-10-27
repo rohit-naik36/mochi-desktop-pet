@@ -49,8 +49,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.120.0
       - run: supabase link --project-ref "$PROJECT_REF"
       - run: supabase db push
-      - run: supabase secrets set SEAT_PEPPER="${{ secrets.SEAT_PEPPER }}"
+      - run: supabase secrets set SEAT_PEPPER="$SEAT_PEPPER"
+        env:
+          SEAT_PEPPER: ${{ secrets.SEAT_PEPPER }}
       - run: supabase functions deploy checkin totals pulse --project-ref "$PROJECT_REF"
