@@ -7,6 +7,7 @@ const Progress = require('./progress');
 const Insights = require('./insights');
 const Company = require('./company');
 const Calls = require('./calls');
+const Device = require('./device');
 
 const MIN_MS = 60_000;
 const WIN_W = 220;
@@ -190,7 +191,7 @@ const AWAY_SEC = { eyes: 20, water: 45, stretch: 60 };
 let lastSneaky = 0;
 function checkAway(key) {
   const need = AWAY_SEC[key];
-  if (!need) return;
+  if (!need || !teamsOn()) return;
   const started = Date.now();
   const timer = setInterval(() => {
     const idle = powerMonitor.getSystemIdleTime();
@@ -210,12 +211,14 @@ function checkAway(key) {
 // and keeps every reminder and line for later.
 let onCall = false;
 let callStart = 0;
-const quietNow = () => onCall || state.silent.until > Date.now();
+// Silent mode, the break check and big-call pep talks are Mochi for Teams
+// features.
+const quietNow = () => teamsOn() && (onCall || state.silent.until > Date.now());
 function sendQuiet(extra = {}) {
   send('quiet', { call: onCall, until: state.silent.until, ...extra });
 }
 async function checkCall() {
-  const now = state.silent.auto ? await Calls.onCall() : false;
+  const now = teamsOn() && state.silent.auto ? await Calls.onCall() : false;
   if (now === onCall) return;
   onCall = now;
   let endedMin = 0;
@@ -266,18 +269,31 @@ function teamsChanged() {
   if (teamsWin && !teamsWin.isDestroyed()) teamsWin.webContents.send('teams', teamsView());
 }
 ipcMain.handle('teams-get', () => teamsView());
-ipcMain.handle('teams-join', (_e, code) => {
-  const c = Company.lookup(code, app.getPath('userData'));
-  if (!c) return { ok: false };
-  state.teams = { ...c, team: null, insights: false, asked: false, joinedAt: Progress.dayKey() };
+// Joining: the demo code works offline. Otherwise, with the Teams server set
+// up, the code is checked there (and this laptop counts as one seat); without
+// it, the code must match the company file IT placed on the laptop.
+function joinCompany(c) {
+  state.teams = { ...c, team: null, insights: false, asked: false, joinedAt: Progress.dayKey(), checkedAt: Date.now() };
   state.insights = {};
   teamsChanged();
+}
+ipcMain.handle('teams-join', async (_e, code) => {
+  const local = Company.lookup(code, app.getPath('userData'));
+  if (local && (local.demo || !Company.hasServer())) { joinCompany(local); return { ok: true }; }
+  if (!Company.hasServer()) return { ok: false, reason: 'unknown-code' };
+  const res = await serverCheckin(code);
+  if (!res.ok) return res;
+  joinCompany(res.company);
+  state.teams.grace = res.graceDays;
+  saveState();
   return { ok: true };
 });
 ipcMain.on('teams-set', (_e, partial = {}) => {
   if (!state.teams) return;
   if (typeof partial.team === 'string' && state.teams.teams.includes(partial.team)) state.teams.team = partial.team;
   if (typeof partial.insights === 'boolean') {
+    // Only weeks from now on are ever added to team totals.
+    if (partial.insights && !state.teams.insights) state.teams.insightsSince = Insights.weekKey();
     state.teams.insights = partial.insights;
     state.teams.asked = true; // the one-time consent screen has been answered
   }
@@ -291,15 +307,71 @@ ipcMain.on('teams-leave', () => {
 
 // IT can roll Mochi out with a company file; people join without a code,
 // and insights stay off until they choose.
-function autoJoin() {
-  if (state.teams) return;
-  const c = Company.fromFile(app.getPath('userData'));
-  if (c && c.autoJoin) {
-    state.teams = { ...c, team: null, insights: false, asked: false, joinedAt: Progress.dayKey() };
-    saveState();
+async function autoJoin() {
+  if (!state.teams) {
+    const c = Company.fromFile(app.getPath('userData'));
+    if (c && c.autoJoin) {
+      if (!Company.hasServer() || c.demo) joinCompany(c);
+      else {
+        const res = await serverCheckin(c.code);
+        if (res.ok) { joinCompany(res.company); state.teams.grace = res.graceDays; saveState(); }
+      }
+    }
   }
   // Ask once, on a friendly screen, before anything is added to team totals.
   if (state.teams && state.teams.asked === false) setTimeout(openTeams, 8000);
+}
+
+// ---------- Mochi for Teams: licence and weekly totals ----------
+
+const DAY_MS = 24 * 60 * MIN_MS;
+const teamsOn = () => !!state.teams && !state.teams.lapsed;
+
+async function serverCheckin(code) {
+  let id = await Device.machineId();
+  if (!id) id = state.deviceSeed || (state.deviceSeed = require('crypto').randomUUID());
+  return Company.checkin(code, Device.installHash(id), await Device.workAccount(), app.getVersion());
+}
+
+// About once a day: count this laptop as a seat and pick up the company's
+// latest contacts and teams. If the server can't be reached or says no for
+// longer than the grace period, company features pause (free Mochi keeps
+// working) until a check-in succeeds again.
+async function dailyCheckin(force = false) {
+  const t = state.teams;
+  if (!t || t.demo || !Company.hasServer()) return;
+  if (!force && !t.lapsed && Date.now() - (t.checkedAt || 0) < 20 * 60 * MIN_MS) return; // at most once every 20 hours
+  const res = await serverCheckin(t.code);
+  if (state.teams !== t) return; // left while we were asking
+  if (res.ok) {
+    const keep = ['team', 'insights', 'insightsSince', 'asked', 'joinedAt', 'sent'];
+    state.teams = { ...res.company, ...Object.fromEntries(keep.map((k) => [k, t[k]])), checkedAt: Date.now(), grace: res.graceDays, lapsed: false };
+    if (state.teams.team && !state.teams.teams.includes(state.teams.team)) state.teams.team = null;
+  } else {
+    t.lapsed = Date.now() - (t.checkedAt || 0) > (t.grace || 45) * DAY_MS;
+  }
+  teamsChanged();
+}
+
+// Finished weeks go to the team totals one by one, each at a random time in
+// the day and a half after the week ends, apart from the daily check-in, and
+// with no laptop id, so a week can't be matched to a seat.
+let sending = false;
+async function sendWeeks() {
+  const t = state.teams;
+  if (sending || !teamsOn() || !t.insights || t.demo || !Company.hasServer()) return;
+  sending = true;
+  try {
+    t.sent = t.sent || {};
+    const now = Date.now();
+    const thisWeek = Insights.weekKey();
+    for (const wk of Object.keys(state.insights.weeks || {}).sort()) {
+      if (wk >= thisWeek || wk < (t.insightsSince || thisWeek) || t.sent[wk] === true) continue;
+      if (!t.sent[wk]) { t.sent[wk] = now + Math.random() * 36 * 60 * MIN_MS; saveState(); continue; }
+      if (now < t.sent[wk]) continue;
+      if (await Company.sendTotals(t.code, t.team, wk, Insights.packet(state.insights, t, wk))) { t.sent[wk] = true; saveState(); }
+    }
+  } finally { sending = false; }
 }
 
 let teamsWin = null;
@@ -442,14 +514,14 @@ function buildMenu() {
     { label: M('board'), click: openBoard },
     { label: state.teams ? '🏢 ' + state.teams.name : M('teams'), click: openTeams },
     { type: 'separator' },
-    { label: M('silent') + (quietNow() ? ' ✓' : ''), submenu: [
+    ...(!teamsOn() ? [] : [{ label: M('silent') + (quietNow() ? ' ✓' : ''), submenu: [
       { label: M('silentAuto'), type: 'checkbox', checked: state.silent.auto, click: (item) => { state.silent.auto = item.checked; saveState(); if (!item.checked && onCall) { onCall = false; sendQuiet(); } } },
       { type: 'separator' },
       ...(state.silent.until > Date.now()
         ? [{ label: M('silentOff'), click: () => setSilent(0) }]
         : [{ label: M('silent30'), click: () => setSilent(30) }, { label: M('silent60'), click: () => setSilent(60) }, { label: M('silentOn'), click: () => setSilent(-1) }]),
     ] },
-    { label: M('bigCall'), click: () => send('action', 'big-call') },
+    { label: M('bigCall'), click: () => send('action', 'big-call') }]),
     state.focusUntil > Date.now()
       ? { label: M('focusStop', Math.ceil((state.focusUntil - Date.now()) / MIN_MS)), click: () => send('action', 'focus-stop') }
       : { label: M('focus'), submenu: [25, 50].map((m) => ({ label: M('focusMin', m), click: () => send('action', 'focus-' + m) })) },
@@ -713,6 +785,10 @@ if (!gotLock) {
     setInterval(refreshTrayMenu, 60_000);
     setInterval(reportActivity, 15_000);
     setInterval(checkCall, 15_000);
+    setTimeout(dailyCheckin, 20_000);
+    setInterval(dailyCheckin, 60 * MIN_MS);
+    setInterval(sendWeeks, 60 * MIN_MS);
+    setTimeout(sendWeeks, 2 * MIN_MS);
     // Manual silent mode ends on its own; tell the pet when it does.
     setInterval(() => { if (state.silent.until && state.silent.until <= Date.now()) setSilent(0); }, 30_000);
     powerMonitor.on('resume', reportActivity);

@@ -1,0 +1,77 @@
+# Mochi for Teams server: setup and running it
+
+This is for Little Smoke Studio. Companies don't sign in anywhere: you set
+each one up, and HR opens Mochi Pulse with a key you give them.
+
+The server is a Supabase project (Mumbai region) with three functions:
+
+| Function | Called by | Does |
+|---|---|---|
+| `checkin` | Mochi, about once a day | counts the laptop as a seat for the month, returns the company's contacts, teams and welcome note |
+| `totals` | Mochi, once a week, only if the person turned insights on | stores one finished week of counts, with no laptop id |
+| `pulse` | Mochi Pulse | returns team totals (groups of 8+, rounded to 5) and the seat count |
+
+## 1. One-time setup
+
+1. Create a free account at supabase.com and a new project. Region: **Mumbai (ap-south-1)**. Save the database password somewhere safe.
+2. In GitHub, open the repo's **Settings > Secrets and variables > Actions** and add:
+   - `SUPABASE_ACCESS_TOKEN`: from supabase.com > Account > Access tokens
+   - `SUPABASE_PROJECT_REF`: the id in your project's URL (`https://supabase.com/dashboard/project/<this>`)
+   - `SUPABASE_DB_PASSWORD`: the database password from step 1
+   - `SEAT_PEPPER`: any long random text (it keeps seat hashes private; never change it later)
+3. In GitHub **Actions**, run **Mochi for Teams server** from `main` with **Deploy** ticked. This creates the tables and deploys the functions.
+4. Put the server address into the apps, then build them:
+   `https://<project-ref>.supabase.co/functions/v1`
+   - Mochi: `SERVER` in `src/company.js`
+   - Mochi Pulse: `SERVER` in `pulse/main.js`
+
+## 2. Add a company
+
+In Supabase, open **Table editor > companies > Insert row**:
+
+| Column | Example | Notes |
+|---|---|---|
+| `id` | `acme` | lowercase, short, never changes |
+| `name` | `Acme Pvt Ltd` | shown to staff |
+| `code` | `ACME-7KQ2-2026` | the join code; capitals, numbers and dashes, 6 to 40 long. Make it hard to guess |
+| `tenant_id` | `72f988bf-…` | their Microsoft Entra tenant id (IT can find it in the Entra admin centre). Turns on the company-laptop lock |
+| `domain` | `corp.acme.com` | or their Windows domain, if they use on-premises AD |
+| `seats` | `500` | committed seats on the contract |
+| `welcome` | `Hi team! …` | a short note from HR, shown when people join |
+| `support` | `[{"name":"Acme Care EAP (free, 24/7)","number":"1800-123-4567"},{"name":"Your HR partner","number":"people@acme.com"}]` | up to 4, shown first when someone shares something heavy |
+| `posh` | `{"name":"Internal Committee (POSH)","number":"ic@acme.com"}` | |
+| `teams` | `["Engineering","Sales","Customer Support"]` | the list people choose from. Teams under 8 people are hidden in Pulse |
+
+Changes reach every laptop within a day, at its next check-in.
+
+Then send IT the company file and guide (`teams/IT-ROLLOUT.md`) with their code filled in.
+
+## 3. Give HR a Pulse key
+
+    node server/tools/new-pulse-key.mjs acme "Priya Sharma, HR head"
+
+It prints a key (give it to that person once, by a private channel) and a line of SQL. Run the SQL in Supabase **SQL editor**. One key per person, so you can switch one off without affecting others: set `revoked` to true in **pulse_keys**.
+
+## 4. Every month: seats
+
+In **SQL editor**:
+
+    select * from seat_months order by month desc, name;
+
+`active_seats` is the number of laptops that checked in that month. Bill on the committed `seats`; if active seats go above it, add the difference at the quarterly true-up. IT can check our number against the install count in Intune.
+
+## 5. If a join code leaks
+
+1. Copy the current `code` into `old_code`, set `old_code_until` to about 30 days from today, and put a new code in `code`.
+2. With the laptop lock on (`tenant_id` or `domain` set), company laptops move to the new code on their own. Without it, send IT the new code to push out.
+3. After `old_code_until`, the old code stops working. Laptops that can't check in keep company features for 45 days, then fall back to free Mochi.
+
+## 6. When a company leaves
+
+Set `active` to false. Their laptops fall back to free Mochi within 45 days. To delete their data, delete the company row (seats, totals and keys go with it).
+
+## Local testing
+
+    cd server && bun install
+    TEST_DATABASE_URL=postgres://postgres@localhost:5432/postgres bun test
+    DATABASE_URL=postgres://... PORT=8787 bun test/dev-server.ts   # then MOCHI_SERVER=http://127.0.0.1:8787 npm start

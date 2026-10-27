@@ -8,9 +8,11 @@ people are hidden.
 It is a separate app from Mochi, so the people using Mochi never have an HR
 view on their laptop.
 
-For now it shows sample data for the fictional Acme Demo Pvt Ltd
-(`sample-data.js`, made by `tools/make-sample.py`). Real totals need the
-Pulse server, which isn't built yet.
+HR opens it with a Pulse key from Little Smoke Studio (see
+`server/ADMIN.md`), and it loads the company's real totals and seat count from
+the Mochi for Teams server. "Look around with sample data" shows the
+fictional Acme Demo Pvt Ltd (`sample-data.js`, made by `tools/make-sample.py`)
+for demos.
 
 Build on Windows (or run the "Build Mochi Pulse" workflow):
 

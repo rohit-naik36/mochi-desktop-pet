@@ -52,3 +52,6 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 button.ghost { background: transparent; color: #cfcde0; border: 1px solid #3a3a4c; }
 .foot { display: flex; gap: 16px; }
 .more summary { margin-top: 12px; }
+
+.welcome { color: #ecebf5; font-size: 13.5px; line-height: 1.5; margin: 8px 0; padding: 10px 12px; border-left: 3px solid #ffd36b; background: #ffffff0a; border-radius: 0 8px 8px 0; white-space: pre-line; }
+.note.err { color: #ff9b8a; }

@@ -1,0 +1,14 @@
+# Supabase project settings used by `supabase functions deploy` and
+# `supabase db push`. The project itself is linked in the deploy workflow.
+project_id = "mochi-teams"
+
+# The app and Mochi Pulse call these without a Supabase login: each function
+# checks the company code or the Pulse key itself.
+[functions.checkin]
+verify_jwt = false
+
+[functions.totals]
+verify_jwt = false
+
+[functions.pulse]
+verify_jwt = false

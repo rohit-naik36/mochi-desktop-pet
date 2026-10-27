@@ -2,13 +2,25 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co http://127.0.0.1:*">
 <title>Mochi Pulse</title>
 <link rel="stylesheet" href="theme.css">
 <link rel="stylesheet" href="page.css">
 </head>
 <body>
-<div class="wrap">
+<section id="signin" class="signin" hidden>
+  <form id="signin-form" class="signin-card">
+    <h1>Mochi Pulse</h1>
+    <p>Team wellbeing totals for your company. Enter the Pulse key Little Smoke Studio gave you.</p>
+    <label for="key">Pulse key</label>
+    <input id="key" name="key" autocomplete="off" spellcheck="false" placeholder="mp_…" required>
+    <label class="remember"><input id="remember" type="checkbox" checked> Keep me signed in on this computer</label>
+    <button type="submit" id="open">Open Pulse</button>
+    <p id="signin-msg" class="signin-msg" role="status"></p>
+    <button type="button" id="sample" class="link">Or look around with sample data</button>
+  </form>
+</section>
+<div class="wrap" id="app" hidden>
 <div class="mp">
   <header class="mp-head" id="top">
     <div class="mp-top">
@@ -20,6 +32,8 @@
     <div class="mp-meta">
       <span id="company-line">—</span>
       <span class="mp-chip sample">Sample data for a demo</span>
+      <span class="mp-chip" id="seats" hidden></span>
+      <button type="button" id="signout" class="mp-chip link">Sign out</button>
       <span class="mp-chip">Groups of 8 or more only</span>
     </div>
     <p class="mp-take" id="take">Over the last 4 weeks, average mood moved by <b data-source="summary" data-field="mood_change" class="dash-skeleton">—</b> points against the first month, and <b data-source="summary" data-field="late_last4" class="dash-skeleton">—</b> of active people were still using their laptop after bedtime. Mochi flagged <b data-source="issue_count" data-field="needs_action" class="dash-skeleton">—</b> issues for the wellness team below.</p>
@@ -177,8 +191,6 @@
 </div>
 <script src="vendor/d3.min.js"></script>
 <script src="sample-data.js"></script>
-<script src="shim.js"></script>
-<script src="picker.js"></script>
-<script src="page.js"></script>
+<script src="start.js"></script>
 </body>
 </html>

@@ -20,3 +20,19 @@ body { margin: 0; padding: 28px clamp(16px, 4vw, 48px) 48px; font-family: var(--
 .mp-pick select:focus-visible { outline: 2px solid #4f7cff; outline-offset: 2px; }
 .mp-table tr.sel td { background: #eef3ff; }
 .dash-skeleton { min-height: 1em; }
+
+.signin { min-height: calc(100vh - 76px); display: grid; place-items: center; }
+.signin-card { width: min(100%, 420px); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 16px; padding: 28px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 10px 30px rgba(27, 42, 68, .08); }
+.signin-card h1 { margin: 0; font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 30px; }
+.signin-card p { margin: 0 0 6px; color: var(--color-fg-muted); line-height: 1.5; font-size: 14px; }
+.signin-card label { font-size: 13px; color: var(--color-fg-muted); }
+.signin-card input#key { font: 14px ui-monospace, Consolas, monospace; padding: 10px 12px; border: 1px solid var(--color-border-line); border-radius: 10px; color: var(--color-fg); }
+.signin-card .remember { display: flex; gap: 8px; align-items: center; }
+.signin-card button[type=submit] { font: 600 14px var(--font-anthropic-sans); background: #ffb36b; color: #1b2a44; border: 0; border-radius: 999px; padding: 11px 16px; cursor: pointer; margin-top: 4px; }
+.signin-card button:disabled { opacity: .6; cursor: default; }
+.signin-msg { min-height: 1.4em; color: var(--color-bad) !important; }
+button.link { background: none; border: 0; color: var(--color-fg-muted); text-decoration: underline; cursor: pointer; font: inherit; font-size: 13px; padding: 0; }
+.mp-chip.link { text-decoration: none; background: none; cursor: pointer; color: var(--color-fg-muted); }
+:focus-visible { outline: 2px solid #4f7cff; outline-offset: 2px; }
+.mp-empty { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 12px; padding: 18px; line-height: 1.5; }
+[hidden] { display: none !important; }
