@@ -334,8 +334,9 @@ pages['teams.html'] = page('teams.html', 'Mochi for teams', 'Mochi for teams bri
         <div class="two"><div class="field"><label for="t-company">Company</label><input id="t-company" name="company" required autocomplete="organization"></div><div class="field"><label for="t-size">Team size</label><select id="t-size" name="size"><option>Under 50</option><option>50 to 250</option><option>250 to 1,000</option><option>Over 1,000</option></select></div></div>
         <div class="field"><label for="t-msg">What would you like Mochi to help with?</label><textarea id="t-msg" name="message" placeholder="For example: break habits for our night-shift support team"></textarea></div>
         <button class="btn btn-primary" type="submit">Send enquiry</button>
-        <p class="form-note">This opens your email app with your message filled in, ready to send.</p>
-        <p class="form-status form-note" hidden>Your email app should be open now. If it didn't open, write to {EMAIL}.</p>
+        <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <p class="form-note">Your message comes straight to {EMAIL}. We reply within two working days.</p>
+        <p class="form-status form-note" role="status" hidden></p>
       </form>
     </div></section>''', current='teams.html')
 
@@ -442,8 +443,9 @@ pages['contact.html'] = page('contact.html', 'Contact', 'Contact the Mochi team 
         <div class="field"><label for="c-topic">Topic</label><select id="c-topic" name="topic"><option>Help with the app</option><option>Mochi for teams</option><option>Press</option><option>Partnership</option><option>Something else</option></select></div>
         <div class="field"><label for="c-msg">Message</label><textarea id="c-msg" name="message" required></textarea></div>
         <button class="btn btn-primary" type="submit">Send message</button>
-        <p class="form-note">This opens your email app with your message filled in, ready to send.</p>
-        <p class="form-status form-note" hidden>Your email app should be open now. If it didn't open, write to {EMAIL}.</p>
+        <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <p class="form-note">Your message comes straight to {EMAIL}. We reply within two working days.</p>
+        <p class="form-status form-note" role="status" hidden></p>
       </form>
     </div></section>''')
 
@@ -500,7 +502,7 @@ pages['privacy.html'] = page('privacy.html', 'Privacy policy', 'How Mochi and mo
       <p>To delete everything, uninstall Mochi or delete that file.</p>
       <h2>This website</h2>
       <p>mochicuddle.com uses no cookies, analytics or trackers. Fonts are loaded from Google Fonts, which receives your IP address to deliver them. The site is hosted on a static host, which may keep standard server logs for security.</p>
-      <p>If you email us or use a form on this site, the form opens your own email app. We receive only what you send and use it only to reply.</p>
+      <p>If you use a form on this site, your message is passed to our inbox by FormSubmit (formsubmit.co), a form delivery service. If you email us, it comes straight to our inbox. We receive only what you send and use it only to reply.</p>
       <h2>Mochi for teams</h2>
       <p>The company edition keeps the same rule: worries, moods and gratitude notes stay on each employee's device. Any team insights are anonymous totals. Each company agreement describes exactly what is collected.</p>
       <h2>Children</h2><p>Mochi is rated for everyone, but it is made for working adults and does not knowingly collect information from anyone.</p>

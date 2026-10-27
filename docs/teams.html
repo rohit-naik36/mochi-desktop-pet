@@ -66,8 +66,9 @@
         <div class="two"><div class="field"><label for="t-company">Company</label><input id="t-company" name="company" required autocomplete="organization"></div><div class="field"><label for="t-size">Team size</label><select id="t-size" name="size"><option>Under 50</option><option>50 to 250</option><option>250 to 1,000</option><option>Over 1,000</option></select></div></div>
         <div class="field"><label for="t-msg">What would you like Mochi to help with?</label><textarea id="t-msg" name="message" placeholder="For example: break habits for our night-shift support team"></textarea></div>
         <button class="btn btn-primary" type="submit">Send enquiry</button>
-        <p class="form-note">This opens your email app with your message filled in, ready to send.</p>
-        <p class="form-status form-note" hidden>Your email app should be open now. If it didn't open, write to hello@mochicuddle.com.</p>
+        <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <p class="form-note">Your message comes straight to hello@mochicuddle.com. We reply within two working days.</p>
+        <p class="form-status form-note" role="status" hidden></p>
       </form>
     </div></section>
 </main>

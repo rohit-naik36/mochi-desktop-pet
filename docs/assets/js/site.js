@@ -98,16 +98,38 @@
     timer = setInterval(show, 4800);
   }
 
-  // Enquiry forms open the visitor's email app with the message filled in.
+  // Enquiry forms send to our inbox through FormSubmit. If that fails, the
+  // visitor's own email app opens with the message filled in instead.
   for (const form of document.querySelectorAll('form[data-mailto]')) {
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const data = new FormData(form);
+      if (data.get('_honey')) return;
+      data.delete('_honey');
       const subject = (form.dataset.subject || 'Hello from mochicuddle.com') + (data.get('company') ? ` (${data.get('company')})` : '');
-      const body = [...data.entries()].filter(([, v]) => v).map(([k, v]) => `${k[0].toUpperCase() + k.slice(1)}: ${v}`).join('\n');
-      location.href = `mailto:${form.dataset.mailto}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      const fields = Object.fromEntries([...data.entries()].filter(([, v]) => v));
       const note = form.querySelector('.form-status');
-      if (note) note.hidden = false;
+      const button = form.querySelector('button[type="submit"]');
+      const tell = (msg) => { if (note) { note.textContent = msg; note.hidden = false; } };
+      button.disabled = true;
+      tell('Sending…');
+      try {
+        const res = await fetch(`https://formsubmit.co/ajax/${form.dataset.mailto}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ ...fields, _subject: subject, _replyto: fields.email, _template: 'table', _captcha: 'false' }),
+        });
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok || String(out.success) !== 'true') throw new Error(out.message || res.status);
+        form.reset();
+        tell('Thanks! Your message is on its way. We reply within two working days.');
+      } catch {
+        const body = Object.entries(fields).map(([k, v]) => `${k[0].toUpperCase() + k.slice(1)}: ${v}`).join('\n');
+        location.href = `mailto:${form.dataset.mailto}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        tell(`We couldn't send that from here, so your email app should open instead. If it doesn't, write to ${form.dataset.mailto}.`);
+      } finally {
+        button.disabled = false;
+      }
     });
   }
 

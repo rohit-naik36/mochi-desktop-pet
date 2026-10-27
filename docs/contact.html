@@ -47,8 +47,9 @@
         <div class="field"><label for="c-topic">Topic</label><select id="c-topic" name="topic"><option>Help with the app</option><option>Mochi for teams</option><option>Press</option><option>Partnership</option><option>Something else</option></select></div>
         <div class="field"><label for="c-msg">Message</label><textarea id="c-msg" name="message" required></textarea></div>
         <button class="btn btn-primary" type="submit">Send message</button>
-        <p class="form-note">This opens your email app with your message filled in, ready to send.</p>
-        <p class="form-status form-note" hidden>Your email app should be open now. If it didn't open, write to hello@mochicuddle.com.</p>
+        <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <p class="form-note">Your message comes straight to hello@mochicuddle.com. We reply within two working days.</p>
+        <p class="form-status form-note" role="status" hidden></p>
       </form>
     </div></section>
 </main>
