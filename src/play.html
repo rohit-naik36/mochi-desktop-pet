@@ -13,6 +13,9 @@
   <div id="fx"></div>
   <div id="orb" class="hidden"></div>
 
+  <div id="pad" class="hidden"></div>
+  <div id="shake-hud" class="hidden"><span id="shake-count"></span><button id="shake-done" class="ghost"></button></div>
+
   <div id="pet-wrap"><div id="pet" class="idle" data-pet-svg></div></div>
 
   <div id="toolbar">
@@ -21,6 +24,7 @@
       <button data-game="breathe">🌬️ Breathe</button>
       <button data-game="bubbles">🫧 Bubbles</button>
       <button data-game="chase">✨ Chase</button>
+      <button data-game="shake">🥊 Shake it out</button>
     </nav>
     <button id="sound" class="icon" title="Sound on/off">🔊</button>
     <button id="close" class="icon" title="Done playing (Esc)">✕</button>
@@ -41,6 +45,15 @@
     <section id="chase" class="panel">
       <div class="hint">Move your mouse slowly. I'll follow the light.</div>
       <div id="catch-count" class="counter"></div>
+    </section>
+    <section id="shake" class="panel">
+      <div id="shake-calm" class="hidden">
+        <div id="shake-line"></div>
+        <div id="shake-breath"></div>
+        <div id="shake-dots"></div>
+        <div id="shake-q"></div>
+        <div id="shake-actions"></div>
+      </div>
     </section>
     <section id="worry" class="panel">
       <div class="hint" id="worry-hint">What's weighing on you? I'll eat it. Nothing is saved.</div>
@@ -68,6 +81,7 @@
   <script src="affection.js"></script>
   <script src="progress.js"></script>
   <script src="worry.js"></script>
+  <script src="shake-rules.js"></script>
   <script src="ai-prompt.js"></script>
   <script src="play.js"></script>
 </body>

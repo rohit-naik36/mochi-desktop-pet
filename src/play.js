@@ -102,7 +102,7 @@ const chime = () => { tone(660, 0.5, 'sine', 0.05); setTimeout(() => tone(990, 0
 
 // ---------- switching games ----------
 
-const games = { breathe: Breathe(), bubbles: Bubbles(), chase: Chase(), worry: Worry() };
+const games = { breathe: Breathe(), bubbles: Bubbles(), chase: Chase(), worry: Worry(), shake: Shake() };
 
 function show(name) {
   if (current) games[current].stop();
@@ -120,7 +120,7 @@ function show(name) {
   document.body.classList.toggle('pass-through', passThrough());
   capture(!passThrough());
   games[name].start();
-  placeCard();
+  if (!games[name].noCard) placeCard();
 }
 
 // Worry and breathing don't need the whole screen: everything outside the card,
@@ -132,10 +132,10 @@ function capture(on) {
   capturing = on;
   window.play.capture(on);
 }
-const passThrough = () => current === 'worry' || current === 'breathe';
+const passThrough = () => current === 'worry' || current === 'breathe' || current === 'shake';
 document.addEventListener('mousemove', (e) => {
   if (!passThrough()) return capture(true);
-  capture(!!e.target.closest('#toolbar, #card, #speech'));
+  capture(!!e.target.closest('#toolbar, #card, #speech, #pad, #shake-hud'));
 });
 
 function finish() {
@@ -148,6 +148,8 @@ document.getElementById('tabs').addEventListener('click', (e) => {
   if (g) show(g);
 });
 document.getElementById('close').onclick = finish;
+document.getElementById('pad').addEventListener('pointerdown', (e) => games.shake.hit(e));
+document.getElementById('shake-done').onclick = () => games.shake.done();
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') finish(); });
 const soundBtn = document.getElementById('sound');
 const paintSound = () => { soundBtn.textContent = soundOn ? '🔊' : '🔇'; };
@@ -336,6 +338,183 @@ function Chase() {
   };
 }
 
+// ---------- 5. Shake it out ----------
+// Mochi puts on gloves and holds a pad, runs around the screen and you hit the
+// pad. Then it takes the gloves off, breathes with you and helps you move on.
+// The rules (when to offer, when a round ends, which cheer) are in shake-rules.js.
+
+function Shake() {
+  const R = window.ShakeRules;
+  const pad = document.getElementById('pad');
+  const hud = document.getElementById('shake-hud');
+  const hudCount = document.getElementById('shake-count');
+  const hudDone = document.getElementById('shake-done');
+  const line = document.getElementById('shake-line');
+  const ask = document.getElementById('shake-q');
+  const breath = document.getElementById('shake-breath');
+  const dots = document.getElementById('shake-dots');
+  const actions = document.getElementById('shake-actions');
+  const POWS = ['POW!', 'WHAM!', 'BAM!', 'THWACK!', 'BOOM!'];
+  const BREATHS = 3;
+  let phase = null; // 'fight' | 'calm' | 'ask'
+  let hits = 0, startedAt = 0, doneClicked = false;
+  let target = null, pauseUntil = 0, last = 0, raf, ticker, timers = [];
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+  const goalText = (n) => T('shakeCount', { count: n }).replace('{goal}', R.HITS_TARGET);
+
+  function newTarget() {
+    const x = rand(130, innerWidth - 130), y = rand(150, innerHeight - 140);
+    target = Math.hypot(x - pos.x, y - pos.y) > 180 ? { x, y } : newTarget();
+    return target;
+  }
+
+  function placePad() {
+    const left = petEl.classList.contains('facing-left');
+    pad.style.left = (pos.x + (left ? -66 : 66)) + 'px';
+    pad.style.top = (pos.y + 4) + 'px';
+  }
+
+  function tick(now) {
+    if (phase !== 'fight') return;
+    const dt = Math.min(50, now - (last || now)); last = now;
+    if (now >= pauseUntil) {
+      if (!target) newTarget();
+      const dx = target.x - pos.x, dy = target.y - pos.y, d = Math.hypot(dx, dy);
+      if (d < 6) { target = null; pauseUntil = now + rand(350, 800); } // a breather: easy to hit
+      else {
+        const step = Math.min(d, Math.max(70, Math.min(230, d * 2.2)) * dt / 1000);
+        placePet(pos.x + dx / d * step, pos.y + dy / d * step);
+        petEl.classList.toggle('facing-left', dx < 0);
+      }
+    }
+    placePad();
+    if (!speech.classList.contains('hidden')) { speech.style.left = pos.x + 'px'; speech.style.top = (pos.y - 62) + 'px'; } // the cheer follows Mochi
+    raf = requestAnimationFrame(tick);
+  }
+
+  function spark(x, y) {
+    for (let i = 0; i < 7; i++) {
+      const bit = document.createElement('div');
+      bit.className = 'pop-bit';
+      bit.style.left = x + 'px'; bit.style.top = y + 'px';
+      const a = (i / 7) * Math.PI * 2;
+      bit.style.setProperty('--dx', Math.cos(a) * 30 + 'px');
+      bit.style.setProperty('--dy', Math.sin(a) * 30 + 'px');
+      document.body.appendChild(bit);
+      setTimeout(() => bit.remove(), 520);
+    }
+  }
+
+  function hit(e) {
+    if (phase !== 'fight') return;
+    e.preventDefault();
+    hits++;
+    hudCount.textContent = goalText(hits);
+    const r = pad.getBoundingClientRect();
+    const x = r.left + r.width / 2, y = r.top + r.height / 2;
+    pad.classList.remove('hit'); void pad.offsetWidth; pad.classList.add('hit');
+    spark(x, y);
+    float(pick(POWS), x - 22, y - 36);
+    tone(rand(110, 170), 0.12, 'triangle', 0.14, 0.5);
+    mood('happy');
+    setTimeout(() => phase === 'fight' && mood('idle'), 220);
+    if (R.cheerNow(hits)) say(T('shakeCheer' + R.stage(hits).toUpperCase()), 1700);
+    check();
+  }
+
+  function check() {
+    if (phase !== 'fight') return;
+    if (R.roundEnd({ hits, elapsedMs: Date.now() - startedAt, doneClicked })) calm();
+  }
+
+  // ----- cool-down: gloves off, three slow breaths, then move on -----
+
+  function paintDots(done) {
+    dots.innerHTML = '';
+    for (let i = 0; i < BREATHS; i++) { const d = document.createElement('span'); if (i < done) d.className = 'done'; dots.appendChild(d); }
+  }
+  function countdown(sec) { for (let i = 0; i < sec; i++) later(() => { breath.textContent = sec - i; }, i * 1000); }
+  function show(el, on) { el.classList.toggle('hidden', !on); }
+
+  function calm() {
+    phase = 'calm';
+    cancelAnimationFrame(raf); clearInterval(ticker);
+    petWrap.classList.remove('boxing');
+    show(pad, false); show(hud, false);
+    speech.classList.add('hidden');
+    show(document.getElementById('shake-calm'), true);
+    show(ask, false); show(actions, false); show(dots, true); show(breath, true);
+    line.textContent = T('shakeCalm');
+    const skip = document.createElement('button');
+    skip.className = 'ghost'; skip.textContent = T('shakeSkip'); skip.onclick = () => { timers.forEach(clearTimeout); timers = []; moveOn(); };
+    actions.innerHTML = ''; actions.appendChild(skip); show(actions, true);
+    paintDots(0);
+    placeCard();
+    chime();
+    const round = (n) => {
+      if (n === BREATHS) return moveOn();
+      line.textContent = T('breatheIn'); petWrap.className = 'inhale'; mood('idle'); countdown(4); tone(392, 1.2, 'sine', 0.03);
+      later(() => { line.textContent = T('breatheOut'); petWrap.className = 'exhale'; mood('sleep'); countdown(6); tone(294, 1.6, 'sine', 0.03); }, 4000);
+      later(() => { paintDots(n + 1); round(n + 1); }, 10000);
+    };
+    later(() => round(0), 1800);
+  }
+
+  function moveOn() {
+    phase = 'ask';
+    petWrap.className = ''; mood('happy');
+    show(dots, false); show(breath, false);
+    line.textContent = T('shakeMoveOn');
+    ask.textContent = T('shakeAsk'); show(ask, true);
+    actions.innerHTML = '';
+    const small = document.createElement('button'); small.className = 'cta'; small.textContent = T('shakeSmallBtn');
+    const letGo = document.createElement('button'); letGo.className = 'ghost'; letGo.textContent = T('shakeLetGoBtn');
+    small.onclick = () => {
+      line.textContent = T('shakeSmall'); show(ask, false);
+      actions.innerHTML = '';
+      const ok = document.createElement('button'); ok.className = 'cta'; ok.textContent = T('okay'); ok.onclick = finish;
+      actions.appendChild(ok);
+      placeCard();
+    };
+    letGo.onclick = () => {
+      line.textContent = T('shakeLetGo'); show(ask, false); show(actions, false);
+      float('✨', pos.x - 8, pos.y - 70);
+      setTimeout(finish, 2400);
+    };
+    actions.append(small, letGo); show(actions, true);
+    window.play.reward({ happiness: 10 });
+    placeCard();
+  }
+
+  return {
+    noCard: true, // the card stays hidden while Mochi runs around
+    start() {
+      phase = 'fight'; hits = 0; doneClicked = false; startedAt = Date.now(); target = null; pauseUntil = 0; last = 0;
+      card.classList.add('hidden');
+      show(document.getElementById('shake-calm'), false);
+      hudCount.textContent = goalText(0); hudDone.textContent = T('shakeDone');
+      hud.title = T('shakeHint');
+      show(hud, true); show(pad, true);
+      petWrap.className = 'free boxing';
+      petEl.classList.remove('facing-left');
+      placePad();
+      say(T('shakeStart'), 4200);
+      raf = requestAnimationFrame(tick);
+      ticker = setInterval(check, 250);
+    },
+    stop() {
+      phase = null;
+      cancelAnimationFrame(raf); clearInterval(ticker);
+      timers.forEach(clearTimeout); timers = [];
+      petWrap.className = '';
+      show(pad, false); show(hud, false);
+      petEl.classList.remove('facing-left');
+    },
+    hit,
+    done() { doneClicked = true; check(); },
+  };
+}
+
 // ---------- 4. Feed a worry ----------
 
 function Worry() {
@@ -395,11 +574,13 @@ function Worry() {
     }
     parts.actions.innerHTML = '';
     const lang = r.lang || S.lang || 'en';
-    const labels = { another: L(lang, 'feedAnother'), breathe: L(lang, 'breatheWithMe'), jar: L(lang, 'saveToJar') };
+    const labels = { another: L(lang, 'feedAnother'), breathe: L(lang, 'breatheWithMe'), jar: L(lang, 'saveToJar'), shake: L(lang, 'shakeBtn') };
+    // Someone who sounds angry is offered the boxing pad first; never after a gentle or serious reply.
+    const followups = window.ShakeRules.shouldOffer(r, r.text) ? ['shake', ...r.followups] : r.followups;
     document.documentElement.style.setProperty('--tiny-step', JSON.stringify(L(lang, 'tinyStep')));
-    for (const f of r.followups) {
+    for (const f of followups) {
       const b = document.createElement('button');
-      b.className = f === r.followups[0] ? 'cta' : 'ghost';
+      b.className = f === followups[0] ? 'cta' : 'ghost';
       b.textContent = f === 'thanks' ? (r.serious ? L(lang, 'okay') : L(lang, 'thanks')) : labels[f];
       b.onclick = () => {
         if (f === 'jar') {
@@ -412,6 +593,7 @@ function Worry() {
         }
         if (f === 'another') askMode();
         else if (f === 'breathe') show('breathe');
+        else if (f === 'shake') show('shake');
         else if (r.serious) { say(L(lang, 'crisisStay'), 4000); }
         else { happy(1200); say(L(lang, 'thanksReply'), 2500); setTimeout(finish, 1800); }
       };
