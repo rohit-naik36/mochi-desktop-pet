@@ -93,7 +93,11 @@ function lookup(code, userData) {
 
 // Base address of the server's functions, for example
 // https://<project>.supabase.co/functions/v1 (see server/ADMIN.md).
-const SERVER = process.env.MOCHI_SERVER || '';
+// The Teams server address, e.g. https://<project-ref>.supabase.co/functions/v1
+// Left empty until the Supabase project is live (and always empty in the demo).
+// MOCHI_SERVER overrides it for testing.
+const DEFAULT_SERVER = '';
+const SERVER = process.env.MOCHI_SERVER || DEFAULT_SERVER;
 
 async function call(fn, body) {
   if (!SERVER) return { status: 0, body: {} };

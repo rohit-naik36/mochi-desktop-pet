@@ -22,7 +22,7 @@ The server is a Supabase project (Mumbai region) with three functions:
 3. In GitHub **Actions**, run **Mochi for Teams server** from `main` with **Deploy** ticked. This creates the tables, deploys the functions and schedules the weekly clean-up that deletes totals older than a year. Check it under **Database > Cron**: a job called `mochi-prune-packets` should be listed. If it isn't, turn on `pg_cron` under **Database > Extensions** and run the deploy again.
 4. Put the server address into the apps, then build them:
    `https://<project-ref>.supabase.co/functions/v1`
-   - Mochi: `SERVER` in `src/company.js`
+   - Mochi: `DEFAULT_SERVER` in `src/company.js`
    - Mochi Pulse: `SERVER` in `pulse/main.js`
 
 ## 2. Add a company
