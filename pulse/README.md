@@ -5,6 +5,10 @@ mix, worry themes, real breaks, late nights, meeting load and feature use,
 with a team picker and issues flagged for the wellness team. Teams under 8
 people are hidden.
 
+It also shows the company's weekly question results and wellness campaigns,
+and makes the reports HR takes to leadership: a pilot report and a quarterly
+review (PDF, with suggested actions) and BRSR Principle 3 figures (CSV).
+
 It is a separate app from Mochi, so the people using Mochi never have an HR
 view on their laptop.
 

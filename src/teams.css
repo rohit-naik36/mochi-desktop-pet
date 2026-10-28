@@ -55,3 +55,12 @@ button.ghost { background: transparent; color: #cfcde0; border: 1px solid #3a3a4
 
 .welcome { color: #ecebf5; font-size: 13.5px; line-height: 1.5; margin: 8px 0; padding: 10px 12px; border-left: 3px solid #ffd36b; background: #ffffff0a; border-radius: 0 8px 8px 0; white-space: pre-line; }
 .note.err { color: #ff9b8a; }
+
+.campaign { font-size: 14px; color: #ecebf5; margin: 4px 0; }
+.campaign .muted { color: #9a98ad; font-size: 12.5px; }
+.q-text { font-size: 15px; color: #ecebf5; line-height: 1.45; margin: 4px 0 10px; }
+.q-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.q-options button { background: #2a2a38; color: #ecebf5; border: 1px solid #3a3a4c; font-weight: 550; }
+.q-options button:hover { border-color: #8fa2ff; }
+.q-options button.skip { background: transparent; color: #9a98ad; }
+button.link.inline { padding: 0; font-size: inherit; }

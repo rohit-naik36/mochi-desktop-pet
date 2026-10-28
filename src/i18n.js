@@ -1003,6 +1003,35 @@
   };
   for (const lang of Object.keys(VCALLS)) merge(STRINGS[lang], VCALLS[lang]);
 
+  // Mochi for Teams: the company's weekly question and wellness campaigns.
+  const VSET2 = {
+    en: {
+      company: {
+        ask: ['{text} has a quick, anonymous question for you this week 💛', 'Got a few seconds{n}? {text} has a one-tap question this week. Anonymous, promise 💛'],
+        answer: 'Answer', notNow: 'Not now',
+        from: 'From {text}:',
+        go: { stretch: 'Stretch now', gratitude: 'Add to the jar', worry: 'Feed me a worry', breathe: 'Breathe with me' },
+      },
+    },
+    hi: {
+      company: {
+        ask: ['इस हफ़्ते {text} का एक छोटा सा गुमनाम सवाल है 💛'],
+        answer: 'जवाब दो', notNow: 'अभी नहीं',
+        from: '{text} की तरफ़ से:',
+        go: { stretch: 'अभी स्ट्रेच करो', gratitude: 'जार में डालो', worry: 'मुझे चिंता खिलाओ', breathe: 'मेरे साथ साँस लो' },
+      },
+    },
+    hinglish: {
+      company: {
+        ask: ['Is hafte {text} ka ek chhota sa anonymous sawaal hai 💛'],
+        answer: 'Jawab do', notNow: 'Abhi nahi',
+        from: '{text} ki taraf se:',
+        go: { stretch: 'Abhi stretch karo', gratitude: 'Jar mein daalo', worry: 'Mujhe tension khilao', breathe: 'Mere saath saans lo' },
+      },
+    },
+  };
+  for (const lang of Object.keys(VSET2)) merge(STRINGS[lang], VSET2[lang]);
+
   // "Notice which app I'm in": one playful line after a long stretch in the
   // same kind of app. Only the kind of app is known, never what's in it.
   const VAPPS = {

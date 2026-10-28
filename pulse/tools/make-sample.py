@@ -90,9 +90,34 @@ hidden = [t[0] for t in TEAMS if t[1] < MIN_GROUP]
 for h in hidden:
     for d in (weekly, emotions, themes, features): del d[h]
 
+# Weekly check-in questions (newest first, like the server) and campaigns.
+# A separate random stream, so the numbers above stay the same.
+qr = random.Random(23)
+QUESTIONS = [
+    ("workload-oct", "How manageable was your workload this week?", ["Very", "Mostly", "Not really", "Not at all"], "2026-10-12", "2026-10-18", [.18, .42, .28, .12]),
+    ("eap-sep", "Do you know how to reach our EAP if you need it?", ["Yes", "Not sure", "No"], "2026-09-14", "2026-09-20", [.71, .19, .10]),
+    ("workload-aug", "How manageable was your workload this week?", ["Very", "Mostly", "Not really", "Not at all"], "2026-08-17", "2026-08-23", [.22, .46, .23, .09]),
+]
+def answers(people):
+    out = []
+    for qid, text, opts, start, end, mix in QUESTIONS:
+        n = int(people * qr.uniform(.45, .6))
+        counts = [r5(n * m * qr.uniform(.85, 1.15)) for m in mix]
+        out.append(dict(id=qid, text=text, options=opts, start=start, end=end, answered=r5(n), counts=counts))
+    return out
+questions = {t[0]: answers(t[1]) for t in TEAMS if t[1] >= MIN_GROUP}
+questions["All teams"] = [dict(q, answered=r5(sum(questions[t][i]["answered"] for t in questions)),
+    counts=[r5(sum(questions[t][i]["counts"][j] for t in questions)) for j in range(len(q["options"]))])
+    for i, q in enumerate(questions["Engineering"])]
+campaigns = [
+    dict(id="hydrate-aug", theme="hydration", start="2026-08-24", end="2026-08-28", note="Free fruit and infused water in every pantry this week."),
+    dict(id="mh-week-oct", theme="mental-health", start="2026-10-05", end="2026-10-10", note="World Mental Health Day: EAP drop-in sessions all week."),
+]
+
 data = dict(company="Acme Demo Pvt Ltd", sample=True, minGroup=MIN_GROUP, weeks=weeks,
             teams=[dict(team=t[0], people=t[1], hidden=t[1] < MIN_GROUP) for t in TEAMS],
-            weekly=weekly, emotions=emotions, themes=themes, features=features)
+            weekly=weekly, emotions=emotions, themes=themes, features=features,
+            questions=questions, campaigns=campaigns)
 open("sample-data.js", "w").write("// Made by tools/make-sample.py. Sample data only, not real people.\nwindow.PULSE_SAMPLE = " + json.dumps(data) + ";\n")
 for t in ["Engineering", "Operations", "All teams"]:
     print(t, [r["avg_mood"] for r in weekly[t]])

@@ -36,6 +36,12 @@
       <button type="button" id="signout" class="mp-chip link">Sign out</button>
       <span class="mp-chip">Groups of 8 or more only</span>
     </div>
+    <div class="mp-actions" aria-label="Reports">
+      <button type="button" class="mp-btn" id="r-pilot">Pilot report (PDF)</button>
+      <button type="button" class="mp-btn" id="r-quarter">Quarterly review (PDF)</button>
+      <button type="button" class="mp-btn" id="r-brsr">BRSR figures (CSV)</button>
+      <span class="mp-note" id="r-msg" role="status"></span>
+    </div>
     <p class="mp-take" id="take">Over the last 4 weeks, average mood moved by <b data-source="summary" data-field="mood_change" class="dash-skeleton">—</b> points against the first month, and <b data-source="summary" data-field="late_last4" class="dash-skeleton">—</b> of active people were still using their laptop after bedtime. Mochi flagged <b data-source="issue_count" data-field="needs_action" class="dash-skeleton">—</b> issues for the wellness team below.</p>
   </header>
 
@@ -160,6 +166,29 @@
     </div>
   </section>
 
+  <section class="mp-sec" id="checkins">
+    <header>
+      <h2>Weekly question</h2>
+      <p class="mp-note">One anonymous question, set up with Little Smoke Studio and asked by Mochi to people who add their counts to team totals. Results show only once 8 or more people in the group have answered, rounded to the nearest 5.</p>
+    </header>
+    <div class="mp-grid" id="q-list"></div>
+  </section>
+
+  <section class="mp-sec" id="campaigns">
+    <header>
+      <h2>Wellness campaigns</h2>
+      <p class="mp-note">Themed weeks Mochi delivered as friendly lines, with your note on the first day. "During" compares the campaign week with the two weeks before it, for the group picked above.</p>
+    </header>
+    <div class="mp-card">
+      <div class="mp-tablebox">
+        <table class="mp-table" id="t-campaigns">
+          <thead><tr><th>Campaign</th><th>Dates</th><th>Your note</th><th>During the campaign</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <section class="mp-sec" id="privacy">
     <header>
       <h2>What HR can and cannot see</h2>
@@ -189,6 +218,7 @@
 
 
 </div>
+<article id="report" class="report" aria-hidden="true"></article>
 <script src="vendor/d3.min.js"></script>
 <script src="sample-data.js"></script>
 <script src="start.js"></script>

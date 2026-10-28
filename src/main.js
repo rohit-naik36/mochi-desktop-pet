@@ -6,6 +6,7 @@ const I18N = require('./i18n');
 const Progress = require('./progress');
 const Insights = require('./insights');
 const Company = require('./company');
+const Campaigns = require('./campaigns');
 const Calls = require('./calls');
 const Ai = require('./ai');
 const Apps = require('./apps');
@@ -124,8 +125,10 @@ const PET_CY = WIN_H - 61;
 
 // Play mode: a transparent layer over the whole work area. The desktop pet
 // hides and the same buddy appears in the layer at the same spot.
+const GAMES = ['breathe', 'bubbles', 'chase', 'worry'];
 function openPlay(game) {
   if (hidingUntil) return;
+  if (!GAMES.includes(game)) game = undefined;
   if (game === 'worry' && aiOn()) Ai.warm(); // ready by the time they've typed
   if (playWin && !playWin.isDestroyed()) { playWin.focus(); return; }
   const pb = win.getBounds();
@@ -266,6 +269,8 @@ function aiChanged(s) {
 // Any window reports an activity here; new badges are announced by the pet
 // (or in the play layer if it's open) and the board refreshes.
 ipcMain.on('track', (_e, event, n = 1) => {
+  if (typeof event !== 'string') return;
+  n = Math.max(1, Math.min(100, Math.round(Number(n)) || 1));
   if (Insights.NUDGES.includes(event)) { noteInsight('done', event); checkAway(event); }
   else noteInsight('feature', event);
   const unlocked = Progress.record(state.stats, event, n);
@@ -350,9 +355,14 @@ ipcMain.on('insight', (_e, kind, value) => {
 });
 
 function teamsView() {
+  const t = state.teams, today = Progress.dayKey();
+  const q = t && (t.questions || []).find((x) => x.start <= today && today <= x.end);
+  const c = t && Campaigns.active(t.campaigns, today);
   return {
-    company: state.teams,
-    packet: state.teams ? Insights.packet(state.insights, state.teams) : null,
+    company: t,
+    packet: t ? Insights.packet(state.insights, t) : null,
+    question: q ? { ...q, answer: (t.answered || {})[q.id] ?? null } : null,
+    campaign: c ? { ...c, name: Campaigns.THEMES[c.theme].name } : null,
     minGroup: Insights.MIN_GROUP,
     roundTo: Insights.ROUND_TO,
   };
@@ -434,12 +444,17 @@ async function serverCheckin(code) {
 // working) until a check-in succeeds again.
 async function dailyCheckin(force = false) {
   const t = state.teams;
-  if (!t || t.demo || !Company.hasServer()) return;
+  if (t && t.demo) { // the demo's campaign and question follow the current week
+    const d = Company.lookup(Company.DEMO_CODE);
+    if ((t.campaigns || [])[0]?.start !== d.campaigns[0].start) { Object.assign(t, { campaigns: d.campaigns, questions: d.questions }); teamsChanged(); }
+    return;
+  }
+  if (!t || !Company.hasServer()) return;
   if (!force && !t.lapsed && Date.now() - (t.checkedAt || 0) < 20 * 60 * MIN_MS) return; // at most once every 20 hours
   const res = await serverCheckin(t.code);
   if (state.teams !== t) return; // left while we were asking
   if (res.ok) {
-    const keep = ['team', 'insights', 'insightsSince', 'asked', 'joinedAt', 'sent'];
+    const keep = ['team', 'insights', 'insightsSince', 'asked', 'joinedAt', 'sent', 'answered', 'said'];
     state.teams = { ...res.company, ...Object.fromEntries(keep.map((k) => [k, t[k]])), checkedAt: Date.now(), grace: res.graceDays, lapsed: false };
     if (state.teams.team && !state.teams.teams.includes(state.teams.team)) state.teams.team = null;
   } else {
@@ -447,6 +462,62 @@ async function dailyCheckin(force = false) {
   }
   teamsChanged();
 }
+
+// ---------- Mochi for Teams: wellness campaigns and check-in questions ----------
+
+// The company's open check-in question that this person hasn't answered or
+// skipped. Only people who add their counts to team totals are asked, since
+// the answer travels with those counts.
+function openQuestion() {
+  const t = state.teams, today = Progress.dayKey();
+  if (!teamsOn() || !t.insights) return null;
+  return (t.questions || []).find((q) => q.start <= today && today <= q.end && (t.answered || {})[q.id] == null) || null;
+}
+
+// Every few minutes during the work day: ask the open question (at most every
+// 3 hours until it's answered or skipped), or say one campaign line a day.
+// The pet window shows it only when it isn't busy and reports back.
+let askedAt = 0;
+function companyTick() {
+  const t = state.teams;
+  if (!teamsOn() || hidingUntil || quietNow()) return;
+  const h = new Date().getHours();
+  if (state.schedule !== 'night' && (h < 10 || h >= 18)) return;
+  const q = openQuestion();
+  if (q && Date.now() - askedAt > 3 * 60 * MIN_MS) {
+    askedAt = Date.now();
+    send('company', { kind: 'question', id: q.id, company: t.name, text: q.text, options: q.options });
+    return;
+  }
+  const today = Progress.dayKey();
+  const c = Campaigns.active(t.campaigns, today);
+  if (!c || (t.said && t.said.day === today) || Math.random() > 0.3) return; // one line a day, at a random time
+  const seen = (t.said && t.said.ids) || [];
+  send('company', {
+    kind: 'campaign', id: c.id, company: t.name, action: Campaigns.THEMES[c.theme].action,
+    text: I18N.fill(state.lang, Campaigns.line(c.theme, state.lang), { name: state.userName, pet: state.name, gender: state.petGender }),
+    note: seen.includes(c.id) ? '' : c.note, // the company's own note, on the first day only
+  });
+}
+ipcMain.on('company-shown', (_e, kind, id, shown) => {
+  const t = state.teams;
+  if (!t) return;
+  if (kind === 'question' && !shown) askedAt = 0; // busy: try again at the next tick
+  if (kind === 'campaign' && shown) {
+    t.said = { day: Progress.dayKey(), ids: [...new Set([...((t.said && t.said.ids) || []), String(id).slice(0, 40)])].slice(-20) };
+    saveState();
+  }
+});
+ipcMain.on('open-teams', () => openTeams());
+// From the Teams window. a: the option number, or -1 to skip the question.
+ipcMain.on('company-answer', (_e, id, a) => {
+  const t = state.teams;
+  const q = t && (t.questions || []).find((x) => x.id === id);
+  if (!q || !t.insights || !Number.isInteger(a) || a < -1 || a >= q.options.length) return;
+  t.answered = { ...(t.answered || {}), [q.id]: a };
+  if (a >= 0) noteInsight('answer', { q: q.id, a });
+  teamsChanged();
+});
 
 // Finished weeks go to the team totals one by one, each at a random time in
 // the day and a half after the week ends, apart from the daily check-in, and
@@ -485,8 +556,10 @@ function openTeams() {
       preload: path.join(__dirname, 'teams-preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
     },
   });
+  teamsWin.setMenu(null);
   teamsWin.loadFile(path.join(__dirname, 'teams.html'));
   teamsWin.on('closed', () => { teamsWin = null; });
 }
@@ -559,6 +632,7 @@ ipcMain.on('pet-hide', () => {
 // The buddy comes back to the desktop wherever play left it.
 ipcMain.on('play-done', (_e, x, y) => {
   if (!playWin) return;
+  if (!num(x, y)) { playWin.close(); return; }
   const wa = playWin._wa;
   placeAt(wa.x + x - PET_CX, wa.y + y - PET_CY);
   state.x = win.getBounds().x; state.y = win.getBounds().y;
@@ -566,7 +640,14 @@ ipcMain.on('play-done', (_e, x, y) => {
   playWin.close();
 });
 // Games report happiness gains; the desktop pet applies and saves them.
-ipcMain.on('play-reward', (_e, delta) => send('reward', { delta }));
+ipcMain.on('play-reward', (_e, delta) => {
+  const clean = {};
+  for (const k of ['happiness', 'hunger', 'energy']) {
+    const v = delta && delta[k];
+    if (Number.isFinite(v)) clean[k] = Math.max(-20, Math.min(20, v));
+  }
+  send('reward', { delta: clean });
+});
 
 function trayIcon() {
   // On a Mac, a black-and-white "Template" icon that macOS tints to match a
@@ -759,7 +840,8 @@ function placeAt(x, y) {
 
 
 // Wandering sends absolute positions so slow sub-pixel drift isn't lost to rounding.
-ipcMain.on('move-to', (_e, x, y) => placeAt(x, y));
+const num = (...v) => v.every(Number.isFinite);
+ipcMain.on('move-to', (_e, x, y) => { if (num(x, y)) placeAt(x, y); });
 
 // Smooth glide used when Mochi gets upset and floats to the middle, and back.
 let glideTimer = null;
@@ -793,6 +875,7 @@ ipcMain.on('glide-home', () => {
 ipcMain.on('focus-pet', () => win.focus());
 
 ipcMain.on('move-by', (_e, dx, dy) => {
+  if (!num(dx, dy)) return;
   const { x, y } = win.getBounds();
   placeAt(x + dx, y + dy);
 });
@@ -841,8 +924,14 @@ ipcMain.on('drag-done', () => {
   if (process.env.MOCHI_DEBUG) console.log('dropped at', JSON.stringify(win.getBounds()));
 });
 
+// The pet page may change only its own fields; company, insights and
+// settings are owned here.
+const PET_KEYS = ['happiness', 'hunger', 'energy', 'focusUntil', 'focusMin', 'moods', 'gratitude',
+  'sleepLog', 'askedNight', 'schedule', 'stayUp', 'userName', 'petGender'];
 ipcMain.on('save-state', (_e, partial) => {
-  Object.assign(state, partial);
+  if (partial && typeof partial === 'object') {
+    for (const k of PET_KEYS) if (k in partial) state[k] = partial[k];
+  }
   if (!upsetHome) ({ x: state.x, y: state.y } = win.getBounds()); // not the temporary centre spot
   saveState();
   refreshTrayMenu();
@@ -905,6 +994,7 @@ if (!gotLock) {
     setTimeout(dailyCheckin, 20_000);
     setInterval(dailyCheckin, 60 * MIN_MS);
     setInterval(sendWeeks, 60 * MIN_MS);
+    setInterval(companyTick, 10 * MIN_MS);
     setTimeout(sendWeeks, 2 * MIN_MS);
     // Manual silent mode ends on its own; tell the pet when it does.
     setInterval(() => { if (state.silent.until && state.silent.until <= Date.now()) setSilent(0); }, 30_000);

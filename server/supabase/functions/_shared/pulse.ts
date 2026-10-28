@@ -108,8 +108,21 @@ function scope(packets: Packet[], weeks: string[]) {
   return { weekly, emotions: rows.map((r) => r.emotions), themes, features };
 }
 
+type Question = { id: string; text: string; options: string[]; start: string; end: string };
+type Campaign = { id: string; theme: string; start: string; end: string; note: string };
+
+// Answers to each check-in question from one group. A question with fewer
+// than MIN_GROUP answers shows no results at all.
+function answers(packets: Packet[], questions: Question[]) {
+  return questions.slice().reverse().map((q) => {
+    const got = packets.map((p) => p.data.answer).filter((a) => a && a.q === q.id);
+    const shown = got.length >= MIN_GROUP;
+    return { ...q, answered: shown ? round(got.length) : null, counts: shown ? q.options.map((_, i) => round(got.filter((a) => a.a === i).length)) : null };
+  });
+}
+
 // packets: this company's rows for the weeks to show (oldest first).
-export function pulseData(company: { name: string; teams: string[] }, packets: Packet[], weeks: string[]) {
+export function pulseData(company: { name: string; teams: string[]; campaigns?: Campaign[]; questions?: Question[] }, packets: Packet[], weeks: string[]) {
   const teamNames = [...new Set([...(company.teams || []), ...packets.map((p) => p.team).filter(Boolean) as string[]])];
   const teams = teamNames.map((team) => {
     const wk = byWeek(packets.filter((p) => p.team === team));
@@ -118,7 +131,8 @@ export function pulseData(company: { name: string; teams: string[] }, packets: P
   }).filter((t) => t.people > 0 || !t.hidden);
 
   const out = { company: company.name, sample: false, minGroup: MIN_GROUP, weeks, teams,
-    weekly: {} as Record<string, unknown>, emotions: {} as Record<string, unknown>, themes: {} as Record<string, unknown>, features: {} as Record<string, unknown> };
+    weekly: {} as Record<string, unknown>, emotions: {} as Record<string, unknown>, themes: {} as Record<string, unknown>, features: {} as Record<string, unknown>,
+    questions: {} as Record<string, unknown>, campaigns: company.campaigns || [] };
   const groups: [string, Packet[]][] = [[ALL, packets], ...teams.filter((t) => !t.hidden).map((t) => [t.team, packets.filter((p) => p.team === t.team)] as [string, Packet[]])];
   for (const [name, ps] of groups) {
     const s = scope(ps, weeks);
@@ -127,6 +141,7 @@ export function pulseData(company: { name: string; teams: string[] }, packets: P
     out.emotions[name] = s.emotions;
     out.themes[name] = s.themes;
     out.features[name] = s.features;
+    out.questions[name] = answers(ps, company.questions || []);
   }
   // Only weeks that have something to show.
   out.weeks = ((out.weekly[ALL] || []) as { week: string }[]).map((r) => r.week);

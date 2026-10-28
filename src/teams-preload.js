@@ -5,5 +5,6 @@ contextBridge.exposeInMainWorld('teams', {
   join: (code) => ipcRenderer.invoke('teams-join', code),
   set: (partial) => ipcRenderer.send('teams-set', partial),
   leave: () => ipcRenderer.send('teams-leave'),
+  answer: (id, a) => ipcRenderer.send('company-answer', id, a),
   onChange: (fn) => ipcRenderer.on('teams', (_e, v) => fn(v)),
 });

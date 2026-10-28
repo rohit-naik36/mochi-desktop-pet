@@ -182,6 +182,42 @@ window.pet.onAction((a) => {
   else if (a === 'gender-changed') { setMode('happy', 1200); float('💛'); say(T('genderSaved.' + S.petGender), { ms: 4000 }); }
 });
 
+// ---------- Mochi for Teams: campaigns and the weekly question ----------
+
+// Only when Mochi isn't busy: no reminder waiting, no focus session, not on
+// a call, not asleep and someone is at the desk. Main is told either way.
+function companyBusy() {
+  return bubbleSticky || upsetKey || focusUntil > Date.now() || hushed() || asleep || idleSec >= 5 * 60;
+}
+
+const CAMPAIGN_GO = {
+  stretch: () => setMode('stretch', 3200),
+  gratitude: () => askGratitude(),
+  worry: () => window.pet.openPlay('worry'),
+  breathe: () => window.pet.openPlay('breathe'),
+};
+
+window.pet.onCompany((m) => {
+  const shown = !companyBusy();
+  window.pet.companyShown(m.kind, m.id, shown);
+  if (!shown) return;
+  if (mode === 'sleep') setMode('idle', 0);
+  setMode('happy', 1200);
+  if (m.kind === 'question') {
+    // The question itself is answered in the Mochi for Teams window, which
+    // has room for it and says exactly how answers are counted.
+    say(T('company.ask', { text: m.company }), { sticky: true, actions: [
+      { label: T('company.answer'), primary: true, run: () => window.pet.openTeams() },
+      { label: T('company.notNow'), run: () => {} },
+    ] });
+  } else {
+    // The company's own note the first time, Mochi's line on other days.
+    const go = CAMPAIGN_GO[m.action];
+    say(m.note ? `${T('company.from', { text: m.company })} ${m.note}` : m.text,
+      { ms: 12000, actions: go ? [{ label: T('company.go.' + m.action), primary: true, run: go }] : [] });
+  }
+});
+
 // ---------- reminders ----------
 
 const UPSET_AFTER_MIN = 3; // ignore a reminder this long and Mochi gets upset

@@ -7,9 +7,9 @@ The server is a Supabase project (Mumbai region) with three functions:
 
 | Function | Called by | Does |
 |---|---|---|
-| `checkin` | Mochi, about once a day | counts the laptop as a seat for the month, returns the company's contacts, teams and welcome note |
+| `checkin` | Mochi, about once a day | counts the laptop as a seat for the month, returns the company's contacts, teams, welcome note, campaigns and question |
 | `totals` | Mochi, once a week, only if the person turned insights on | stores one finished week of counts, with no laptop id |
-| `pulse` | Mochi Pulse | returns team totals (groups of 8+, rounded to 5) and the seat count |
+| `pulse` | Mochi Pulse | returns team totals (groups of 8+, rounded to 5), question results, campaigns and the seat count |
 
 ## 1. One-time setup
 
@@ -19,7 +19,7 @@ The server is a Supabase project (Mumbai region) with three functions:
    - `SUPABASE_PROJECT_REF`: the id in your project's URL (`https://supabase.com/dashboard/project/<this>`)
    - `SUPABASE_DB_PASSWORD`: the database password from step 1
    - `SEAT_PEPPER`: any long random text (it keeps seat hashes private; never change it later)
-3. In GitHub **Actions**, run **Mochi for Teams server** from `main` with **Deploy** ticked. This creates the tables and deploys the functions.
+3. In GitHub **Actions**, run **Mochi for Teams server** from `main` with **Deploy** ticked. This creates the tables, deploys the functions and schedules the weekly clean-up that deletes totals older than a year. Check it under **Database > Cron**: a job called `mochi-prune-packets` should be listed. If it isn't, turn on `pg_cron` under **Database > Extensions** and run the deploy again.
 4. Put the server address into the apps, then build them:
    `https://<project-ref>.supabase.co/functions/v1`
    - Mochi: `SERVER` in `src/company.js`
@@ -60,13 +60,34 @@ In **SQL editor**:
 
 `active_seats` is the number of laptops that checked in that month. Bill on the committed `seats`; if active seats go above it, add the difference at the quarterly true-up. IT can check our number against the install count in Intune.
 
-## 5. If a join code leaks
+## 5. Wellness campaigns and the weekly question
+
+Plan these with HR on your regular call, then add them to the company's row. Laptops pick them up at their next daily check-in.
+
+**Campaigns** (`campaigns` column): a themed week Mochi delivers as its own friendly lines, once a day, with the company's note on the first day.
+
+    [{"id":"hydrate-nov","theme":"hydration","start":"2026-11-16","end":"2026-11-20","note":"Free fruit and water at the pantry all week!"}]
+
+- `theme`: one of `hydration`, `movement`, `eyes`, `sleep`, `gratitude`, `mental-health`, `breathe`, `kindness`. Mochi only ever says its own written lines for these; the company's words go in `note` (up to 100 characters).
+- `id`: lowercase letters, numbers and dashes. Up to 8 upcoming campaigns.
+- Good dates: World Mental Health Day (10 Oct, `mental-health`), the week after a big release (`sleep`), summer (`hydration`), year-end (`gratitude`).
+
+**Weekly question** (`questions` column): one anonymous question, 2 to 5 short answers.
+
+    [{"id":"workload-1","text":"How manageable was your workload this week?","options":["Very","Mostly","Not really","Not at all"],"start":"2026-11-16","end":"2026-11-22"}]
+
+- Mochi asks only people who add their counts to team totals, at most every 3 hours until they answer or skip, and they answer in the Mochi for Teams window. Each person answers once per question.
+- The answer travels inside that week's totals as an option number, with no laptop id. Pulse shows results only once 8 or more people in a group have answered, rounded to 5.
+- Keep questions about the work and the workplace ("Did you get a proper lunch break most days?"), never about health conditions, personal life or anything that identifies someone. Turn down questions that could single out a person or a small group.
+- Keep old questions in the list: Pulse shows the last 12 weeks of results.
+
+## 6. If a join code leaks
 
 1. Copy the current `code` into `old_code`, set `old_code_until` to about 30 days from today, and put a new code in `code`.
 2. With the laptop lock on (`tenant_id` or `domain` set), company laptops move to the new code on their own. Without it, send IT the new code to push out.
 3. After `old_code_until`, the old code stops working. Laptops that can't check in keep company features for 45 days, then fall back to free Mochi.
 
-## 6. When a company leaves
+## 7. When a company leaves
 
 Set `active` to false. Their laptops fall back to free Mochi within 45 days. To delete their data, delete the company row (seats, totals and keys go with it).
 

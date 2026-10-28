@@ -29,6 +29,32 @@ export function mondayOf(d: Date) {
   return day(m);
 }
 
+// Themes built into the app (src/campaigns.js), so a campaign is only ever
+// one of Mochi's own written lines plus a short note from the company.
+export const CAMPAIGN_THEMES = ['hydration', 'movement', 'eyes', 'sleep', 'gratitude', 'mental-health', 'breathe', 'kindness'];
+const isDay = (v: unknown) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v + 'T00:00:00Z'));
+const isId = (v: unknown) => typeof v === 'string' && /^[a-z0-9-]{1,40}$/.test(v);
+
+// A company's campaigns that end on or after `since`, soonest first.
+// deno-lint-ignore no-explicit-any
+export function campaignsFrom(list: any, since: string) {
+  return (Array.isArray(list) ? list : [])
+    .filter((c) => c && isId(c.id) && CAMPAIGN_THEMES.includes(c.theme) && isDay(c.start) && isDay(c.end) && c.start <= c.end && c.end >= since)
+    .map((c) => ({ id: c.id, theme: c.theme, start: c.start, end: c.end, note: str(c.note, 100) }))
+    .sort((a, b) => a.start.localeCompare(b.start))
+    .slice(0, 8);
+}
+
+// A company's check-in questions that end on or after `since`.
+// deno-lint-ignore no-explicit-any
+export function questionsFrom(list: any, since: string) {
+  return (Array.isArray(list) ? list : [])
+    .filter((q) => q && isId(q.id) && str(q.text, 140) && isDay(q.start) && isDay(q.end) && q.start <= q.end && q.end >= since &&
+      Array.isArray(q.options) && q.options.length >= 2 && q.options.length <= 5 && q.options.every((o: unknown) => str(o, 30)))
+    .map((q) => ({ id: q.id, text: str(q.text, 140), options: q.options.map((o: unknown) => str(o, 30)), start: q.start, end: q.end }))
+    .sort((a, b) => a.start.localeCompare(b.start));
+}
+
 async function companyFor(sql: Sql, code: string, today: Date) {
   if (!/^[A-Z0-9-]{6,40}$/.test(code)) return null;
   const [c] = await sql`
@@ -72,6 +98,8 @@ export async function checkin(sql: Sql, pepper: string, body: any, today = new D
       support: Array.isArray(c.support) ? c.support.slice(0, 4) : [],
       posh: c.posh || null,
       teams: Array.isArray(c.teams) ? c.teams.slice(0, 60) : [],
+      campaigns: campaignsFrom(c.campaigns, day(today)),
+      questions: questionsFrom(c.questions, day(today)).slice(0, 4),
     },
     graceDays: GRACE_DAYS,
   });
@@ -100,6 +128,16 @@ export function cleanPacket(p: any) {
   };
 }
 
+// The answer to this company's check-in question, if it is one: a question
+// that was open during that week, and an option number it has.
+// deno-lint-ignore no-explicit-any
+export function cleanAnswer(questions: any, week: string, a: any) {
+  if (!a || !isId(a.q) || !Number.isInteger(a.a)) return null;
+  const end = day(new Date(new Date(week + 'T00:00:00Z').getTime() + 6 * 864e5));
+  const q = questionsFrom(questions, week).find((x) => x.id === a.q && x.start <= end);
+  return q && a.a >= 0 && a.a < q.options.length ? { q: q.id, a: a.a } : null;
+}
+
 // One laptop's counts for one finished week. No install id is sent or kept.
 // deno-lint-ignore no-explicit-any
 export async function totals(sql: Sql, body: any, today = new Date()): Promise<Out> {
@@ -113,7 +151,15 @@ export async function totals(sql: Sql, body: any, today = new Date()): Promise<O
   }
   const teams: string[] = Array.isArray(c.teams) ? c.teams : [];
   const team = teams.includes(body?.team) ? body.team : null;
-  await sql`insert into packets (company_id, team, week, data) values (${c.id}, ${team}, ${week}, ${sql.json(cleanPacket(body?.packet))})`;
+  const data: Record<string, unknown> = cleanPacket(body?.packet);
+  const answer = cleanAnswer(c.questions, week, body?.packet?.answer);
+  if (answer) data.answer = answer;
+  // Each laptop sends one packet a week. A cap of twice the seats (or 5,000
+  // when no seat count is set) stops a leaked code from flooding the totals.
+  const cap = Number(c.seats) > 0 ? Number(c.seats) * 2 : 5000;
+  const [{ n }] = await sql`select count(*)::int as n from packets where company_id = ${c.id} and week = ${week}`;
+  if (n >= cap) return no(429, 'week-full');
+  await sql`insert into packets (company_id, team, week, data) values (${c.id}, ${team}, ${week}, ${sql.json(data)})`;
   return ok({});
 }
 
@@ -137,7 +183,12 @@ export async function pulse(sql: Sql, key: unknown, today = new Date()): Promise
     select to_char(month, 'YYYY-MM') as month, count(*)::int as active from seats
     where company_id = ${row.id} group by month order by month desc limit 6`;
   return ok({
-    pulse: pulseData({ name: row.name, teams: Array.isArray(row.teams) ? row.teams : [] }, [...packets], weeks),
+    pulse: pulseData({
+      name: row.name,
+      teams: Array.isArray(row.teams) ? row.teams : [],
+      campaigns: campaignsFrom(row.campaigns, weeks[0]),
+      questions: questionsFrom(row.questions, weeks[0]).slice(-12),
+    }, [...packets], weeks),
     seats: { committed: row.seats, months: [...seats] },
   });
 }
