@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self'; img-src 'self'">
+  <title>Mochi Demo tour</title>
+  <link rel="stylesheet" href="tour.css">
+</head>
+<body>
+  <div class="demo-chip">DEMO &middot; sample data, nothing is sent</div>
+  <div class="dots" id="dots" aria-hidden="true"></div>
+  <p class="count" id="count"></p>
+  <h1 id="title"></h1>
+  <p class="text" id="text"></p>
+  <button class="show" id="show" type="button"></button>
+  <p class="note" id="note" role="status" aria-live="polite"></p>
+  <div class="nav">
+    <button id="back" type="button">Back</button>
+    <button id="next" type="button">Next</button>
+  </div>
+  <script src="tour.js"></script>
+</body>
+</html>

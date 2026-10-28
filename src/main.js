@@ -11,6 +11,11 @@ const Calls = require('./calls');
 const Ai = require('./ai');
 const Apps = require('./apps');
 const Device = require('./device');
+const Idle = require('./idle');
+// The demo app only (see src/demo-flag.js): normal and Store builds leave
+// src/demo out of the package and never load it.
+const DEMO = require('./demo-flag').isDemo(require('../package.json'), app.isPackaged, process.env);
+const Demo = DEMO ? require('./demo') : null;
 
 const MIN_MS = 60_000;
 const WIN_W = 220;
@@ -156,6 +161,7 @@ function openPlay(game) {
   playWin.setAlwaysOnTop(true, 'screen-saver');
   const query = { px: String(pb.x - wa.x + PET_CX), py: String(pb.y - wa.y + PET_CY) };
   if (game) query.game = game;
+  if (Demo && game === 'worry' && Demo.worryText()) query.demoWorry = Demo.worryText();
   playWin.loadFile(path.join(__dirname, 'play.html'), { query });
   playWin.once('ready-to-show', () => playWin.focus());
   playWin.webContents.once('did-finish-load', () => {
@@ -294,7 +300,7 @@ function checkAway(key) {
   if (!need || !teamsOn()) return;
   const started = Date.now();
   const timer = setInterval(() => {
-    const idle = powerMonitor.getSystemIdleTime();
+    const idle = Idle.get();
     if (idle >= need) {
       clearInterval(timer);
       noteInsight('away', key);
@@ -365,6 +371,7 @@ function teamsView() {
     campaign: c ? { ...c, name: Campaigns.THEMES[c.theme].name } : null,
     minGroup: Insights.MIN_GROUP,
     roundTo: Insights.ROUND_TO,
+    demoCode: DEMO ? Company.DEMO_CODE : null,
   };
 }
 function teamsChanged() {
@@ -776,12 +783,13 @@ function buildMenu() {
       // Store (MSIX) builds can't register to start with Windows this way.
       // On macOS (including the sandboxed App Store build) the app registers
       // itself as a login item through SMAppService.
-      ...(process.windowsStore ? [] : [IS_MAC ? { label: M('startupMac'), ...tip('startup'), type: 'checkbox',
+      ...(process.windowsStore || DEMO ? [] : [IS_MAC ? { label: M('startupMac'), ...tip('startup'), type: 'checkbox',
         checked: app.getLoginItemSettings({ type: 'mainAppService' }).status === 'enabled',
         click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked, type: 'mainAppService' }) } : { label: M('startup'), ...tip('startup'), type: 'checkbox',
         checked: app.getLoginItemSettings().openAtLogin,
         click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked }) }]),
     ] },
+    ...(Demo ? Demo.menuItems() : []),
     { label: M('help'), click: showHelp },
     { label: M('bringBack'), click: () => { const wa = workArea(); placeAt(wa.x + wa.width - WIN_W - 40, wa.y + wa.height - WIN_H); } },
     { label: M('quit'), click: () => app.quit() },
@@ -793,7 +801,7 @@ function showHelp() {
   const M = (key) => I18N.t(state.lang, 'menu.' + key, { name: state.userName, pet: state.name, gender: state.petGender });
   const Tp = (key) => I18N.t(state.lang, 'tips.' + key, { pet: state.name });
   const rows = [['worry'], ['feed'], ['play'], ['nap'], ['focus'], ...(teamsOn() ? [['silent'], ['bigCall']] : []), ['mood'], ['gratitude'], ['board'],
-    ['settings', null], ...(Ai.status().state === 'missing' || !teamsOn() ? [] : [['smarter']]), ['noticeApps'], ['teams'], ['schedule'], ['buddy'], ['name'], ['gender'], ['language'], ['chatty'], ['wander'], ['reminders'], ...(process.windowsStore ? [] : [[IS_MAC ? 'startupMac' : 'startup', 'startup']])];
+    ['settings', null], ...(Ai.status().state === 'missing' || !teamsOn() ? [] : [['smarter']]), ['noticeApps'], ['teams'], ['schedule'], ['buddy'], ['name'], ['gender'], ['language'], ['chatty'], ['wander'], ['reminders'], ...(process.windowsStore || DEMO ? [] : [[IS_MAC ? 'startupMac' : 'startup', 'startup']])];
   const detail = rows.map(([k, t]) => (t === null ? '\n' + M(k) : `• ${M(k).replace(/\s*\(.*\)$/, '')}: ${Tp(t || k)}`)).join('\n');
   dialog.showMessageBox({ type: 'info', title: 'Mochi', message: M('helpTitle'), detail, buttons: ['OK'] });
 }
@@ -969,7 +977,7 @@ if (!gotLock) {
 } else {
   app.on('second-instance', () => send('action', 'pet'));
   app.whenReady().then(() => {
-    if (process.platform === 'win32') app.setAppUserModelId('com.mochi.desktoppet');
+    if (process.platform === 'win32') app.setAppUserModelId(DEMO ? 'com.mochi.demo' : 'com.mochi.desktoppet');
     // On a Mac the buddy lives in the menu bar, not the Dock (LSUIElement
     // in the bundle does this too; this covers `npm start`).
     if (IS_MAC) app.dock?.hide();
@@ -981,6 +989,11 @@ if (!gotLock) {
     offerMoveToApplications();
     createWindow();
     buildTray();
+    if (Demo) Demo.init({
+      app, BrowserWindow, screen, ipcMain, Company, Insights, Calls, Idle,
+      getState: () => state, statePath, send, saveState, refreshTrayMenu, teamsChanged,
+      openTeams, openPlay, joinCompany, checkCall, teamsOn, warmAi: () => { if (aiOn()) Ai.warm(); },
+    });
     const keepOnScreen = () => { const { x, y } = win.getBounds(); placeAt(x, y); };
     screen.on('display-metrics-changed', keepOnScreen);
     screen.on('display-removed', keepOnScreen);

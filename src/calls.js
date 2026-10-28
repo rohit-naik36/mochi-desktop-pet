@@ -21,7 +21,12 @@ function deviceInUse(regText) {
 
 const STORE = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\';
 
+// The demo app can stand in for a call (see src/demo). Other builds never set it.
+let override = null;
+function setOverride(fn) { override = typeof fn === 'function' ? fn : null; }
+
 async function onCall() {
+  if (override) return !!override();
   if (process.platform === 'win32') {
     const [mic, cam] = await Promise.all([run('reg', ['query', STORE + 'microphone', '/s']), run('reg', ['query', STORE + 'webcam', '/s'])]);
     return deviceInUse(mic) || deviceInUse(cam);
@@ -30,4 +35,4 @@ async function onCall() {
   return false;
 }
 
-module.exports = { onCall, deviceInUse };
+module.exports = { onCall, deviceInUse, setOverride };

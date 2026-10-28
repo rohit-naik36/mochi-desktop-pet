@@ -3,3 +3,4 @@ dist/
 build/embedded.provisionprofile
 dist-pulse/
 models/
+dist-demo/

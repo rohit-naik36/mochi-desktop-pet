@@ -526,8 +526,10 @@ function Worry() {
   btn.onclick = feed;
   text.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); feed(); } });
 
+  // Only the demo app passes a sample worry in the address (see src/demo).
+  const sample = new URLSearchParams(location.search).get('demoWorry') || '';
   return {
-    start() { askMode(); },
+    start() { askMode(); if (sample) text.value = sample.slice(0, 280); },
     stop() { letters.innerHTML = ''; },
   };
 }

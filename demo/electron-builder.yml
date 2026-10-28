@@ -1,0 +1,44 @@
+# Mochi Demo: the guided tour for client demos, built from this repo.
+#   npm run dist:demo      (or the "Build Mochi Demo" workflow)
+#
+# A separate app from Mochi: its own app ID and data folder, so it never reads
+# or writes a real Mochi install. It carries the on-device AI model and Mochi
+# Pulse's sample company, and it has no server address, so nothing is sent.
+# Never published to the Store or to a GitHub Release.
+appId: com.mochi.demo
+productName: Mochi Demo
+copyright: Copyright © 2026 Unorthologic LLP
+extraMetadata:
+  name: mochi-demo
+  productName: Mochi Demo
+  description: Mochi Demo, a guided tour of Mochi for Teams for client demos.
+  mochiDemo: true
+files:
+  - src/**/*
+  - pulse/**/*
+  - "!pulse/tools/**"
+  - "!pulse/electron-builder.yml"
+  - "!node_modules/@node-llama-cpp/*cuda*/**"
+  - "!node_modules/node-llama-cpp/llama/gitRelease.bundle"
+extraResources:
+  - from: models
+    to: models
+    filter: ["*.gguf"]
+asarUnpack:
+  - node_modules/node-llama-cpp/bins/**
+  - node_modules/node-llama-cpp/llama/localBuilds/**
+  - node_modules/@node-llama-cpp/*/bins/**
+  - "**/*.node"
+directories:
+  output: dist-demo
+  buildResources: build
+win:
+  icon: build/icon.ico
+  target: [nsis]
+nsis:
+  oneClick: true
+  perMachine: false
+  createDesktopShortcut: true
+  runAfterFinish: true
+  shortcutName: Mochi Demo
+  artifactName: Mochi-Demo-Setup-${version}.exe

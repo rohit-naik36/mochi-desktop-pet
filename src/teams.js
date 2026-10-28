@@ -50,6 +50,7 @@ function renderQuestion(q, insightsOn) {
 
 function render(v) {
   const co = v.company;
+  if (v.demoCode && !$('code').value) $('code').value = v.demoCode; // the demo app fills in its own code
   const asking = !!co && co.asked === false;
   $('join').classList.toggle('hidden', !!co);
   $('consent').classList.toggle('hidden', !asking);

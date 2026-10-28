@@ -128,6 +128,19 @@ npm run dist:mac     # on a Mac
 
 Code: `src/main.js` (window, tray, movement), `src/pet.html|css|js` (the pet, its moods, reminders).
 
+### Mochi Demo (client demos)
+
+A separate app, **Mochi Demo**, runs a guided tour of Mochi for Teams: join the demo company, a heavy-day reply, a simulated call, a real break, what HR sees, and Mochi Pulse with sample data. It has its own app ID and data folder, no server address and the on-device AI model inside. Nothing is ever sent.
+
+```
+npm run demo         # run the tour from the repo (throwaway data folder)
+npm run dist:demo    # build the installer into dist-demo/ (needs the model: node tools/fetch-model.mjs)
+```
+
+The "Build Mochi Demo" workflow builds the installer on Windows and keeps it as a workflow artifact. It is never a Release or Store package. The demo code lives in `src/demo/` and is left out of every other build; only `demo/electron-builder.yml` sets the flag (`src/demo-flag.js`). Two things are pretended in the tour, because they depend on the machine: a call starting (`src/calls.js`) and the keyboard going quiet (`src/idle.js`). The tray menu has Restart tour and Reset demo.
+
+Windows check before a client sees it: install on a clean user; run all eight steps; check the first worry reply works (and falls back to the written reply if the model is slow); Reset demo; uninstall; confirm a normal Mochi on the same laptop is untouched.
+
 ## Versions
 
 Every version is tagged automatically (`v0.1.0`, `v0.2.0`, ...) by `.github/workflows/tag-versions.yml` when it lands on `main`. Bump `version` in package.json and push: the new tag gets a Windows build and a GitHub Release.

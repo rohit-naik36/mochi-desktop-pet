@@ -79,6 +79,8 @@
 
   let saved = null;
   try { saved = localStorage.getItem(KEY); } catch { /* storage off */ }
-  if (saved && SERVER) open(saved).then((b) => show(b.pulse, b.seats), (err) => signin(err.message === 'key' ? 'Your key no longer works. Ask Little Smoke Studio for a new one.' : ''));
+  // The demo app opens Pulse straight on the sample company.
+  if (new URLSearchParams(location.search).get('sample') === '1') show(sample);
+  else if (saved && SERVER) open(saved).then((b) => show(b.pulse, b.seats), (err) => signin(err.message === 'key' ? 'Your key no longer works. Ask Little Smoke Studio for a new one.' : ''));
   else signin();
 })();
