@@ -826,13 +826,17 @@ function refreshTrayMenu() {
   tray.setContextMenu(buildMenu());
 }
 
+// The pet window can already be gone when a late message from its page
+// arrives (quitting, relaunching, Reset demo). Every handler below checks this.
+const gone = () => !win || win.isDestroyed();
+
 function send(ch, payload) {
-  if (win && !win.isDestroyed()) win.webContents.send(ch, payload);
+  if (!gone()) win.webContents.send(ch, payload);
 }
 
 // Renderer asks to toggle click-through as the pointer enters or leaves the pet.
 ipcMain.on('mouse-over-pet', (_e, over) => {
-  if (!win || process.env.MOCHI_DEBUG) return;
+  if (gone() || process.env.MOCHI_DEBUG) return;
   win.setIgnoreMouseEvents(!over, { forward: true });
 });
 
@@ -840,6 +844,7 @@ ipcMain.on('mouse-over-pet', (_e, over) => {
 // with display scaling, setPosition alone lets the size creep by a pixel each
 // call, which slowly pushed the pet down behind the taskbar.
 function placeAt(x, y) {
+  if (gone()) return;
   const wa = screen.getDisplayNearestPoint({ x: x + WIN_W / 2, y: y + WIN_H / 2 }).workArea;
   const nx = Math.min(Math.max(Math.round(x), wa.x - 40), wa.x + wa.width - WIN_W + 40);
   const ny = Math.min(Math.max(Math.round(y), wa.y - 40), wa.y + wa.height - WIN_H);
@@ -855,9 +860,11 @@ ipcMain.on('move-to', (_e, x, y) => { if (num(x, y)) placeAt(x, y); });
 let glideTimer = null;
 function glide(tx, ty, ms = 1100) {
   clearInterval(glideTimer);
+  if (gone()) return;
   const { x: sx, y: sy } = win.getBounds();
   const t0 = Date.now();
   glideTimer = setInterval(() => {
+    if (gone()) { clearInterval(glideTimer); return; }
     const t = Math.min(1, (Date.now() - t0) / ms);
     const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
     placeAt(sx + (tx - sx) * e, sy + (ty - sy) * e);
@@ -867,7 +874,7 @@ function glide(tx, ty, ms = 1100) {
 
 let upsetHome = null;
 ipcMain.on('glide-center', () => {
-  if (playWin) return;
+  if (playWin || gone()) return;
   const b = win.getBounds();
   upsetHome = upsetHome || { x: b.x, y: b.y };
   const wa = screen.getDisplayMatching(b).workArea;
@@ -880,10 +887,10 @@ ipcMain.on('glide-home', () => {
   glide(upsetHome.x, upsetHome.y);
   upsetHome = null;
 });
-ipcMain.on('focus-pet', () => win.focus());
+ipcMain.on('focus-pet', () => { if (!gone()) win.focus(); });
 
 ipcMain.on('move-by', (_e, dx, dy) => {
-  if (!num(dx, dy)) return;
+  if (!num(dx, dy) || gone()) return;
   const { x, y } = win.getBounds();
   placeAt(x + dx, y + dy);
 });
@@ -891,6 +898,7 @@ ipcMain.on('move-by', (_e, dx, dy) => {
 // Dragging follows the real cursor position, so rounding never adds up.
 let dragOffset = null;
 ipcMain.on('drag-start', () => {
+  if (gone()) return;
   const c = screen.getCursorScreenPoint();
   const { x, y } = win.getBounds();
   dragOffset = { x: c.x - x, y: c.y - y };
@@ -920,6 +928,7 @@ ipcMain.handle('get-cursor', () => {
 });
 
 ipcMain.handle('get-bounds', () => {
+  if (gone()) return null;
   const bounds = win.getBounds();
   const wa = screen.getDisplayMatching(bounds).workArea;
   return { win: bounds, workArea: wa };
@@ -927,6 +936,7 @@ ipcMain.handle('get-bounds', () => {
 
 // After a drag the pet stays exactly where it was dropped (pulled back on screen if needed).
 ipcMain.on('drag-done', () => {
+  if (gone()) return;
   const { x, y } = win.getBounds();
   placeAt(x, y);
   if (process.env.MOCHI_DEBUG) console.log('dropped at', JSON.stringify(win.getBounds()));
@@ -940,7 +950,7 @@ ipcMain.on('save-state', (_e, partial) => {
   if (partial && typeof partial === 'object') {
     for (const k of PET_KEYS) if (k in partial) state[k] = partial[k];
   }
-  if (!upsetHome) ({ x: state.x, y: state.y } = win.getBounds()); // not the temporary centre spot
+  if (!upsetHome && !gone()) ({ x: state.x, y: state.y } = win.getBounds()); // not the temporary centre spot
   saveState();
   refreshTrayMenu();
   if (boardWin && !boardWin.isDestroyed()) boardWin.webContents.send('state', state);
