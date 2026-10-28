@@ -158,7 +158,7 @@ function openPlay(game) {
       sandbox: true,
     },
   });
-  playWin.setAlwaysOnTop(true, 'screen-saver');
+  playWin.setAlwaysOnTop(true, 'floating'); // above normal windows, not above everything
   const query = { px: String(pb.x - wa.x + PET_CX), py: String(pb.y - wa.y + PET_CY) };
   if (game) query.game = game;
   if (Demo && game === 'worry' && Demo.worryText()) query.demoWorry = Demo.worryText();
@@ -524,6 +524,21 @@ ipcMain.on('company-answer', (_e, id, a) => {
   t.answered = { ...(t.answered || {}), [q.id]: a };
   if (a >= 0) noteInsight('answer', { q: q.id, a });
   teamsChanged();
+});
+// From the Mochi for Teams window: have Mochi ask the question now, in its own
+// bubble (also to change an earlier answer, which clears it first).
+ipcMain.on('company-ask-now', (_e, id, change) => {
+  const t = state.teams;
+  const q = t && teamsOn() && t.insights && (t.questions || []).find((x) => x.id === id);
+  if (!q) return;
+  if (change && (t.answered || {})[q.id] != null) {
+    const rest = { ...t.answered };
+    delete rest[q.id];
+    t.answered = rest;
+    teamsChanged();
+  }
+  askedAt = Date.now();
+  send('company', { kind: 'question', id: q.id, company: t.name, text: q.text, options: q.options });
 });
 
 // Finished weeks go to the team totals one by one, each at a random time in
@@ -911,6 +926,11 @@ ipcMain.on('drag-move', () => {
 ipcMain.on('drag-end', () => { dragOffset = null; });
 
 ipcMain.on('open-play', (_e, game) => openPlay(game));
+// The play room lets clicks through to the apps behind it, except over its own
+// card and toolbar (the room tells us as the pointer moves).
+ipcMain.on('play-capture', (e, on) => {
+  if (playWin && !playWin.isDestroyed() && e.sender === playWin.webContents) playWin.setIgnoreMouseEvents(!on, { forward: true });
+});
 
 ipcMain.on('context-menu', () => {
   // Mochi has no Dock icon on Mac, so bring it forward or the menu may not open.

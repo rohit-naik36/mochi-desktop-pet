@@ -99,3 +99,4 @@ body.chasing #toolbar, body.chasing #toolbar * { cursor: pointer !important; }
 
 /* Feed a worry: its own space, without the game tabs */
 body.talk-mode #tabs { display: none; }
+body.pass-through #veil { opacity: .35; }

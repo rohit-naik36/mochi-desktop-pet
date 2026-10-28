@@ -117,9 +117,26 @@ function show(name) {
   document.body.classList.remove('chasing');
   mood('idle');
   speech.classList.add('hidden');
+  document.body.classList.toggle('pass-through', passThrough());
+  capture(!passThrough());
   games[name].start();
   placeCard();
 }
+
+// Worry and breathing don't need the whole screen: everything outside the card,
+// the toolbar and Mochi lets clicks through to the apps behind, so you can
+// keep working. The bubble and chase games keep the whole screen.
+let capturing = true;
+function capture(on) {
+  if (on === capturing) return;
+  capturing = on;
+  window.play.capture(on);
+}
+const passThrough = () => current === 'worry' || current === 'breathe';
+document.addEventListener('mousemove', (e) => {
+  if (!passThrough()) return capture(true);
+  capture(!!e.target.closest('#toolbar, #card, #speech'));
+});
 
 function finish() {
   if (current) games[current].stop();

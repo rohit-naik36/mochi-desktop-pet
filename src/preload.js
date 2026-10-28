@@ -27,4 +27,5 @@ contextBridge.exposeInMainWorld('pet', {
   onCompany: (fn) => ipcRenderer.on('company', (_e, m) => fn(m)),
   companyShown: (kind, id, shown) => ipcRenderer.send('company-shown', kind, id, shown),
   openTeams: () => ipcRenderer.send('open-teams'),
+  companyAnswer: (id, a) => ipcRenderer.send('company-answer', id, a),
 });
