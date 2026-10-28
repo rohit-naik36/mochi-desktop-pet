@@ -172,6 +172,7 @@ window.pet.onAction((a) => {
   else if (a === 'mood') askMood();
   else if (a === 'gratitude') askGratitude();
   else if (a === 'big-call') bigCall();
+  else if (a.startsWith('app-') && !bubbleSticky && !hushed() && !asleep) { setMode('happy', 900); say(T('apps.' + a.slice(4)), { ms: 8000 }); }
   else if (a.startsWith('sneaky-') && !bubbleSticky && !hushed()) { float('👀'); say(T('sneaky.' + a.slice(7)), { ms: 7000 }); }
   else if (a === 'schedule-changed') {
     if (asleep === 'bed' && (S.schedule === 'night' || !inBedtime())) wakeUp(0);

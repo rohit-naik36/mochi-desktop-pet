@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('play', {
   done: (x, y) => ipcRenderer.send('play-done', x, y),
   track: (event, n) => ipcRenderer.send('track', event, n),
   insight: (kind, value) => ipcRenderer.send('insight', kind, value),
+  aiReply: (req) => ipcRenderer.invoke('ai-reply', req),
   jar: (text) => ipcRenderer.send('jar-add', text),
   onAchievement: (fn) => ipcRenderer.on('achievement', (_e, id) => fn(id)),
 });
