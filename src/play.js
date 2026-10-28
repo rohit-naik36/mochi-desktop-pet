@@ -363,7 +363,7 @@ function Worry() {
     reply.classList.toggle('serious', !!r.serious);
     parts.opener.textContent = r.opener;
     parts.reflect.textContent = r.reflect;
-    parts.comfort.textContent = r.comfort;
+    parts.comfort.textContent = r.comfort + (r.ai ? ' ✨' : '');
     parts.step.textContent = r.step;
     parts.ask.textContent = r.ask || '';
     parts.helplines.innerHTML = '';
@@ -421,6 +421,12 @@ function Worry() {
     withCompany(r);
     r.text = words;
     if (r.celebrate) return celebrate(r, tr);
+    // Smarter replies (beta): the model on this laptop may reword the comfort
+    // and the next step for everyday worries while Mochi eats. Anything it
+    // gets wrong, or too slowly, falls back to the written reply.
+    const aiAsk = window.MochiAI && window.MochiAI.allowed(r, words) && !rude.profane
+      ? window.play.aiReply({ text: words, lang: r.lang, r: { lang: r.lang, topic: r.topic, serious: !!r.serious, gentle: !!r.gentle, celebrate: !!r.celebrate, helplines: !!r.helplines } }).catch(() => null)
+      : null;
     mood('eat');
     [...words].forEach((ch, i) => {
       const el = document.createElement('span');
@@ -441,7 +447,9 @@ function Worry() {
     text.classList.add('hidden');
     const total = 1500 + Math.min(words.length, 280) * 16;
     setTimeout(() => tone(220, 0.25, 'sine', 0.06, 0.6), total - 200);
-    setTimeout(() => {
+    setTimeout(async () => {
+      const ai = aiAsk && await aiAsk;
+      if (ai) Object.assign(r, { comfort: ai.comfort, step: ai.step, ai: true });
       // Swearing about a situation is just venting: acknowledge the feeling.
       if (rude.profane && !r.serious) r.comfort = L(r.lang, 'ventNote') + ' ' + r.comfort;
       mood(r.serious || r.gentle ? 'idle' : 'happy');

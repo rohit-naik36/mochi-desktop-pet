@@ -1,0 +1,17 @@
+name: App notice check
+
+# Makes sure the "Notice which app I'm in" helper runs on Windows.
+on:
+  pull_request:
+    paths: ['src/apps.js', 'tools/apps-smoke.js']
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tools/apps-smoke.js

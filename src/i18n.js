@@ -86,7 +86,7 @@
       explicit1: "Whoa, no 🙈 Sweet talk is lovely, but that kind of talk isn't something I do. Let's keep it wholesome, okay?",
       explicit2: 'I mean it{n}. No sexual talk, please. One more time and I\'ll go hide for a bit.',
       // menu
-      menu: { feed: 'Feed', play: 'Play', playTime: 'Play time', breathe: 'Breathe with me', bubbles: 'Bubble pop', chase: 'Chase the light', worry: '🍃 Feed me a worry', nap: 'Nap time', buddy: 'Choose your buddy', name: 'Tell me your name', changeName: 'Change my name ({you})', wander: 'Let it wander', moveToApps: 'Move Mochi to your Applications folder?', moveToAppsDetail: 'Right now Mochi is running from the download. Moving it installs it properly, so it stays after a restart and can open at login.', moveYes: 'Move to Applications', moveNo: 'Not now', chatty: 'How chatty', chatty_quiet: 'Quiet', chatty_normal: 'Normal', chatty_chatty: 'Chatty', reminders: 'Reminders', water: 'Drink water (every {count} min)', stretch: 'Stretch break (every {count} min)', eyes: '20-20-20 eye rest (every {count} min)', startup: 'Start with Windows', startupMac: 'Open at login', language: 'Language', bringBack: 'Bring pet back', quit: 'Quit', hidingNow: '{pet} is hiding... back soon', gender: '{pet} is a...' },
+      menu: { feed: 'Feed', play: 'Play', playTime: 'Play time', breathe: 'Breathe with me', bubbles: 'Bubble pop', chase: 'Chase the light', worry: '🍃 Feed me a worry', nap: 'Nap time', buddy: 'Choose your buddy', name: 'Tell me your name', changeName: 'Change my name ({you})', wander: 'Let it wander', moveToApps: 'Move Mochi to your Applications folder?', moveToAppsDetail: 'Right now Mochi is running from the download. Moving it installs it properly, so it stays after a restart and can open at login.', moveYes: 'Move to Applications', moveNo: 'Not now', chatty: 'How chatty', chatty_quiet: 'Quiet', chatty_normal: 'Normal', chatty_chatty: 'Chatty', reminders: 'Reminders', water: 'Drink water (every {count} min)', stretch: 'Stretch break (every {count} min)', eyes: '20-20-20 eye rest (every {count} min)', startup: 'Start with Windows', startupMac: 'Open at login', language: 'Language', bringBack: 'Bring pet back', settings: '⚙️ Settings', smarter: '✨ Smarter replies (beta)', smarterFailed: "couldn't start", quit: 'Quit', hidingNow: '{pet} is hiding... back soon', gender: '{pet} is a...' },
     },
 
     hi: {
@@ -166,7 +166,7 @@
       explicitSoft: 'हम्म, ये मेरे लिए थोड़ा ज़्यादा बड़ों वाला है 🙈 अगर इससे जुड़ी कोई चिंता है, तो डॉक्टर या काउंसलर इसके लिए सबसे अच्छे हैं।',
       explicit1: 'अरे नहीं 🙈 प्यारी बातें अच्छी लगती हैं, पर ऐसी बातें मैं नहीं {g:करता|करती}। साफ़-सुथरी बातें करें, ठीक है?',
       explicit2: 'सच में{n}। प्लीज़ ऐसी बातें नहीं। एक बार और, और मैं थोड़ी देर के लिए छुप {g:जाऊँगा|जाऊँगी}।',
-      menu: { feed: 'खिलाओ', play: 'खेलो', playTime: 'खेलने का समय', breathe: 'मेरे साथ साँस लो', bubbles: 'बुलबुले फोड़ो', chase: 'रोशनी पकड़ो', worry: '🍃 मुझे चिंता खिलाओ', nap: 'सोने का समय', buddy: 'अपना दोस्त चुनो', name: 'अपना नाम बताओ', changeName: 'नाम बदलो ({you})', wander: 'घूमने दो', moveToApps: 'Mochi को Applications फ़ोल्डर में रखें?', moveToAppsDetail: 'अभी Mochi डाउनलोड से चल रहा है। Applications में रखने से ये ठीक से इंस्टॉल हो जाएगा, रीस्टार्ट के बाद भी रहेगा और लॉगिन पर खुल सकेगा।', moveYes: 'Applications में रखो', moveNo: 'अभी नहीं', chatty: 'कितनी बातें करे', chatty_quiet: 'कम', chatty_normal: 'सामान्य', chatty_chatty: 'ज़्यादा', reminders: 'रिमाइंडर', water: 'पानी पियो (हर {count} मिनट)', stretch: 'स्ट्रेच ब्रेक (हर {count} मिनट)', eyes: 'आँखों का आराम (हर {count} मिनट)', startup: 'Windows के साथ शुरू करो', startupMac: 'लॉगिन पर खोलो', language: 'भाषा', bringBack: 'वापस लाओ', quit: 'बंद करो', hidingNow: '{pet} {g:छुपा हुआ|छुपी हुई} है... जल्दी {g:लौटेगा|लौटेगी}', gender: '{pet} है...' },
+      menu: { feed: 'खिलाओ', play: 'खेलो', playTime: 'खेलने का समय', breathe: 'मेरे साथ साँस लो', bubbles: 'बुलबुले फोड़ो', chase: 'रोशनी पकड़ो', worry: '🍃 मुझे चिंता खिलाओ', nap: 'सोने का समय', buddy: 'अपना दोस्त चुनो', name: 'अपना नाम बताओ', changeName: 'नाम बदलो ({you})', wander: 'घूमने दो', moveToApps: 'Mochi को Applications फ़ोल्डर में रखें?', moveToAppsDetail: 'अभी Mochi डाउनलोड से चल रहा है। Applications में रखने से ये ठीक से इंस्टॉल हो जाएगा, रीस्टार्ट के बाद भी रहेगा और लॉगिन पर खुल सकेगा।', moveYes: 'Applications में रखो', moveNo: 'अभी नहीं', chatty: 'कितनी बातें करे', chatty_quiet: 'कम', chatty_normal: 'सामान्य', chatty_chatty: 'ज़्यादा', reminders: 'रिमाइंडर', water: 'पानी पियो (हर {count} मिनट)', stretch: 'स्ट्रेच ब्रेक (हर {count} मिनट)', eyes: 'आँखों का आराम (हर {count} मिनट)', startup: 'Windows के साथ शुरू करो', startupMac: 'लॉगिन पर खोलो', language: 'भाषा', bringBack: 'वापस लाओ', settings: '⚙️ सेटिंग्स', quit: 'बंद करो', hidingNow: '{pet} {g:छुपा हुआ|छुपी हुई} है... जल्दी {g:लौटेगा|लौटेगी}', gender: '{pet} है...' },
     },
 
     hinglish: {
@@ -246,7 +246,7 @@
       explicitSoft: 'Hmm, ye mere liye thoda zyada adult wala hai 🙈 Agar isse judi koi tension hai, toh doctor ya counsellor iske liye best hain.',
       explicit1: 'Arre nahi 🙈 Sweet baatein acchi lagti hain, par aisi baatein main nahi {g:karta|karti}. Saaf-suthri baatein karein, okay?',
       explicit2: 'Sach mein{n}. Please aisi baatein nahi. Ek baar aur, aur main thodi der ke liye chhup {g:jaunga|jaungi}.',
-      menu: { feed: 'Khilao', play: 'Khelo', playTime: 'Khelne ka time', breathe: 'Mere saath saans lo', bubbles: 'Bubble pop', chase: 'Light pakdo', worry: '🍃 Mujhe tension khilao', nap: 'Sone ka time', buddy: 'Apna buddy chuno', name: 'Apna naam batao', changeName: 'Naam badlo ({you})', wander: 'Ghoomne do', moveToApps: 'Mochi ko Applications folder mein rakhein?', moveToAppsDetail: 'Abhi Mochi download se chal raha hai. Applications mein rakhne se ye theek se install ho jayega, restart ke baad bhi rahega aur login pe khul sakega.', moveYes: 'Applications mein rakho', moveNo: 'Abhi nahi', chatty: 'Kitni baatein kare', chatty_quiet: 'Kam', chatty_normal: 'Normal', chatty_chatty: 'Zyada', reminders: 'Reminders', water: 'Paani piyo (har {count} min)', stretch: 'Stretch break (har {count} min)', eyes: 'Aankhon ka rest (har {count} min)', startup: 'Windows ke saath start karo', startupMac: 'Login pe kholo', language: 'Language / भाषा', bringBack: 'Wapas lao', quit: 'Band karo', hidingNow: '{pet} {g:chhupa hua|chhupi hui} hai... jaldi {g:aayega|aayegi}', gender: '{pet} hai...' },
+      menu: { feed: 'Khilao', play: 'Khelo', playTime: 'Khelne ka time', breathe: 'Mere saath saans lo', bubbles: 'Bubble pop', chase: 'Light pakdo', worry: '🍃 Mujhe tension khilao', nap: 'Sone ka time', buddy: 'Apna buddy chuno', name: 'Apna naam batao', changeName: 'Naam badlo ({you})', wander: 'Ghoomne do', moveToApps: 'Mochi ko Applications folder mein rakhein?', moveToAppsDetail: 'Abhi Mochi download se chal raha hai. Applications mein rakhne se ye theek se install ho jayega, restart ke baad bhi rahega aur login pe khul sakega.', moveYes: 'Applications mein rakho', moveNo: 'Abhi nahi', chatty: 'Kitni baatein kare', chatty_quiet: 'Kam', chatty_normal: 'Normal', chatty_chatty: 'Zyada', reminders: 'Reminders', water: 'Paani piyo (har {count} min)', stretch: 'Stretch break (har {count} min)', eyes: 'Aankhon ka rest (har {count} min)', startup: 'Windows ke saath start karo', startupMac: 'Login pe kholo', language: 'Language / भाषा', bringBack: 'Wapas lao', settings: '⚙️ Settings', quit: 'Band karo', hidingNow: '{pet} {g:chhupa hua|chhupi hui} hai... jaldi {g:aayega|aayegi}', gender: '{pet} hai...' },
     },
   };
 
@@ -1031,6 +1031,153 @@
     },
   };
   for (const lang of Object.keys(VSET2)) merge(STRINGS[lang], VSET2[lang]);
+
+  // "Notice which app I'm in": one playful line after a long stretch in the
+  // same kind of app. Only the kind of app is known, never what's in it.
+  const VAPPS = {
+    en: {
+      menu: {
+        noticeApps: "👀 Notice which app I'm in",
+        noticeAppsAsk: "Let {pet} notice which app you're in?",
+        noticeAppsDetail: "After a long stretch in the same app, like Excel or VS Code, {pet} will say something funny and remind you to take a break. Only the app's name is checked, never window titles, websites or what's on your screen. Nothing is saved or sent anywhere.",
+        noticeAppsYes: 'Yes, turn it on', noticeAppsNo: 'Not now',
+      },
+      apps: {
+        excel: ["Still in Excel{n}? The cells are starting to stare back 😅 Look away for 20 seconds?", "That's a lot of rows. Even VLOOKUP takes breaks. Stretch with me? 📊", "Spreadsheet marathon! Your eyes deserve a pivot table of water 💧"],
+        word: ["Long writing session{n}! Stand up, read the last line out loud, then come back ✍️", "The cursor has blinked about a million times. Blink back, and look far away for a bit 👀"],
+        slides: ["Deck life! The perfect font can wait one minute. Stretch? 🎞️", "If you nudge that box one more pixel, I'm calling a break 😄"],
+        mail: ["Inbox again{n}? It's like me: always hungry. Step away for a minute 📬", "Emails will keep coming. Your shoulders need a roll right now 🙆"],
+        chat: ["Lots of chatting{n}! Time for a sip of water before the next ping 💬", "Your messages can wait 60 seconds. Shoulders down, deep breath 💛"],
+        code: ["Deep in code{n}! The bug will still be there after a stretch, I promise 🐛", "Long build session. Rubber-duck it to me, then take a short walk? 🦆", "Your code compiles, but does your back? Quick stretch 💻"],
+        browser: ["How many tabs is it now{n}? 😄 Time to close a few and rest your eyes.", "Long browsing stretch! Look at something far away for 20 seconds 🌳"],
+        design: ["Pixel-perfect mode{n}! Step back, literally. Fresh eyes spot more 🎨", "Design marathon! Your wrist would love a little shake-out ✋"],
+      },
+    },
+    hi: {
+      menu: {
+        noticeApps: '👀 कौन सा ऐप खुला है, ये देखो',
+        noticeAppsAsk: '{pet} को देखने दें कि आप कौन सा ऐप चला रहे हैं?',
+        noticeAppsDetail: 'एक ही ऐप (जैसे Excel या VS Code) में बहुत देर रहने पर {pet} कुछ मज़ेदार कहेगा और ब्रेक याद दिलाएगा। सिर्फ़ ऐप का नाम देखा जाता है, विंडो का टाइटल, वेबसाइट या स्क्रीन पर क्या है, कभी नहीं। कुछ भी सेव या कहीं भेजा नहीं जाता।',
+        noticeAppsYes: 'हाँ, चालू करो', noticeAppsNo: 'अभी नहीं',
+      },
+      apps: {
+        excel: ['अभी भी Excel में{n}? सेल्स अब तुम्हें घूरने लगे हैं 😅 20 सेकंड दूर देखो?', 'इतनी सारी रो! VLOOKUP भी ब्रेक लेता है। मेरे साथ स्ट्रेच करें? 📊'],
+        word: ['लंबा लिखने का सेशन{n}! उठो, आख़िरी लाइन ज़ोर से पढ़ो, फिर वापस आओ ✍️'],
+        slides: ['परफ़ेक्ट फ़ॉन्ट एक मिनट रुक सकता है। स्ट्रेच करें? 🎞️'],
+        mail: ['फिर से इनबॉक्स{n}? ये मेरी तरह हमेशा भूखा रहता है। एक मिनट दूर हो जाओ 📬'],
+        chat: ['बहुत सारी बातें{n}! अगले मैसेज से पहले थोड़ा पानी पी लो 💬'],
+        code: ['कोड में डूबे हो{n}! बग स्ट्रेच के बाद भी वहीं मिलेगा, वादा 🐛', 'कोड तो चल रहा है, पर कमर? जल्दी से स्ट्रेच 💻'],
+        browser: ['अब कितने टैब खुले हैं{n}? 😄 कुछ बंद करो और आँखों को आराम दो।'],
+        design: ['पिक्सल-परफ़ेक्ट मोड{n}! थोड़ा पीछे हटो, नई नज़र ज़्यादा देखती है 🎨'],
+      },
+    },
+    hinglish: {
+      menu: {
+        noticeApps: '👀 Kaunsa app khula hai, ye dekho',
+        noticeAppsAsk: '{pet} ko dekhne dein ki aap kaunsa app chala rahe ho?',
+        noticeAppsDetail: 'Ek hi app (jaise Excel ya VS Code) mein bahut der rehne par {pet} kuch funny bolega aur break yaad dilayega. Sirf app ka naam dekha jata hai, window title, website ya screen pe kya hai, kabhi nahi. Kuch bhi save ya kahin bheja nahi jata.',
+        noticeAppsYes: 'Haan, on karo', noticeAppsNo: 'Abhi nahi',
+      },
+      apps: {
+        excel: ['Abhi bhi Excel mein{n}? Cells ab tumhe ghoorne lage hain 😅 20 second door dekho?', 'Itni saari rows! VLOOKUP bhi break leta hai. Stretch karein? 📊'],
+        word: ['Lamba writing session{n}! Utho, last line zor se padho, phir wapas aao ✍️'],
+        slides: ['Perfect font ek minute ruk sakta hai. Stretch? 🎞️', 'Wo box ek pixel aur khiskaya toh main break bulaunga 😄'],
+        mail: ['Phir se inbox{n}? Ye meri tarah hamesha bhookha rehta hai. Ek minute break 📬'],
+        chat: ['Bahut chatting ho gayi{n}! Agle ping se pehle thoda paani 💬'],
+        code: ['Code mein doobe ho{n}! Bug stretch ke baad bhi wahin milega, promise 🐛', 'Code toh compile ho raha hai, par kamar? Jaldi se stretch 💻'],
+        browser: ['Ab kitne tabs khule hain{n}? 😄 Kuch band karo aur aankhon ko rest do.'],
+        design: ['Pixel-perfect mode{n}! Thoda peeche hato, fresh nazar zyada dekhti hai 🎨'],
+      },
+    },
+  };
+  for (const lang of Object.keys(VAPPS)) merge(STRINGS[lang], VAPPS[lang]);
+
+  // One-line explanations for the tray menu: tooltips on Mac, and the
+  // "What does everything do?" list on every system.
+  const VTIPS = {
+    en: {
+      menu: { help: '❓ What does everything do?', helpTitle: 'What everything in the menu does' },
+      tips: {
+        worry: "Type what's bothering you. Mochi eats it and replies like a friend.",
+        feed: 'Give Mochi a snack to keep it happy and full.',
+        play: 'Mini games to unwind: breathing, bubble pop and chase the light.',
+        nap: 'Mochi takes a short nap.',
+        focus: 'Mochi guards a 25 or 50 minute focus session and holds reminders until your break.',
+        silent: 'Keeps Mochi quiet, automatically during calls or for a set time.',
+        bigCall: 'A pep talk before an important call, and a check-in after.',
+        mood: 'Log how you feel today. It stays on this computer.',
+        gratitude: 'Save one good thing from today, to read back on hard days.',
+        board: 'Your points, streaks and badges.',
+        smarter: 'A small AI built into Mochi writes more personal worry replies, right on this laptop. Your words never leave it.',
+        noticeApps: 'After a long stretch in one app, Mochi jokes about it and suggests a break. Checks the app name only.',
+        teams: "Join your company's Mochi with a code to see its support contacts.",
+        schedule: 'When Mochi goes to bed, or night-shift mode if you work nights.',
+        buddy: 'Pick a buddy. Each one has its own look and personality.',
+        name: 'Tell Mochi what to call you.',
+        gender: 'How your buddy talks about itself (matters in Hindi and Hinglish).',
+        language: 'English, Hindi or Hinglish.',
+        chatty: 'How often Mochi talks on its own.',
+        wander: 'Lets Mochi stroll along the bottom of your screen.',
+        reminders: 'Water, stretch and 20-20-20 eye rest reminders.',
+        startup: 'Open Mochi automatically when your computer starts.',
+      },
+    },
+    hi: {
+      menu: { help: '❓ कौन सा बटन क्या करता है?', helpTitle: 'मेन्यू में हर चीज़ क्या करती है' },
+      tips: {
+        worry: 'जो परेशान कर रहा है, लिखो। Mochi उसे खा लेता है और दोस्त की तरह जवाब देता है।',
+        feed: 'Mochi को स्नैक दो, ताकि वो खुश और भरा रहे।',
+        play: 'आराम के छोटे खेल: साँस, बुलबुले और रोशनी पकड़ो।',
+        nap: 'Mochi थोड़ी देर सो जाता है।',
+        focus: '25 या 50 मिनट फ़ोकस, Mochi ब्रेक तक रिमाइंडर रोक कर रखता है।',
+        silent: 'Mochi को चुप रखता है, कॉल के दौरान अपने आप या कुछ देर के लिए।',
+        bigCall: 'ज़रूरी कॉल से पहले हौसला, और बाद में हाल-चाल।',
+        mood: 'आज कैसा लग रहा है, लिखो। ये इसी कंप्यूटर पर रहता है।',
+        gratitude: 'आज की एक अच्छी बात सेव करो, मुश्किल दिनों में पढ़ने के लिए।',
+        board: 'तुम्हारे पॉइंट्स, स्ट्रीक और बैज।',
+        smarter: 'Mochi में बना एक छोटा AI इसी लैपटॉप पर ज़्यादा अपने जैसे जवाब लिखता है। तुम्हारे शब्द कहीं नहीं जाते।',
+        noticeApps: 'एक ही ऐप में बहुत देर रहने पर Mochi मज़ाक करता है और ब्रेक याद दिलाता है। सिर्फ़ ऐप का नाम देखता है।',
+        teams: 'कोड से अपनी कंपनी का Mochi जोड़ो और उसके सपोर्ट कॉन्टैक्ट देखो।',
+        schedule: 'Mochi कब सोए, या रात की शिफ़्ट वाला मोड।',
+        buddy: 'अपना दोस्त चुनो। हर एक का अपना रूप और स्वभाव है।',
+        name: 'Mochi को बताओ तुम्हें क्या बुलाए।',
+        gender: 'तुम्हारा दोस्त अपने बारे में कैसे बोले।',
+        language: 'English, हिंदी या Hinglish।',
+        chatty: 'Mochi अपने आप कितना बोले।',
+        wander: 'Mochi स्क्रीन के नीचे घूमता रहे।',
+        reminders: 'पानी, स्ट्रेच और 20-20-20 आँखों के आराम के रिमाइंडर।',
+        startup: 'कंप्यूटर चालू होते ही Mochi अपने आप खुले।',
+      },
+    },
+    hinglish: {
+      menu: { help: '❓ Kaunsa option kya karta hai?', helpTitle: 'Menu mein har cheez kya karti hai' },
+      tips: {
+        worry: 'Jo pareshan kar raha hai, likho. Mochi use kha leta hai aur dost ki tarah reply karta hai.',
+        feed: 'Mochi ko snack do, taaki wo khush aur bhara rahe.',
+        play: 'Relax karne ke chhote games: breathing, bubble pop aur light pakdo.',
+        nap: 'Mochi thodi der so jata hai.',
+        focus: '25 ya 50 minute focus, Mochi break tak reminders rok ke rakhta hai.',
+        silent: 'Mochi ko chup rakhta hai, call ke time apne aap ya kuch der ke liye.',
+        bigCall: 'Important call se pehle pep talk, aur baad mein haal-chaal.',
+        mood: 'Aaj kaisa lag raha hai, likho. Ye isi computer pe rehta hai.',
+        gratitude: 'Aaj ki ek achhi baat save karo, mushkil din pe padhne ke liye.',
+        board: 'Tumhare points, streaks aur badges.',
+        smarter: 'Mochi mein bana ek chhota AI isi laptop pe zyada personal replies likhta hai. Tumhare words kahin nahi jaate.',
+        noticeApps: 'Ek hi app mein bahut der rehne pe Mochi joke karta hai aur break yaad dilata hai. Sirf app ka naam dekhta hai.',
+        teams: 'Code se apni company ka Mochi join karo aur uske support contacts dekho.',
+        schedule: 'Mochi kab soye, ya night shift mode.',
+        buddy: 'Apna buddy chuno. Har ek ka apna look aur nature hai.',
+        name: 'Mochi ko batao tumhe kya bulaye.',
+        gender: 'Tumhara buddy apne baare mein kaise bole (Hindi aur Hinglish mein farak padta hai).',
+        language: 'English, Hindi ya Hinglish.',
+        chatty: 'Mochi apne aap kitna bole.',
+        wander: 'Mochi screen ke neeche ghoomta rahe.',
+        reminders: 'Paani, stretch aur 20-20-20 aankhon ke rest ke reminders.',
+        startup: 'Computer start hote hi Mochi apne aap khule.',
+      },
+    },
+  };
+  for (const lang of Object.keys(VTIPS)) merge(STRINGS[lang], VTIPS[lang]);
 
   // 11 -> "11 pm" in English; "11" in Hindi/Hinglish, which say "raat 11 baje".
   const hourLabel = (lang, h) => (lang === 'en' ? `${h % 12 || 12} ${h < 12 ? 'am' : 'pm'}` : String(h % 12 || 12));

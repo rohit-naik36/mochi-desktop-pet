@@ -8,6 +8,8 @@ const Insights = require('./insights');
 const Company = require('./company');
 const Campaigns = require('./campaigns');
 const Calls = require('./calls');
+const Ai = require('./ai');
+const Apps = require('./apps');
 const Device = require('./device');
 
 const MIN_MS = 60_000;
@@ -60,6 +62,8 @@ const defaults = {
   teams: null, // Mochi for Teams: { id, name, support, posh, teams, team, insights }
   insights: {}, // anonymous weekly counts, kept only while insights are on
   silent: { auto: true, until: 0 }, // quiet on calls; until = manual silent mode end (ms)
+  apps: false, // notice which app is in front (name only) for playful lines; off by default
+  ai: { on: true }, // Smarter replies: the small model that ships with Mochi
 };
 
 function loadState() {
@@ -125,6 +129,7 @@ const GAMES = ['breathe', 'bubbles', 'chase', 'worry'];
 function openPlay(game) {
   if (hidingUntil) return;
   if (!GAMES.includes(game)) game = undefined;
+  if (game === 'worry' && aiOn()) Ai.warm(); // ready by the time they've typed
   if (playWin && !playWin.isDestroyed()) { playWin.focus(); return; }
   const pb = win.getBounds();
   const wa = screen.getDisplayMatching(pb).workArea;
@@ -168,6 +173,96 @@ function openPlay(game) {
 }
 
 ipcMain.handle('get-state', () => state);
+
+// ---------- offline AI (beta) ----------
+
+// Smarter replies ship only in the company installer and work while the
+// company licence is active.
+const aiOn = () => state.ai.on && teamsOn();
+
+// The written reply is always ready first; the model may only reword it.
+ipcMain.handle('ai-reply', (_e, req = {}) => {
+  if (!aiOn() || Ai.status().state !== 'ready' || !Ai.allowed(req.r, req.text)) return null;
+  return Ai.reply({ text: req.text, lang: req.lang, name: state.userName, pet: state.name, skin: state.skin });
+});
+
+// ---------- notice which app I'm in (opt-in) ----------
+
+// Same kind of app for 90 minutes straight (2.5 hours if Mochi is set to
+// quiet) gets one playful line, at most every 45 minutes, never on a call,
+// in focus time or while hiding. Only the kind of app is kept, in memory.
+const APP_LONG_MIN = { quiet: 150, normal: 90, chatty: 60 };
+let appKind = null, appSince = 0, appLastLine = 0;
+
+function onApp(kind) {
+  const now = Date.now();
+  if (powerMonitor.getSystemIdleTime() >= 5 * 60 || kind !== appKind) { appKind = kind; appSince = now; return; }
+  if (!kind) return;
+  const need = (APP_LONG_MIN[state.chatty] || 90) * MIN_MS;
+  if (now - appSince < need || now - appLastLine < 45 * MIN_MS) return;
+  if (quietNow() || hidingUntil || state.focusUntil > now) return;
+  appLastLine = now;
+  appSince = now; // the next line for the same app waits another full stretch
+  send('action', 'app-' + kind);
+}
+
+function setApps(on) {
+  state.apps = on;
+  saveState();
+  appKind = null;
+  if (on) Apps.start(onApp); else Apps.stop();
+}
+
+function appsItem(M) {
+  return {
+    label: M('noticeApps'),
+    toolTip: I18N.t(state.lang, 'tips.noticeApps'),
+    type: 'checkbox',
+    checked: !!state.apps,
+    click: (i) => {
+      if (!i.checked) return setApps(false);
+      const response = dialog.showMessageBoxSync({
+        type: 'question',
+        title: 'Mochi',
+        message: M('noticeAppsAsk'),
+        detail: M('noticeAppsDetail'),
+        buttons: [M('noticeAppsYes'), M('noticeAppsNo')],
+        defaultId: 0,
+        cancelId: 1,
+      });
+      setApps(response === 0);
+      refreshTrayMenu();
+    },
+  };
+}
+
+// One checkbox in Settings, on by default. Hidden in builds without the
+// model and outside a company.
+function aiItem(M) {
+  const s = Ai.status();
+  if (s.state === 'missing' || !teamsOn()) return null;
+  const note = s.state === 'error' ? M('smarterFailed') : '';
+  return {
+    label: M('smarter') + (note ? ` (${note})` : ''),
+    toolTip: I18N.t(state.lang, 'tips.smarter'),
+    type: 'checkbox',
+    checked: state.ai.on,
+    click: (i) => {
+      state.ai.on = i.checked;
+      saveState();
+      if (i.checked) Ai.turnOn(); else Ai.turnOff();
+      refreshTrayMenu();
+    },
+  };
+}
+
+let aiMenuAt = 0;
+function aiChanged(s) {
+  if (Date.now() - aiMenuAt < 1000) return;
+  if (s.state === 'error') console.error('[ai]', s.error);
+  aiMenuAt = Date.now();
+  if (tray) refreshTrayMenu();
+}
 
 // ---------- points and badges ----------
 
@@ -577,6 +672,8 @@ function buildTray() {
 
 function buildMenu() {
   const M = (key, count) => I18N.t(state.lang, 'menu.' + key, { name: state.userName, pet: state.name, gender: state.petGender, count });
+  // Hover text on Mac (Windows tray menus don't show tooltips; the help item covers both).
+  const tip = (key) => ({ toolTip: I18N.t(state.lang, 'tips.' + key, { pet: state.name }) });
   const toggle = (key, label) => ({
     label,
     type: 'checkbox',
@@ -592,96 +689,113 @@ function buildMenu() {
   }
   return Menu.buildFromTemplate([
     { label: `${state.name}  ❤ ${Math.round(state.happiness)}  🍙 ${Math.round(100 - state.hunger)}  ⭐ ${state.stats.points}`, enabled: false },
-    { label: M('board'), click: openBoard },
-    { label: state.teams ? '🏢 ' + state.teams.name : M('teams'), click: openTeams },
-    { type: 'separator' },
-    ...(!teamsOn() ? [] : [{ label: M('silent') + (quietNow() ? ' ✓' : ''), submenu: [
-      { label: M('silentAuto'), type: 'checkbox', checked: state.silent.auto, click: (item) => { state.silent.auto = item.checked; saveState(); if (!item.checked && onCall) { onCall = false; sendQuiet(); } } },
-      { type: 'separator' },
-      ...(state.silent.until > Date.now()
-        ? [{ label: M('silentOff'), click: () => setSilent(0) }]
-        : [{ label: M('silent30'), click: () => setSilent(30) }, { label: M('silent60'), click: () => setSilent(60) }, { label: M('silentOn'), click: () => setSilent(-1) }]),
-    ] },
-    { label: M('bigCall'), click: () => send('action', 'big-call') }]),
-    state.focusUntil > Date.now()
-      ? { label: M('focusStop', Math.ceil((state.focusUntil - Date.now()) / MIN_MS)), click: () => send('action', 'focus-stop') }
-      : { label: M('focus'), submenu: [25, 50].map((m) => ({ label: M('focusMin', m), click: () => send('action', 'focus-' + m) })) },
-    { label: M('mood'), click: () => send('action', 'mood') },
-    { label: M('gratitude'), click: () => send('action', 'gratitude') },
-    { type: 'separator' },
-    { label: M('feed'), click: () => send('action', 'feed') },
-    { label: M('play'), submenu: [
+    { label: M('worry'), ...tip('worry'), click: () => openPlay('worry') },
+    { label: M('feed'), ...tip('feed'), click: () => send('action', 'feed') },
+    { label: M('play'), ...tip('play'), submenu: [
       { label: M('playTime'), click: () => openPlay() },
       { type: 'separator' },
       { label: M('breathe'), click: () => openPlay('breathe') },
       { label: M('bubbles'), click: () => openPlay('bubbles') },
       { label: M('chase'), click: () => openPlay('chase') },
     ] },
-    { label: M('worry'), click: () => openPlay('worry') },
-    { label: M('nap'), click: () => send('action', 'sleep') },
-    { label: M('schedule'), submenu: [
-      ...[22, 23, 0, 1].map((h) => ({
-        label: M('bedAt', I18N.hourLabel(state.lang, h)),
-        type: 'radio',
-        checked: state.schedule !== 'night' && state.bedtime === h,
-        click: () => setSchedule('day', h),
-      })),
+    { label: M('nap'), ...tip('nap'), click: () => send('action', 'sleep') },
+    { type: 'separator' },
+    state.focusUntil > Date.now()
+      ? { label: M('focusStop', Math.ceil((state.focusUntil - Date.now()) / MIN_MS)), click: () => send('action', 'focus-stop') }
+      : { label: M('focus'), ...tip('focus'), submenu: [25, 50].map((m) => ({ label: M('focusMin', m), click: () => send('action', 'focus-' + m) })) },
+    // Silent mode and big-call pep talks come with Mochi for Teams.
+    ...(!teamsOn() ? [] : [{ label: M('silent') + (quietNow() ? ' ✓' : ''), ...tip('silent'), submenu: [
+      { label: M('silentAuto'), type: 'checkbox', checked: state.silent.auto, click: (item) => { state.silent.auto = item.checked; saveState(); if (!item.checked && onCall) { onCall = false; sendQuiet(); } } },
       { type: 'separator' },
-      { label: M('nightShift'), type: 'radio', checked: state.schedule === 'night', click: () => setSchedule('night') },
-    ] },
-    { label: M('buddy'), submenu: SKINS.map((sk) => ({
-      label: sk.label,
-      type: 'radio',
-      checked: state.skin === sk.id,
-      click: () => {
-        state.skin = sk.id;
-        state.name = sk.name;
-        saveState();
-        tray.setToolTip(`${state.name} the desktop pet`);
-        refreshTrayMenu();
-        send('state', state);
-        send('action', 'switched');
-      },
-    })) },
-    { label: state.userName ? M('changeName') : M('name'), click: () => send('action', 'ask-name') },
-    { label: M('gender'), submenu: ['male', 'female', 'nonbinary'].map((g) => ({
-      label: I18N.t(state.lang, 'gender.' + g),
-      type: 'radio',
-      checked: state.petGender === g,
-      click: () => { state.petGender = g; saveState(); refreshTrayMenu(); send('state', state); send('action', 'gender-changed'); },
-    })) },
-    { label: M('language'), submenu: I18N.LANGS.map((l) => ({
-      label: l.label,
-      type: 'radio',
-      checked: state.lang === l.id,
-      click: () => { state.lang = l.id; saveState(); refreshTrayMenu(); send('state', state); send('action', 'switched'); },
-    })) },
-    { label: M('chatty'), submenu: ['quiet', 'normal', 'chatty'].map((c) => ({
-      label: M('chatty_' + c),
-      type: 'radio',
-      checked: (state.chatty || 'normal') === c,
-      click: () => { state.chatty = c; saveState(); send('state', state); },
-    })) },
-    { label: M('wander'), type: 'checkbox', checked: state.walking,
-      click: (i) => { state.walking = i.checked; saveState(); send('state', state); } },
+      ...(state.silent.until > Date.now()
+        ? [{ label: M('silentOff'), click: () => setSilent(0) }]
+        : [{ label: M('silent30'), click: () => setSilent(30) }, { label: M('silent60'), click: () => setSilent(60) }, { label: M('silentOn'), click: () => setSilent(-1) }]),
+      { type: 'separator' },
+      { label: M('bigCall'), ...tip('bigCall'), click: () => send('action', 'big-call') },
+    ] }]),
+    { label: M('mood'), ...tip('mood'), click: () => send('action', 'mood') },
+    { label: M('gratitude'), ...tip('gratitude'), click: () => send('action', 'gratitude') },
+    { label: M('board'), ...tip('board'), click: openBoard },
     { type: 'separator' },
-    { label: M('reminders'), submenu: [
-      toggle('water', M('water', state.waterEveryMin)),
-      toggle('stretch', M('stretch', state.stretchEveryMin)),
-      toggle('eyes', M('eyes', state.eyesEveryMin)),
+    { label: M('settings'), submenu: [
+      ...[aiItem(M)].filter(Boolean),
+      ...(Apps.supported() ? [appsItem(M)] : []),
+      { label: state.teams ? '🏢 ' + state.teams.name : M('teams'), ...tip('teams'), click: openTeams },
+      { type: 'separator' },
+      { label: M('schedule'), ...tip('schedule'), submenu: [
+        ...[22, 23, 0, 1].map((h) => ({
+          label: M('bedAt', I18N.hourLabel(state.lang, h)),
+          type: 'radio',
+          checked: state.schedule !== 'night' && state.bedtime === h,
+          click: () => setSchedule('day', h),
+        })),
+        { type: 'separator' },
+        { label: M('nightShift'), type: 'radio', checked: state.schedule === 'night', click: () => setSchedule('night') },
+      ] },
+      { label: M('buddy'), ...tip('buddy'), submenu: SKINS.map((sk) => ({
+        label: sk.label,
+        type: 'radio',
+        checked: state.skin === sk.id,
+        click: () => {
+          state.skin = sk.id;
+          state.name = sk.name;
+          saveState();
+          tray.setToolTip(`${state.name} the desktop pet`);
+          refreshTrayMenu();
+          send('state', state);
+          send('action', 'switched');
+        },
+      })) },
+      { label: state.userName ? M('changeName') : M('name'), ...tip('name'), click: () => send('action', 'ask-name') },
+      { label: M('gender'), ...tip('gender'), submenu: ['male', 'female', 'nonbinary'].map((g) => ({
+        label: I18N.t(state.lang, 'gender.' + g),
+        type: 'radio',
+        checked: state.petGender === g,
+        click: () => { state.petGender = g; saveState(); refreshTrayMenu(); send('state', state); send('action', 'gender-changed'); },
+      })) },
+      { label: M('language'), ...tip('language'), submenu: I18N.LANGS.map((l) => ({
+        label: l.label,
+        type: 'radio',
+        checked: state.lang === l.id,
+        click: () => { state.lang = l.id; saveState(); refreshTrayMenu(); send('state', state); send('action', 'switched'); },
+      })) },
+      { label: M('chatty'), ...tip('chatty'), submenu: ['quiet', 'normal', 'chatty'].map((c) => ({
+        label: M('chatty_' + c),
+        type: 'radio',
+        checked: (state.chatty || 'normal') === c,
+        click: () => { state.chatty = c; saveState(); send('state', state); },
+      })) },
+      { label: M('wander'), ...tip('wander'), type: 'checkbox', checked: state.walking,
+        click: (i) => { state.walking = i.checked; saveState(); send('state', state); } },
+      { type: 'separator' },
+      { label: M('reminders'), ...tip('reminders'), submenu: [
+        toggle('water', M('water', state.waterEveryMin)),
+        toggle('stretch', M('stretch', state.stretchEveryMin)),
+        toggle('eyes', M('eyes', state.eyesEveryMin)),
+      ] },
+      // Store (MSIX) builds can't register to start with Windows this way.
+      // On macOS (including the sandboxed App Store build) the app registers
+      // itself as a login item through SMAppService.
+      ...(process.windowsStore ? [] : [IS_MAC ? { label: M('startupMac'), ...tip('startup'), type: 'checkbox',
+        checked: app.getLoginItemSettings({ type: 'mainAppService' }).status === 'enabled',
+        click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked, type: 'mainAppService' }) } : { label: M('startup'), ...tip('startup'), type: 'checkbox',
+        checked: app.getLoginItemSettings().openAtLogin,
+        click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked }) }]),
     ] },
-    // Store (MSIX) builds can't register to start with Windows this way.
-    // On macOS (including the sandboxed App Store build) the app registers
-    // itself as a login item through SMAppService.
-    ...(process.windowsStore ? [] : [IS_MAC ? { label: M('startupMac'), type: 'checkbox',
-      checked: app.getLoginItemSettings({ type: 'mainAppService' }).status === 'enabled',
-      click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked, type: 'mainAppService' }) } : { label: M('startup'), type: 'checkbox',
-      checked: app.getLoginItemSettings().openAtLogin,
-      click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked }) }]),
-    { type: 'separator' },
+    { label: M('help'), click: showHelp },
     { label: M('bringBack'), click: () => { const wa = workArea(); placeAt(wa.x + wa.width - WIN_W - 40, wa.y + wa.height - WIN_H); } },
     { label: M('quit'), click: () => app.quit() },
   ]);
+}
+
+// Plain list of what each menu item does, since Windows menus can't show tooltips.
+function showHelp() {
+  const M = (key) => I18N.t(state.lang, 'menu.' + key, { name: state.userName, pet: state.name, gender: state.petGender });
+  const Tp = (key) => I18N.t(state.lang, 'tips.' + key, { pet: state.name });
+  const rows = [['worry'], ['feed'], ['play'], ['nap'], ['focus'], ...(teamsOn() ? [['silent'], ['bigCall']] : []), ['mood'], ['gratitude'], ['board'],
+    ['settings', null], ...(Ai.status().state === 'missing' || !teamsOn() ? [] : [['smarter']]), ['noticeApps'], ['teams'], ['schedule'], ['buddy'], ['name'], ['gender'], ['language'], ['chatty'], ['wander'], ['reminders'], ...(process.windowsStore ? [] : [[IS_MAC ? 'startupMac' : 'startup', 'startup']])];
+  const detail = rows.map(([k, t]) => (t === null ? '\n' + M(k) : `• ${M(k).replace(/\s*\(.*\)$/, '')}: ${Tp(t || k)}`)).join('\n');
+  dialog.showMessageBox({ type: 'info', title: 'Mochi', message: M('helpTitle'), detail, buttons: ['OK'] });
 }
 
 function setSchedule(schedule, bedtime = state.bedtime) {
@@ -860,6 +974,9 @@ if (!gotLock) {
     // in the bundle does this too; this covers `npm start`).
     if (IS_MAC) app.dock?.hide();
     loadState();
+    state.ai = { ...defaults.ai, ...state.ai };
+    Ai.init(state.ai, aiChanged);
+    if (state.apps && Apps.supported()) Apps.start(onApp);
     autoJoin();
     offerMoveToApplications();
     createWindow();
@@ -884,6 +1001,6 @@ if (!gotLock) {
     powerMonitor.on('resume', reportActivity);
     powerMonitor.on('unlock-screen', reportActivity);
   });
-  app.on('before-quit', saveState);
+  app.on('before-quit', () => { Apps.stop(); saveState(); });
   app.on('window-all-closed', () => app.quit());
 }

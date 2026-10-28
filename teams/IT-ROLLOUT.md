@@ -1,14 +1,23 @@
 # Mochi for Teams: IT rollout guide
 
-Mochi is a small desktop app for Windows 10 and 11. Staff don't create accounts or sign in. Everything personal stays on the laptop; the only network traffic is a daily licence check and, for people who opt in, one small file of weekly counts (details in `SECURITY-PRIVACY.md`).
+Mochi is a desktop app for Windows 10 and 11. Staff don't create accounts or sign in. Everything personal stays on the laptop; the only network traffic is a daily licence check and, for people who opt in, one small file of weekly counts (details in `SECURITY-PRIVACY.md`).
 
-## 1. Install Mochi from the Microsoft Store through Intune
+## 1. Install Mochi for Teams through Intune
 
-1. Intune admin centre > **Apps > Windows > Add > Microsoft Store app (new)**.
-2. Search for **Mochi - Desk Buddy** (Store id `9P81ZJPTQ47Q`) and select it.
-3. Install behaviour: **User**. Assign it to the group that has Mochi for Teams, for example `Engineering`.
+Your company gets its own installer, `Mochi-Teams-Setup-<version>.exe`, from Little Smoke Studio. It is the free Mochi plus **smarter replies**: a small AI model (Qwen, Apache 2.0 licence) that runs entirely on the laptop and never sends anything out. That is why the installer is about 1.4 GB. The free Microsoft Store version doesn't include it.
 
-The Store keeps Mochi updated. No admin rights are needed to run it, and it opens no inbound ports. If your company blocks the Microsoft Store app, the Intune Store integration still works, because Intune installs through winget.
+1. Wrap the installer with the [Microsoft Win32 Content Prep Tool](https://learn.microsoft.com/intune/intune-service/apps/apps-win32-prepare): `IntuneWinAppUtil.exe -c <folder> -s Mochi-Teams-Setup-<version>.exe -o <out>`.
+2. Intune admin centre > **Apps > Windows > Add > Windows app (Win32)** and upload the `.intunewin` file.
+3. Install command: `Mochi-Teams-Setup-<version>.exe /S`
+4. Uninstall command: `"%LocalAppData%\Programs\mochi-desktop-pet\Uninstall Mochi.exe" /S`
+5. Install behaviour: **User**. Detection rule: file `%LocalAppData%\Programs\mochi-desktop-pet\Mochi.exe` exists.
+6. Assign it to the group that has Mochi for Teams, for example `Engineering`.
+
+No admin rights are needed to install or run it, and it opens no inbound ports. Smarter replies needs about 2 GB of free memory while someone is chatting and unloads itself after 10 minutes. It switches on only while the laptop is joined to your company, and each person can turn it off in Settings.
+
+**Updates:** we send you each new installer; upload it as a new version of the same Intune app (the detection rule stays the same).
+
+If someone already has the free Store version, they can keep it, but they won't get smarter replies; the company installer is a separate app.
 
 ## 2. Connect it to your company (no typing for staff)
 
@@ -50,7 +59,7 @@ Each laptop counts as one seat per month it is used. Intune shows how many devic
 
 ## 6. Removing it
 
-Unassign the app in Intune and delete `%ProgramData%\Mochi`. Each person's own data is in `%LocalAppData%\Packages\…Mochi…` (Store install) and goes when the app is uninstalled.
+Unassign the app in Intune and delete `%ProgramData%\Mochi`. Each person's own settings are in `%AppData%\Mochi` and can be deleted after uninstalling.
 
 ## Try it first
 

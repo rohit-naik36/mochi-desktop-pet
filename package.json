@@ -23,7 +23,12 @@
     "appId": "com.mochi.desktoppet",
     "productName": "Mochi",
     "files": [
-      "src/**/*"
+      "src/**/*",
+      "!node_modules/@node-llama-cpp/*cuda*/**",
+      "!node_modules/node-llama-cpp/llama/gitRelease.bundle"
+    ],
+    "extraResources": [
+      { "from": "models", "to": "models", "filter": ["*.gguf"] }
     ],
     "directories": {
       "buildResources": "build",
@@ -70,7 +75,8 @@
       "entitlementsInherit": "build/entitlements.mac.plist",
       "extendInfo": {
         "LSUIElement": true
-      }
+      },
+      "x64ArchFiles": "Contents/Resources/app.asar.unpacked/node_modules/**"
     },
     "mas": {
       "entitlements": "build/entitlements.mas.plist",
@@ -97,6 +103,15 @@
         "en-US"
       ],
       "artifactName": "Mochi-Store-${version}.${ext}"
-    }
+    },
+    "asarUnpack": [
+      "node_modules/node-llama-cpp/bins/**",
+      "node_modules/node-llama-cpp/llama/localBuilds/**",
+      "node_modules/@node-llama-cpp/*/bins/**",
+      "**/*.node"
+    ]
+  },
+  "dependencies": {
+    "node-llama-cpp": "3.22.2"
   }
 }

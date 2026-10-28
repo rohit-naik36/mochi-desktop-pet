@@ -12,7 +12,7 @@ Mochi runs on each employee's laptop. What people type, their moods and their gr
 
 | Data | Kept where | Sent to the server? | Kept for |
 |---|---|---|---|
-| Words typed into Mochi (worries, names) | Never kept; read in memory to reply | Never | Not kept |
+| Words typed into Mochi (worries, names) | Never kept; read in memory to reply, including by the on-device AI | Never | Not kept |
 | Moods, gratitude notes, settings, badges | The employee's laptop | Never | Until the app is uninstalled |
 | Weekly counts (mood levels, worry themes, reminders, breaks, calls, features) | Laptop, 8 weeks | Only if the employee opts in, one finished week at a time | 1 year on the server |
 | Answer to the company's weekly question (an option number, such as 2) | Laptop, 8 weeks | Only if the employee opts in to team totals, inside that week's counts | 1 year on the server |
@@ -32,6 +32,10 @@ There is no user account, no email address, no IP address stored, no analytics a
 - **Weekly questions.** Answers are option numbers inside the weekly counts, shown only once 8 or more people in a group have answered. Questions are about work and the workplace; Little Smoke Studio declines questions about health conditions or anything that could single someone out.
 - **No drill-down.** There is no screen, export or query in Pulse that shows one person. The raw weekly files are not readable by HR at all.
 
+## Smarter replies (on-device AI)
+
+The company edition includes a small open AI model (Qwen 2B, Apache 2.0) that runs on the laptop's own processor. It only rewords Mochi's comfort line and next step for everyday worries. It has no network access, keeps nothing after replying, and never sees crisis or self-harm messages, which always get Mochi's fixed safety replies and helplines. Each person can turn it off in Settings.
+
 ## How it flows
 
 ```
@@ -49,7 +53,7 @@ Laptop (Mochi)                       Mochi for Teams server (Mumbai)          HR
 - **Access:** row level security is on for every table with no public policies, so nothing is readable through the public API. Only the three server functions can read or write. Pulse keys are random 32-character keys, stored hashed, one per HR person, revocable.
 - **Abuse limits:** the server refuses requests over 16 KB, and accepts at most twice a company's seat count of weekly packets each week, so a leaked join code can't flood the totals. A leaked code can also be replaced at once, with the old one kept working for a short handover period.
 - **Admin access:** only Little Smoke Studio, with two-factor sign-in to the hosting console **[confirm 2FA is on]**.
-- **App:** distributed through the Microsoft Store (signed and malware-scanned by Microsoft). It needs no admin rights and opens no inbound ports. It does not read files, the screen, keystrokes or other apps' content. Silent mode checks only whether the microphone or camera is in use (yes or no).
+- **App:** a company installer deployed through Intune; the free edition is on the Microsoft Store (signed and malware-scanned by Microsoft). Installer code signing **[confirm Azure Artifact Signing is set up]**. It needs no admin rights and opens no inbound ports. It does not read files, the screen, keystrokes or other apps' content. Silent mode checks only whether the microphone or camera is in use (yes or no).
 - **Code:** the source is in a private-by-licence repository; every change runs automated tests.
 - **Certifications:** none yet. ISO 27001 is on the roadmap once there are enough customers to justify it.
 
