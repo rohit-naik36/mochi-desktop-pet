@@ -50,6 +50,16 @@ test('the demo company works offline and never has a server', () => {
   assert.ok(c.support.length >= 1 && c.teams.length >= 8);
 });
 
+test('the demo app switches the server off, and tests never reach it', () => {
+  assert.match(read('src/main.js'), /Company\.useServer\(!DEMO\)/);
+  assert.strictEqual(Company.hasServer(), false); // off until main.js turns it on
+  Company.useServer(true);
+  assert.strictEqual(Company.hasServer(), true);
+  assert.match(read('src/company.js'), /DEFAULT_SERVER = 'https:\/\/[a-z0-9]+\.supabase\.co\/functions\/v1'/);
+  Company.useServer(false);
+  assert.strictEqual(Company.hasServer(), false);
+});
+
 test('a simulated call replaces the real check, and goes away again', async () => {
   let on = true;
   Calls.setOverride(() => on);

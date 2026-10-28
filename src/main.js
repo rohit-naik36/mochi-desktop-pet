@@ -16,6 +16,7 @@ const Idle = require('./idle');
 // src/demo out of the package and never load it.
 const DEMO = require('./demo-flag').isDemo(require('../package.json'), app.isPackaged, process.env);
 const Demo = DEMO ? require('./demo') : null;
+Company.useServer(!DEMO); // the demo app never talks to a server
 
 const MIN_MS = 60_000;
 const WIN_W = 220;

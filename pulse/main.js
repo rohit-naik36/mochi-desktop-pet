@@ -9,7 +9,7 @@ const path = require('path');
 app.setAppUserModelId('com.mochi.pulse');
 
 // Base address of the Teams server's functions (see server/ADMIN.md).
-const SERVER = '';
+const SERVER = 'https://duxpvnvjylrzriqvbjqo.supabase.co/functions/v1';
 
 function open() {
   const win = new BrowserWindow({
