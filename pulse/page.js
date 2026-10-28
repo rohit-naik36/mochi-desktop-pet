@@ -150,7 +150,7 @@ dash.calc('issue_count', {
   const MOODS = [
     { key: 'very_low', name: 'Very low', color: 'var(--color-bad)', op: 1 },
     { key: 'low', name: 'Low', color: 'var(--color-bad)', op: .5 },
-    { key: 'okay', name: 'Okay', color: 'var(--cds-chart-muted)', op: 1 },
+    { key: 'okay', name: 'Okay', color: 'var(--pulse-chart-muted)', op: 1 },
     { key: 'good', name: 'Good', color: 'var(--color-ok)', op: .5 },
     { key: 'great', name: 'Great', color: 'var(--color-ok)', op: 1 }
   ];
@@ -164,7 +164,7 @@ dash.calc('issue_count', {
     const m = { t: 8, r: 4, b: 26, l: textW(svg, ['100%']) + 8 };
     const x = d3.scaleBand(rows.map(r => r.week), [m.l, w - m.r]).padding(.28);
     const y = d3.scaleLinear([0, 1], [H - m.b, m.t]);
-    svg.append('g').selectAll('line').data([0, .5, 1]).join('line').attr('x1', m.l).attr('x2', w - m.r).attr('y1', y).attr('y2', y).style('stroke', 'var(--cds-chart-grid)');
+    svg.append('g').selectAll('line').data([0, .5, 1]).join('line').attr('x1', m.l).attr('x2', w - m.r).attr('y1', y).attr('y2', y).style('stroke', 'var(--pulse-chart-grid)');
     svg.append('g').selectAll('text').data([0, .5, 1]).join('text').attr('class', 'mp-tick').attr('x', m.l - 6).attr('y', y).attr('dy', '0.32em').attr('text-anchor', 'end').text(f0);
     const series = d3.stack().keys(MOODS.map(m => m.key))(rows);
     const tip = tipFor(el);
@@ -196,7 +196,7 @@ dash.calc('issue_count', {
     const m = { t: 12, r: textW(svg, ends.map(e => series.length > 1 ? e.txt : fmt(last[e.s.key])), 'mp-lab') + 10, b: 26, l: textW(svg, ticks.map(tickFmt)) + 8 };
     const x = d3.scaleUtc(d3.extent(rows, r => r.week), [m.l, w - m.r]);
     const y = d3.scaleLinear([0, top], [H - m.b, m.t]);
-    svg.append('g').selectAll('line').data(ticks).join('line').attr('x1', m.l).attr('x2', w - m.r).attr('y1', y).attr('y2', y).style('stroke', 'var(--cds-chart-grid)');
+    svg.append('g').selectAll('line').data(ticks).join('line').attr('x1', m.l).attr('x2', w - m.r).attr('y1', y).attr('y2', y).style('stroke', 'var(--pulse-chart-grid)');
     svg.append('g').selectAll('text').data(ticks).join('text').attr('class', 'mp-tick').attr('x', m.l - 6).attr('y', y).attr('dy', '0.32em').attr('text-anchor', 'end').text(tickFmt);
     const xt = [rows[0].week, rows[Math.floor(rows.length / 2)].week, last.week];
     svg.append('g').selectAll('text').data(xt).join('text').attr('class', 'mp-tick').attr('x', x).attr('y', H - 8)
@@ -231,9 +231,9 @@ dash.calc('issue_count', {
     const m = { t: 22, r: 4, b: 26, l: textW(svg, ticks.map(fc)) + 8 };
     const x = d3.scaleBand(rows.map(r => r.week), [m.l, w - m.r]).padding(.3);
     const y = d3.scaleLinear([0, enrolled], [H - m.b, m.t]);
-    svg.append('g').selectAll('line').data(ticks).join('line').attr('x1', m.l).attr('x2', w - m.r).attr('y1', y).attr('y2', y).style('stroke', 'var(--cds-chart-grid)');
+    svg.append('g').selectAll('line').data(ticks).join('line').attr('x1', m.l).attr('x2', w - m.r).attr('y1', y).attr('y2', y).style('stroke', 'var(--pulse-chart-grid)');
     svg.append('g').selectAll('text').data(ticks).join('text').attr('class', 'mp-tick').attr('x', m.l - 6).attr('y', y).attr('dy', '0.32em').attr('text-anchor', 'end').text(fc);
-    svg.append('line').attr('x1', m.l).attr('x2', w - m.r).attr('y1', y(enrolled)).attr('y2', y(enrolled)).style('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '4 4');
+    svg.append('line').attr('x1', m.l).attr('x2', w - m.r).attr('y1', y(enrolled)).attr('y2', y(enrolled)).style('stroke', 'var(--pulse-chart-reference)').attr('stroke-dasharray', '4 4');
     svg.append('text').attr('class', 'mp-tick').attr('x', w - m.r).attr('y', y(enrolled) - 6).attr('text-anchor', 'end').text(refTxt);
     const tip = tipFor(el);
     svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', d => x(d.week) + Math.max(0, (x.bandwidth() - 32) / 2)).attr('width', Math.min(32, x.bandwidth()))
@@ -269,7 +269,7 @@ dash.calc('issue_count', {
   }
 
   const THEME_SERIES = [
-    { key: 'first_month', name: 'First month', color: 'var(--cds-chart-muted)' },
+    { key: 'first_month', name: 'First month', color: 'var(--pulse-chart-muted)' },
     { key: 'last_month', name: 'Last month', color: dash.colors[1] }
   ];
   legend('theme-legend', THEME_SERIES);
@@ -357,7 +357,7 @@ dash.calc('issue_count', {
     hbars('c-themes', 'themes', 'theme', THEME_SERIES, f0);
     lineChart('c-late', 'habits', [{ key: 'late_night_share', label: 'After bedtime', color: dash.colors[2] }], f0, f0);
     activeChart();
-    lineChart('c-breaks', 'habits', [{ key: 'breaks_taken_share', label: 'Clicked Done', color: 'var(--cds-chart-muted)' }, { key: 'breaks_away_share', label: 'Really stepped away', color: dash.colors[0] }], f0, f0);
+    lineChart('c-breaks', 'habits', [{ key: 'breaks_taken_share', label: 'Clicked Done', color: 'var(--pulse-chart-muted)' }, { key: 'breaks_away_share', label: 'Really stepped away', color: dash.colors[0] }], f0, f0);
     lineChart('c-calls', 'weekly', [{ key: 'call_hours_per_person', label: 'Hours on calls', color: dash.colors[3] }], v => d3.format('.1f')(v) + ' h', d3.format('d'));
     hbars('c-features', 'features', 'feature', [{ key: 'users', name: 'People', color: dash.colors[0] }], f0);
   });

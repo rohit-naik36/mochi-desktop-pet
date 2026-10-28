@@ -2,17 +2,17 @@
 :root {
   --color-fg: #1b2a44; --color-fg-muted: #55657f; --color-bg: #f3f6fb; --color-panel: #ffffff;
   --color-border-line: #dbe3ef; --color-ok: #23905f; --color-warn: #b8700f; --color-bad: #cf3e36;
-  --cds-chart-grid: #e8edf5; --cds-chart-muted: #b3bfd2; --cds-chart-reference: #8a97ad;
-  --cds-surface-popover: #ffffff; --cds-border: #dbe3ef; --cds-text-secondary: #55657f;
-  --cds-shadow-popover: 0 6px 20px rgba(27, 42, 68, .14); --cds-radius: 12px;
-  --cds-pad-xs: 6px; --cds-pad-sm: 10px; --cds-pad-lg: 18px;
-  --cds-gap-sm: 8px; --cds-gap-md: 14px; --cds-gap-xl: 30px;
-  --cds-font-size-caption: 12.5px; --cds-font-size-body: 14px; --cds-font-size-heading: 16px; --cds-font-size-title: 30px;
-  --cds-font-weight-medium: 600; --cds-dur-slow: .35s; --cds-ease-out: cubic-bezier(.2, .7, .2, 1);
-  --font-anthropic-sans: "Segoe UI", system-ui, sans-serif; --font-anthropic-serif: Georgia, "Times New Roman", serif;
+  --pulse-chart-grid: #e8edf5; --pulse-chart-muted: #b3bfd2; --pulse-chart-reference: #8a97ad;
+  --pulse-surface-popover: #ffffff; --pulse-border: #dbe3ef; --pulse-text-secondary: #55657f;
+  --pulse-shadow-popover: 0 6px 20px rgba(27, 42, 68, .14); --pulse-radius: 12px;
+  --pulse-pad-xs: 6px; --pulse-pad-sm: 10px; --pulse-pad-lg: 18px;
+  --pulse-gap-sm: 8px; --pulse-gap-md: 14px; --pulse-gap-xl: 30px;
+  --pulse-font-size-caption: 12.5px; --pulse-font-size-body: 14px; --pulse-font-size-heading: 16px; --pulse-font-size-title: 30px;
+  --pulse-font-weight-medium: 600; --pulse-dur-slow: .35s; --pulse-ease-out: cubic-bezier(.2, .7, .2, 1);
+  --pulse-font-sans: "Segoe UI", system-ui, sans-serif; --pulse-font-serif: Georgia, "Times New Roman", serif;
 }
 html { background: var(--color-bg); color: var(--color-fg); }
-body { margin: 0; padding: 28px clamp(16px, 4vw, 48px) 48px; font-family: var(--font-anthropic-sans); }
+body { margin: 0; padding: 28px clamp(16px, 4vw, 48px) 48px; font-family: var(--pulse-font-sans); }
 .wrap { max-width: 1240px; margin: 0 auto; }
 .mp-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
 .mp-pick { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--color-fg-muted); }
@@ -23,12 +23,12 @@ body { margin: 0; padding: 28px clamp(16px, 4vw, 48px) 48px; font-family: var(--
 
 .signin { min-height: calc(100vh - 76px); display: grid; place-items: center; }
 .signin-card { width: min(100%, 420px); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 16px; padding: 28px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 10px 30px rgba(27, 42, 68, .08); }
-.signin-card h1 { margin: 0; font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 30px; }
+.signin-card h1 { margin: 0; font-family: var(--pulse-font-serif); font-weight: 400; font-size: 30px; }
 .signin-card p { margin: 0 0 6px; color: var(--color-fg-muted); line-height: 1.5; font-size: 14px; }
 .signin-card label { font-size: 13px; color: var(--color-fg-muted); }
 .signin-card input#key { font: 14px ui-monospace, Consolas, monospace; padding: 10px 12px; border: 1px solid var(--color-border-line); border-radius: 10px; color: var(--color-fg); }
 .signin-card .remember { display: flex; gap: 8px; align-items: center; }
-.signin-card button[type=submit] { font: 600 14px var(--font-anthropic-sans); background: #ffb36b; color: #1b2a44; border: 0; border-radius: 999px; padding: 11px 16px; cursor: pointer; margin-top: 4px; }
+.signin-card button[type=submit] { font: 600 14px var(--pulse-font-sans); background: #ffb36b; color: #1b2a44; border: 0; border-radius: 999px; padding: 11px 16px; cursor: pointer; margin-top: 4px; }
 .signin-card button:disabled { opacity: .6; cursor: default; }
 .signin-msg { min-height: 1.4em; color: var(--color-bad) !important; }
 button.link { background: none; border: 0; color: var(--color-fg-muted); text-decoration: underline; cursor: pointer; font: inherit; font-size: 13px; padding: 0; }
