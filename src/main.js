@@ -933,6 +933,12 @@ ipcMain.on('play-capture', (e, on) => {
   if (playWin && !playWin.isDestroyed() && e.sender === playWin.webContents) playWin.setIgnoreMouseEvents(!on, { forward: true });
 });
 
+// The bubble game and Shake it out sit above everything, even other always-on-top
+// windows, and take every click, so a stray click can't hit an app behind them.
+ipcMain.on('play-top', (e, on) => {
+  if (playWin && !playWin.isDestroyed() && e.sender === playWin.webContents) playWin.setAlwaysOnTop(true, on ? 'screen-saver' : 'floating');
+});
+
 ipcMain.on('context-menu', () => {
   // Mochi has no Dock icon on Mac, so bring it forward or the menu may not open.
   if (IS_MAC) app.focus({ steal: true });

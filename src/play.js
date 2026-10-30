@@ -119,6 +119,8 @@ function show(name) {
   speech.classList.add('hidden');
   document.body.classList.toggle('pass-through', passThrough());
   capture(!passThrough());
+  // Bubbles and Shake it out cover the whole screen, on top of everything.
+  window.play.top(name === 'bubbles' || name === 'shake');
   games[name].start();
   if (!games[name].noCard) placeCard();
 }
@@ -132,10 +134,10 @@ function capture(on) {
   capturing = on;
   window.play.capture(on);
 }
-const passThrough = () => current === 'worry' || current === 'breathe' || current === 'shake';
+const passThrough = () => current === 'worry' || current === 'breathe';
 document.addEventListener('mousemove', (e) => {
   if (!passThrough()) return capture(true);
-  capture(!!e.target.closest('#toolbar, #card, #speech, #pad, #shake-hud'));
+  capture(!!e.target.closest('#toolbar, #card, #speech'));
 });
 
 function finish() {
