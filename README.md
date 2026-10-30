@@ -16,7 +16,7 @@ Click **More info → Run anyway**. See *Getting rid of the SmartScreen warning*
 
 Its own space, separate from the games: right-click → **Feed me a worry**. Type what's bothering you and your buddy eats it, letter by letter. It reflects back what you wrote, offers comfort that fits the topic (deadlines, work, study, money, people, health, self-doubt, the future), and suggests one tiny next step. If a worry mentions self-harm, it gently points to people who can help. It runs fully offline and nothing is saved.
 
-Not everything is a worry. Share good news ("I got promoted!", "promotion mil gaya!") and Mochi throws a little party instead of eating it, gives you bonus points, and offers to keep it in your gratitude jar. Sad feelings get a soft, quiet reply with no munching jokes. Hopeless words like "nothing matters" or "what's the point" get a gentle reply with the free helplines.
+Not everything is a worry. Share good news ("I got promoted!", "promotion mil gaya!") and Mochi throws a little party instead of eating it, gives you bonus points, and offers to keep it in your gratitude jar. Sad feelings get a soft, quiet reply with no munching jokes. Hopeless words like "nothing matters" or "what's the point" get a gentle reply with the free helplines. If a worry sounds angry, the reply also offers **Shake it out** (see Play room).
 
 ## Focus with me
 
@@ -46,6 +46,9 @@ Right-click → **Play** turns your desktop into a play area. Your buddy stays w
 - **Breathe with me**: your buddy swells as you breathe in and shrinks as you breathe out (4s in, 4s hold, 6s out, 6 rounds).
 - **Bubble pop**: soft bubbles float up across your whole screen. Pop them with gentle sounds. No timer, no score pressure.
 - **Chase the light**: a warm light follows your mouse and your buddy floats after it.
+- **Shake it out**: for when you're angry. Your buddy puts on gloves and runs around the screen holding a punch pad, and you hit the pad (about 20 hits or 40 seconds, or press I'm done). Then the gloves come off, you breathe three slow breaths together, and your buddy helps you move on: one small thing, or let it go. It is the feeling you hit, never a person. It's offered after an angry worry (never after a sad, hopeless or serious one) and is always there as a tab. Nothing is saved or sent.
+
+The bubble game and Shake it out cover the whole screen, above every other window, and take every click, so a stray click can't land on an app behind them. Breathe and Feed a worry let clicks through, so you can keep working.
 
 Your buddy also sometimes asks if you want a quick play break. The 🔊 button turns sounds off.
 
@@ -127,6 +130,17 @@ npm run dist:mac     # on a Mac
 ```
 
 Code: `src/main.js` (window, tray, movement), `src/pet.html|css|js` (the pet, its moods, reminders).
+
+### Mochi for Teams (company edition)
+
+The buddy stays free. Companies add their own helplines, anonymous weekly insights and the HR dashboard. Where things live:
+
+- `server/`: the Teams server on Supabase (Mumbai, `ap-south-1`): database migrations, three functions (`checkin`, `totals`, `pulse`) and tests. Setup, adding a company and billing are in `server/ADMIN.md`. The "Mochi for Teams server" workflow runs the tests on every push and deploys from `main` when started by hand with Deploy ticked (needs the secrets `SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` and `SEAT_PEPPER`).
+- `pulse/`: **Mochi Pulse**, a separate app for HR. It signs in with a Pulse key and shows team totals (groups of 8 or more, rounded to 5). Built by the "Build Mochi Pulse" workflow.
+- `src/company.js`: the app side. `DEFAULT_SERVER` holds the server address; `MOCHI_SERVER` overrides it for testing. The server is off until `main.js` turns it on, and the demo app never turns it on.
+- `teams/`: the IT rollout guide, the security and privacy pack and the launch kit.
+
+A normal Windows build with the model inside (the Mochi for Teams installer) comes from the "Build Windows" workflow's `mochi-teams-windows` artifact. Run the workflow by hand on a branch to get one without publishing a release.
 
 ### Mochi Demo (client demos)
 
