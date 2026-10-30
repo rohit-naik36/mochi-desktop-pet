@@ -9,7 +9,7 @@ const path = require('path');
 app.setAppUserModelId('com.mochi.pulse');
 
 // Base address of the Teams server's functions (see server/ADMIN.md).
-const SERVER = '';
+const SERVER = 'https://duxpvnvjylrzriqvbjqo.supabase.co/functions/v1';
 
 function open() {
   const win = new BrowserWindow({
@@ -25,7 +25,8 @@ function open() {
   // The Teams server address; MOCHI_SERVER overrides it for testing.
   win.loadFile(path.join(__dirname, 'index.html'), { query: { server: process.env.MOCHI_SERVER || SERVER } });
   // Nothing inside the app navigates away or opens windows; links go to the browser.
-  win.webContents.on('will-navigate', (e) => e.preventDefault());
+  // Only a reload of the same page is allowed (Sign out reloads it).
+  win.webContents.on('will-navigate', (e, url) => { if (url !== win.webContents.getURL()) e.preventDefault(); });
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https:\/\//.test(url)) shell.openExternal(url);
     return { action: 'deny' };

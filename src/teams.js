@@ -21,35 +21,38 @@ function contactLine(c) {
 }
 
 let privacyOpen = false;
-let changing = false; // showing the options again to change an answer
 
 const dateLabel = (d) => new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 
+// The question itself is asked by Mochi, in its bubble on the desktop; this
+// window only shows the answer, and can ask Mochi to ask again.
 function renderQuestion(q, insightsOn) {
   $('question').classList.toggle('hidden', !q);
   if (!q) return;
   $('q-text').textContent = q.text;
   $('q-off').classList.toggle('hidden', insightsOn);
-  const answered = q.answer != null && !changing;
-  $('q-done').classList.toggle('hidden', !answered || !insightsOn);
-  if (answered) {
-    $('q-done').textContent = q.answer >= 0 ? `You answered "${q.options[q.answer]}". Thank you! ` : 'You skipped this one. ';
-    const again = document.createElement('button');
-    again.type = 'button'; again.className = 'link inline';
-    again.textContent = q.answer >= 0 ? 'Change my answer' : 'Answer after all';
-    again.addEventListener('click', () => { changing = true; if (last) render(last); });
-    $('q-done').append(again);
-  }
-  const buttons = insightsOn && !answered ? [
-    ...q.options.map((o, i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = o; b.addEventListener('click', () => { changing = false; window.teams.answer(q.id, i); }); return b; }),
-    ...(q.answer == null ? [Object.assign(document.createElement('button'), { type: 'button', className: 'skip', textContent: 'Skip' })] : []),
-  ] : [];
-  for (const b of buttons) if (b.className === 'skip') b.addEventListener('click', () => window.teams.answer(q.id, -1));
-  $('q-options').replaceChildren(...buttons);
+  $('q-options').replaceChildren();
+  $('q-done').classList.toggle('hidden', !insightsOn);
+  if (!insightsOn) return;
+  const answered = q.answer != null;
+  const link = (label, change) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'link inline'; b.textContent = label;
+    b.addEventListener('click', () => {
+      window.teams.askNow(q.id, change);
+      $('q-done').textContent = "Mochi is asking you now. Look for its bubble on your desktop.";
+    });
+    return b;
+  };
+  $('q-done').textContent = answered
+    ? (q.answer >= 0 ? `You answered "${q.options[q.answer]}". Thank you! ` : 'You skipped this one. ')
+    : 'Mochi will ask you this on your desktop. ';
+  $('q-done').append(link(answered ? (q.answer >= 0 ? 'Change my answer' : 'Answer after all') : 'Ask me now', answered));
 }
 
 function render(v) {
   const co = v.company;
+  if (v.demoCode && !$('code').value) $('code').value = v.demoCode; // the demo app fills in its own code
   const asking = !!co && co.asked === false;
   $('join').classList.toggle('hidden', !!co);
   $('consent').classList.toggle('hidden', !asking);

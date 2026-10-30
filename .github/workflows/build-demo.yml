@@ -1,0 +1,67 @@
+name: Build Mochi Demo
+
+# Builds the Mochi Demo installer on a real Windows machine: the guided tour
+# for client demos, with the on-device AI model inside. The result is a
+# workflow artifact only. It is never attached to a GitHub Release and never
+# goes to the Microsoft Store.
+#
+# Run it by hand (Actions > Build Mochi Demo > Run workflow), or push a branch
+# whose name starts with demo-.
+on:
+  workflow_dispatch:
+  push:
+    branches: ['demo-*']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      # Optional: Azure Artifact Signing, same secrets as Build Windows. Without
+      # them the installer is unsigned and SmartScreen will warn on first run.
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      SIGN_ENDPOINT: ${{ secrets.AZURE_SIGN_ENDPOINT }}
+      SIGN_ACCOUNT: ${{ secrets.AZURE_SIGN_ACCOUNT }}
+      SIGN_PROFILE: ${{ secrets.AZURE_SIGN_PROFILE }}
+      SIGN_PUBLISHER: ${{ secrets.AZURE_SIGN_PUBLISHER }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+      - name: Cache the AI model
+        uses: actions/cache@v4
+        with:
+          path: models
+          key: model-${{ hashFiles('src/ai-models.json') }}
+      - name: Fetch the AI model
+        run: node tools/fetch-model.mjs
+
+      - name: Build Mochi Demo installer
+        shell: pwsh
+        run: |
+          $extra = @()
+          if ($env:SIGN_ENDPOINT) {
+            Write-Host "Signing with Azure Artifact Signing"
+            $extra += "-c.win.azureSignOptions.endpoint=$env:SIGN_ENDPOINT"
+            $extra += "-c.win.azureSignOptions.codeSigningAccountName=$env:SIGN_ACCOUNT"
+            $extra += "-c.win.azureSignOptions.certificateProfileName=$env:SIGN_PROFILE"
+            $extra += "-c.win.azureSignOptions.publisherName=$env:SIGN_PUBLISHER"
+          } else {
+            Write-Host "No signing secrets set, building unsigned"
+          }
+          npx electron-builder --config demo/electron-builder.yml --win nsis --publish never @extra
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mochi-demo-windows
+          path: dist-demo/Mochi-Demo-Setup-*.exe
+          retention-days: 14

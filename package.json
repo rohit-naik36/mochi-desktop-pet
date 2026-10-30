@@ -9,7 +9,10 @@
     "dist:mac": "electron-builder --mac --publish never",
     "dist:linux": "electron-builder --linux AppImage",
     "dist:store": "electron-builder --win appx --publish never",
-    "dist:mas": "electron-builder --mac mas:universal --publish never"
+    "dist:mas": "electron-builder --mac mas:universal --publish never",
+    "demo": "node tools/run-demo.js",
+    "dist:demo": "electron-builder --config demo/electron-builder.yml --win nsis --publish never",
+    "test": "node --test test/*.test.js"
   },
   "author": "Rohit Naik",
   "license": "SEE LICENSE IN LICENSE",
@@ -24,6 +27,7 @@
     "productName": "Mochi",
     "files": [
       "src/**/*",
+      "!src/demo/**",
       "!node_modules/@node-llama-cpp/*cuda*/**",
       "!node_modules/node-llama-cpp/llama/gitRelease.bundle"
     ],

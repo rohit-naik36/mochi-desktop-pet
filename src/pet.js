@@ -12,6 +12,10 @@ let modeUntil = 0;
 let dragging = null;
 let bubbleTimer = null;
 let bubbleSticky = false;
+let overPet = false, overBubble = false; // where the pointer is
+let pointerOver = false;  // the pointer is on Mochi or its bubble
+let calmUntil = 0;        // stay put until then (just after an answer)
+let questionOpen = null;  // id of the company question being asked, if any
 const timers = {};
 
 const MIN = 60_000;
@@ -48,6 +52,7 @@ function say(text, { actions = [], ms = 6000, sticky = false, input = null } = {
   // drag, a pat, a nap) must not replace it. Show a sparkle instead.
   if (bubbleSticky && !sticky && !bubble.classList.contains('hidden')) { float(pick(['✨', '💛'])); return; }
   clearTimeout(bubbleTimer);
+  questionOpen = null; // a new bubble replaces any open question
   bubbleText.textContent = text;
   bubbleActions.innerHTML = '';
   bubble.querySelector('input')?.remove();
@@ -80,7 +85,10 @@ function say(text, { actions = [], ms = 6000, sticky = false, input = null } = {
 
 function hideBubble(force = false) {
   if (bubbleSticky && !force) return;
+  if (bubbleSticky) calmUntil = Date.now() + window.PetRules.STILL_AFTER_MS; // a second click should still land
   bubbleSticky = false;
+  questionOpen = null;
+  overBubble = false; pointerOver = overPet; // a hidden bubble can't be hovered, and no mouseleave comes
   bubble.classList.add('hidden');
 }
 
@@ -172,6 +180,7 @@ window.pet.onAction((a) => {
   else if (a === 'mood') askMood();
   else if (a === 'gratitude') askGratitude();
   else if (a === 'big-call') bigCall();
+  else if (a.startsWith('demo-nudge-') && NUDGES[a.slice(11)]) fireNudge(a.slice(11)); // sent by the demo app only
   else if (a.startsWith('app-') && !bubbleSticky && !hushed() && !asleep) { setMode('happy', 900); say(T('apps.' + a.slice(4)), { ms: 8000 }); }
   else if (a.startsWith('sneaky-') && !bubbleSticky && !hushed()) { float('👀'); say(T('sneaky.' + a.slice(7)), { ms: 7000 }); }
   else if (a === 'schedule-changed') {
@@ -204,12 +213,18 @@ window.pet.onCompany((m) => {
   if (mode === 'sleep') setMode('idle', 0);
   setMode('happy', 1200);
   if (m.kind === 'question') {
-    // The question itself is answered in the Mochi for Teams window, which
-    // has room for it and says exactly how answers are counted.
-    say(T('company.ask', { text: m.company }), { sticky: true, actions: [
-      { label: T('company.answer'), primary: true, run: () => window.pet.openTeams() },
-      { label: T('company.notNow'), run: () => {} },
-    ] });
+    // Asked and answered right here: one tap, then Mochi says thanks. The
+    // Mochi for Teams window only shows the answer afterwards.
+    const actions = window.PetRules.questionActions(m, T('company.skip'), (a) => {
+      window.pet.companyAnswer(m.id, a);
+      say(T(a < 0 ? 'company.skipped' : 'company.thanks'), { ms: 6000 });
+      setMode('happy', 1200);
+    });
+    if (!actions.length) return;
+    say(window.PetRules.questionLine(T('company.asking', { text: m.company }), m.text), { sticky: true, actions });
+    questionOpen = m.id;
+    // Not answered after a minute and a half: step aside; Mochi asks again later.
+    setTimeout(() => { if (questionOpen === m.id && bubbleSticky) hideBubble(true); }, 90_000);
   } else {
     // The company's own note the first time, Mochi's line on other days.
     const go = CAMPAIGN_GO[m.action];
@@ -776,6 +791,7 @@ let bounds = null;
 
 async function decideNext() {
   if (dragging) return;
+  if (stayStill()) return setMode('idle', 1000); // check again in a second
   const tired = S.energy < 25;
   const r = Math.random();
   if (tired && r < 0.5) return sleep();
@@ -809,6 +825,9 @@ function markTime() {
 markTime();
 setInterval(markTime, MIN);
 
+// Mochi holds still while it waits for an answer or while you aim at it.
+const stayStill = () => window.PetRules.shouldStayStill({ bubbleSticky, pointerOver, upset: !!upsetKey, calmUntil });
+
 function walkStep() {
   if (!bounds) return;
   const speed = pace().speed;
@@ -831,7 +850,7 @@ function walkStep() {
 
 setInterval(() => {
   if (!S || dragging) return;
-  if (mode === 'walk') walkStep();
+  if (mode === 'walk') { if (stayStill()) setMode('idle', 1000); else walkStep(); }
   if (mode === 'sleep' && Math.random() < 0.02) float('z', 'zzz');
   if (upsetKey) return;
   // Asleep for the night (or while you're away): after a snack or a game,
@@ -866,7 +885,7 @@ const ACTS = {
 };
 (function doSomething() {
   setTimeout(() => {
-    const free = S && !dragging && !asleep && !upsetKey && !bubbleSticky && mode !== 'sleep' && !(focusUntil > Date.now()) && !hushed();
+    const free = S && !dragging && !asleep && !upsetKey && !bubbleSticky && !pointerOver && mode !== 'sleep' && !(focusUntil > Date.now()) && !hushed();
     // Only while you're at the computer, and not over a bubble.
     if (free && idleSec < 120 && bubble.classList.contains('hidden')) {
       const own = ACTS[S.skin] || [];
@@ -898,8 +917,14 @@ setInterval(async () => {
 // ---------- mouse: hover, click, drag ----------
 
 for (const el of [petEl, bubble]) {
-  el.addEventListener('mouseenter', () => window.pet.mouseOverPet(true));
-  el.addEventListener('mouseleave', () => { if (!dragging) window.pet.mouseOverPet(false); });
+  const isBubble = el === bubble;
+  el.addEventListener('mouseenter', () => { if (isBubble) overBubble = true; else overPet = true; pointerOver = true; window.pet.mouseOverPet(true); });
+  el.addEventListener('mouseleave', () => {
+    if (isBubble) overBubble = false; else overPet = false;
+    pointerOver = overPet || overBubble;
+    calmUntil = Math.max(calmUntil, Date.now() + 1500); // don't bolt the instant the pointer leaves
+    if (!dragging) window.pet.mouseOverPet(false);
+  });
 }
 
 petEl.addEventListener('mousedown', (e) => {

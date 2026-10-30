@@ -11,6 +11,12 @@ const Calls = require('./calls');
 const Ai = require('./ai');
 const Apps = require('./apps');
 const Device = require('./device');
+const Idle = require('./idle');
+// The demo app only (see src/demo-flag.js): normal and Store builds leave
+// src/demo out of the package and never load it.
+const DEMO = require('./demo-flag').isDemo(require('../package.json'), app.isPackaged, process.env);
+const Demo = DEMO ? require('./demo') : null;
+Company.useServer(!DEMO); // the demo app never talks to a server
 
 const MIN_MS = 60_000;
 const WIN_W = 220;
@@ -153,9 +159,10 @@ function openPlay(game) {
       sandbox: true,
     },
   });
-  playWin.setAlwaysOnTop(true, 'screen-saver');
+  playWin.setAlwaysOnTop(true, 'floating'); // above normal windows, not above everything
   const query = { px: String(pb.x - wa.x + PET_CX), py: String(pb.y - wa.y + PET_CY) };
   if (game) query.game = game;
+  if (Demo && game === 'worry' && Demo.worryText()) query.demoWorry = Demo.worryText();
   playWin.loadFile(path.join(__dirname, 'play.html'), { query });
   playWin.once('ready-to-show', () => playWin.focus());
   playWin.webContents.once('did-finish-load', () => {
@@ -294,7 +301,7 @@ function checkAway(key) {
   if (!need || !teamsOn()) return;
   const started = Date.now();
   const timer = setInterval(() => {
-    const idle = powerMonitor.getSystemIdleTime();
+    const idle = Idle.get();
     if (idle >= need) {
       clearInterval(timer);
       noteInsight('away', key);
@@ -365,6 +372,7 @@ function teamsView() {
     campaign: c ? { ...c, name: Campaigns.THEMES[c.theme].name } : null,
     minGroup: Insights.MIN_GROUP,
     roundTo: Insights.ROUND_TO,
+    demoCode: DEMO ? Company.DEMO_CODE : null,
   };
 }
 function teamsChanged() {
@@ -517,6 +525,21 @@ ipcMain.on('company-answer', (_e, id, a) => {
   t.answered = { ...(t.answered || {}), [q.id]: a };
   if (a >= 0) noteInsight('answer', { q: q.id, a });
   teamsChanged();
+});
+// From the Mochi for Teams window: have Mochi ask the question now, in its own
+// bubble (also to change an earlier answer, which clears it first).
+ipcMain.on('company-ask-now', (_e, id, change) => {
+  const t = state.teams;
+  const q = t && teamsOn() && t.insights && (t.questions || []).find((x) => x.id === id);
+  if (!q) return;
+  if (change && (t.answered || {})[q.id] != null) {
+    const rest = { ...t.answered };
+    delete rest[q.id];
+    t.answered = rest;
+    teamsChanged();
+  }
+  askedAt = Date.now();
+  send('company', { kind: 'question', id: q.id, company: t.name, text: q.text, options: q.options });
 });
 
 // Finished weeks go to the team totals one by one, each at a random time in
@@ -776,12 +799,13 @@ function buildMenu() {
       // Store (MSIX) builds can't register to start with Windows this way.
       // On macOS (including the sandboxed App Store build) the app registers
       // itself as a login item through SMAppService.
-      ...(process.windowsStore ? [] : [IS_MAC ? { label: M('startupMac'), ...tip('startup'), type: 'checkbox',
+      ...(process.windowsStore || DEMO ? [] : [IS_MAC ? { label: M('startupMac'), ...tip('startup'), type: 'checkbox',
         checked: app.getLoginItemSettings({ type: 'mainAppService' }).status === 'enabled',
         click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked, type: 'mainAppService' }) } : { label: M('startup'), ...tip('startup'), type: 'checkbox',
         checked: app.getLoginItemSettings().openAtLogin,
         click: (i) => app.setLoginItemSettings({ openAtLogin: i.checked }) }]),
     ] },
+    ...(Demo ? Demo.menuItems() : []),
     { label: M('help'), click: showHelp },
     { label: M('bringBack'), click: () => { const wa = workArea(); placeAt(wa.x + wa.width - WIN_W - 40, wa.y + wa.height - WIN_H); } },
     { label: M('quit'), click: () => app.quit() },
@@ -793,7 +817,7 @@ function showHelp() {
   const M = (key) => I18N.t(state.lang, 'menu.' + key, { name: state.userName, pet: state.name, gender: state.petGender });
   const Tp = (key) => I18N.t(state.lang, 'tips.' + key, { pet: state.name });
   const rows = [['worry'], ['feed'], ['play'], ['nap'], ['focus'], ...(teamsOn() ? [['silent'], ['bigCall']] : []), ['mood'], ['gratitude'], ['board'],
-    ['settings', null], ...(Ai.status().state === 'missing' || !teamsOn() ? [] : [['smarter']]), ['noticeApps'], ['teams'], ['schedule'], ['buddy'], ['name'], ['gender'], ['language'], ['chatty'], ['wander'], ['reminders'], ...(process.windowsStore ? [] : [[IS_MAC ? 'startupMac' : 'startup', 'startup']])];
+    ['settings', null], ...(Ai.status().state === 'missing' || !teamsOn() ? [] : [['smarter']]), ['noticeApps'], ['teams'], ['schedule'], ['buddy'], ['name'], ['gender'], ['language'], ['chatty'], ['wander'], ['reminders'], ...(process.windowsStore || DEMO ? [] : [[IS_MAC ? 'startupMac' : 'startup', 'startup']])];
   const detail = rows.map(([k, t]) => (t === null ? '\n' + M(k) : `• ${M(k).replace(/\s*\(.*\)$/, '')}: ${Tp(t || k)}`)).join('\n');
   dialog.showMessageBox({ type: 'info', title: 'Mochi', message: M('helpTitle'), detail, buttons: ['OK'] });
 }
@@ -818,13 +842,17 @@ function refreshTrayMenu() {
   tray.setContextMenu(buildMenu());
 }
 
+// The pet window can already be gone when a late message from its page
+// arrives (quitting, relaunching, Reset demo). Every handler below checks this.
+const gone = () => !win || win.isDestroyed();
+
 function send(ch, payload) {
-  if (win && !win.isDestroyed()) win.webContents.send(ch, payload);
+  if (!gone()) win.webContents.send(ch, payload);
 }
 
 // Renderer asks to toggle click-through as the pointer enters or leaves the pet.
 ipcMain.on('mouse-over-pet', (_e, over) => {
-  if (!win || process.env.MOCHI_DEBUG) return;
+  if (gone() || process.env.MOCHI_DEBUG) return;
   win.setIgnoreMouseEvents(!over, { forward: true });
 });
 
@@ -832,6 +860,7 @@ ipcMain.on('mouse-over-pet', (_e, over) => {
 // with display scaling, setPosition alone lets the size creep by a pixel each
 // call, which slowly pushed the pet down behind the taskbar.
 function placeAt(x, y) {
+  if (gone()) return;
   const wa = screen.getDisplayNearestPoint({ x: x + WIN_W / 2, y: y + WIN_H / 2 }).workArea;
   const nx = Math.min(Math.max(Math.round(x), wa.x - 40), wa.x + wa.width - WIN_W + 40);
   const ny = Math.min(Math.max(Math.round(y), wa.y - 40), wa.y + wa.height - WIN_H);
@@ -847,9 +876,11 @@ ipcMain.on('move-to', (_e, x, y) => { if (num(x, y)) placeAt(x, y); });
 let glideTimer = null;
 function glide(tx, ty, ms = 1100) {
   clearInterval(glideTimer);
+  if (gone()) return;
   const { x: sx, y: sy } = win.getBounds();
   const t0 = Date.now();
   glideTimer = setInterval(() => {
+    if (gone()) { clearInterval(glideTimer); return; }
     const t = Math.min(1, (Date.now() - t0) / ms);
     const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
     placeAt(sx + (tx - sx) * e, sy + (ty - sy) * e);
@@ -859,7 +890,7 @@ function glide(tx, ty, ms = 1100) {
 
 let upsetHome = null;
 ipcMain.on('glide-center', () => {
-  if (playWin) return;
+  if (playWin || gone()) return;
   const b = win.getBounds();
   upsetHome = upsetHome || { x: b.x, y: b.y };
   const wa = screen.getDisplayMatching(b).workArea;
@@ -872,10 +903,10 @@ ipcMain.on('glide-home', () => {
   glide(upsetHome.x, upsetHome.y);
   upsetHome = null;
 });
-ipcMain.on('focus-pet', () => win.focus());
+ipcMain.on('focus-pet', () => { if (!gone()) win.focus(); });
 
 ipcMain.on('move-by', (_e, dx, dy) => {
-  if (!num(dx, dy)) return;
+  if (!num(dx, dy) || gone()) return;
   const { x, y } = win.getBounds();
   placeAt(x + dx, y + dy);
 });
@@ -883,6 +914,7 @@ ipcMain.on('move-by', (_e, dx, dy) => {
 // Dragging follows the real cursor position, so rounding never adds up.
 let dragOffset = null;
 ipcMain.on('drag-start', () => {
+  if (gone()) return;
   const c = screen.getCursorScreenPoint();
   const { x, y } = win.getBounds();
   dragOffset = { x: c.x - x, y: c.y - y };
@@ -895,6 +927,17 @@ ipcMain.on('drag-move', () => {
 ipcMain.on('drag-end', () => { dragOffset = null; });
 
 ipcMain.on('open-play', (_e, game) => openPlay(game));
+// The play room lets clicks through to the apps behind it, except over its own
+// card and toolbar (the room tells us as the pointer moves).
+ipcMain.on('play-capture', (e, on) => {
+  if (playWin && !playWin.isDestroyed() && e.sender === playWin.webContents) playWin.setIgnoreMouseEvents(!on, { forward: true });
+});
+
+// The bubble game and Shake it out sit above everything, even other always-on-top
+// windows, and take every click, so a stray click can't hit an app behind them.
+ipcMain.on('play-top', (e, on) => {
+  if (playWin && !playWin.isDestroyed() && e.sender === playWin.webContents) playWin.setAlwaysOnTop(true, on ? 'screen-saver' : 'floating');
+});
 
 ipcMain.on('context-menu', () => {
   // Mochi has no Dock icon on Mac, so bring it forward or the menu may not open.
@@ -912,6 +955,7 @@ ipcMain.handle('get-cursor', () => {
 });
 
 ipcMain.handle('get-bounds', () => {
+  if (gone()) return null;
   const bounds = win.getBounds();
   const wa = screen.getDisplayMatching(bounds).workArea;
   return { win: bounds, workArea: wa };
@@ -919,6 +963,7 @@ ipcMain.handle('get-bounds', () => {
 
 // After a drag the pet stays exactly where it was dropped (pulled back on screen if needed).
 ipcMain.on('drag-done', () => {
+  if (gone()) return;
   const { x, y } = win.getBounds();
   placeAt(x, y);
   if (process.env.MOCHI_DEBUG) console.log('dropped at', JSON.stringify(win.getBounds()));
@@ -932,7 +977,7 @@ ipcMain.on('save-state', (_e, partial) => {
   if (partial && typeof partial === 'object') {
     for (const k of PET_KEYS) if (k in partial) state[k] = partial[k];
   }
-  if (!upsetHome) ({ x: state.x, y: state.y } = win.getBounds()); // not the temporary centre spot
+  if (!upsetHome && !gone()) ({ x: state.x, y: state.y } = win.getBounds()); // not the temporary centre spot
   saveState();
   refreshTrayMenu();
   if (boardWin && !boardWin.isDestroyed()) boardWin.webContents.send('state', state);
@@ -969,7 +1014,7 @@ if (!gotLock) {
 } else {
   app.on('second-instance', () => send('action', 'pet'));
   app.whenReady().then(() => {
-    if (process.platform === 'win32') app.setAppUserModelId('com.mochi.desktoppet');
+    if (process.platform === 'win32') app.setAppUserModelId(DEMO ? 'com.mochi.demo' : 'com.mochi.desktoppet');
     // On a Mac the buddy lives in the menu bar, not the Dock (LSUIElement
     // in the bundle does this too; this covers `npm start`).
     if (IS_MAC) app.dock?.hide();
@@ -981,6 +1026,11 @@ if (!gotLock) {
     offerMoveToApplications();
     createWindow();
     buildTray();
+    if (Demo) Demo.init({
+      app, BrowserWindow, screen, ipcMain, Company, Insights, Calls, Idle,
+      getState: () => state, statePath, send, saveState, refreshTrayMenu, teamsChanged,
+      openTeams, openPlay, joinCompany, checkCall, teamsOn, warmAi: () => { if (aiOn()) Ai.warm(); },
+    });
     const keepOnScreen = () => { const { x, y } = win.getBounds(); placeAt(x, y); };
     screen.on('display-metrics-changed', keepOnScreen);
     screen.on('display-removed', keepOnScreen);

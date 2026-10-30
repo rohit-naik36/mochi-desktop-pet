@@ -93,9 +93,18 @@ function lookup(code, userData) {
 
 // Base address of the server's functions, for example
 // https://<project>.supabase.co/functions/v1 (see server/ADMIN.md).
-const SERVER = process.env.MOCHI_SERVER || '';
+// The Teams server (Supabase, Mumbai). The address is not a secret: each
+// function checks the company code or the Pulse key itself.
+// MOCHI_SERVER overrides it for testing.
+const DEFAULT_SERVER = 'https://duxpvnvjylrzriqvbjqo.supabase.co/functions/v1';
+// Off until main.js turns it on, so tests never reach the network, and the
+// demo app (which main.js switches off) never has a server.
+let serverOn = false;
+const useServer = (on) => { serverOn = !!on; };
+const server = () => (serverOn ? process.env.MOCHI_SERVER || DEFAULT_SERVER : '');
 
 async function call(fn, body) {
+  const SERVER = server();
   if (!SERVER) return { status: 0, body: {} };
   try {
     const res = await fetch(`${SERVER}/${fn}`, {
@@ -126,4 +135,4 @@ async function sendTotals(code, team, week, packet) {
   return status === 200 || status === 400; // 400: too old or not allowed, don't retry
 }
 
-module.exports = { lookup, fromFile, clean, checkin, sendTotals, hasServer: () => !!SERVER, DEMO_CODE };
+module.exports = { lookup, fromFile, clean, checkin, sendTotals, hasServer: () => !!server(), useServer, DEMO_CODE };

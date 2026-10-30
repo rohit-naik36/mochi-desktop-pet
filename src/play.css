@@ -6,8 +6,8 @@ html, body { background: transparent; cursor: default; }
 #toolbar {
   position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 20;
   display: flex; align-items: center; gap: 6px; padding: 6px 8px 6px 14px; border-radius: 14px;
-  background: rgba(22,24,36,.88); color: #e9ebf5; box-shadow: 0 8px 28px rgba(0,0,0,.35);
-  backdrop-filter: blur(6px); font-size: 13px;
+  background: #161824; color: #e9ebf5; box-shadow: 0 8px 28px rgba(0,0,0,.35);
+  font-size: 13px;
 }
 #title { font-weight: 600; margin-right: 6px; white-space: nowrap; }
 #tabs { display: flex; gap: 4px; }
@@ -28,7 +28,7 @@ html, body { background: transparent; cursor: default; }
 
 #card {
   position: fixed; z-index: 15; width: 300px; padding: 12px 14px; border-radius: 16px;
-  background: rgba(22,24,36,.9); color: #e9ebf5; box-shadow: 0 10px 30px rgba(0,0,0,.35); backdrop-filter: blur(6px);
+  background: #161824; color: #e9ebf5; box-shadow: 0 10px 30px rgba(0,0,0,.35);
   font-size: 13px; line-height: 1.4;
 }
 .panel { display: none; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
@@ -99,3 +99,31 @@ body.chasing #toolbar, body.chasing #toolbar * { cursor: pointer !important; }
 
 /* Feed a worry: its own space, without the game tabs */
 body.talk-mode #tabs { display: none; }
+body.pass-through #veil { opacity: .35; }
+
+/* shake it out: gloves, the pad Mochi holds, and the little counter */
+#pet-wrap.boxing::before, #pet-wrap.boxing::after {
+  content: ''; position: absolute; top: 60px; width: 24px; height: 24px; border-radius: 50%; z-index: 6;
+  background: radial-gradient(circle at 35% 30%, #ff8a8f, #d93a40 70%); box-shadow: 0 2px 4px rgba(0,0,0,.4), inset 0 0 0 2px rgba(122,28,32,.55);
+}
+#pet-wrap.boxing::before { left: 2px; }
+#pet-wrap.boxing::after { right: 2px; }
+#pad {
+  position: fixed; width: 72px; height: 72px; margin: -36px 0 0 -36px; z-index: 12; border-radius: 50%; cursor: pointer; pointer-events: auto;
+  background: radial-gradient(circle, #fff3c4 0 16%, #ff9f43 17% 40%, #ffd166 41% 60%, #ff9f43 61%);
+  border: 3px solid #b5651d; box-shadow: 0 4px 14px rgba(0,0,0,.4);
+}
+#pad.hit { animation: pad-hit .18s ease-out; }
+@keyframes pad-hit { 0% { transform: scale(.78) rotate(-10deg); } 100% { transform: scale(1) rotate(0); } }
+#shake-hud {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 20; display: flex; align-items: center; gap: 12px;
+  padding: 8px 10px 8px 16px; border-radius: 14px; background: #161824; color: #e9ebf5; box-shadow: 0 8px 28px rgba(0,0,0,.35); font-size: 13px; font-weight: 600;
+}
+#shake-calm { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+#shake-calm.hidden { display: none; }
+#shake-breath { font-size: 13px; color: #b6bbd3; min-height: 18px; }
+#shake-dots { display: flex; gap: 6px; }
+#shake-dots span { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.2); }
+#shake-dots span.done { background: #8fa2ff; }
+#shake-q { color: #d7dbf0; font-style: italic; }
+#shake-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }

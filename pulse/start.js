@@ -33,6 +33,8 @@
       p.textContent = 'Nothing to show yet. Pulse appears once at least 8 people have used Mochi with insights on for a full week. Totals arrive a day or two after each week ends.';
       document.querySelector('.mp-head').after(p);
       document.querySelectorAll('.mp > section').forEach((s) => { s.hidden = true; });
+      // No data yet: hide the placeholders and report buttons that would only show dashes.
+      for (const sel of ['#take', '.mp-actions', '.mp-pick', '#company-line']) { const el = document.querySelector(sel); if (el) el.hidden = true; }
       return;
     }
     for (const src of ['shim.js', 'picker.js', 'page.js', 'reports.js']) await load(src);
@@ -79,6 +81,8 @@
 
   let saved = null;
   try { saved = localStorage.getItem(KEY); } catch { /* storage off */ }
-  if (saved && SERVER) open(saved).then((b) => show(b.pulse, b.seats), (err) => signin(err.message === 'key' ? 'Your key no longer works. Ask Little Smoke Studio for a new one.' : ''));
+  // The demo app opens Pulse straight on the sample company.
+  if (new URLSearchParams(location.search).get('sample') === '1') show(sample);
+  else if (saved && SERVER) open(saved).then((b) => show(b.pulse, b.seats), (err) => signin(err.message === 'key' ? 'Your key no longer works. Ask Little Smoke Studio for a new one.' : ''));
   else signin();
 })();
