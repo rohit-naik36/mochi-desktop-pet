@@ -26,6 +26,30 @@
     return out;
   }
 
+  // A persona line made fit to say: placeholders filled, *stage directions* and emoji dropped,
+  // "GOOO" shortened, a full stop added. '' if there is nothing to say (or it is Hindi).
+  function speakable(line, vars = {}) {
+    let s = String(line == null ? '' : line);
+    if (/[\u0900-\u097F]/.test(s)) return '';
+    s = s.replace(/\*[^*]*\*/g, ' ')
+      .replace(/\{greet\}/g, vars.greet || '')
+      .replace(/\{n\}/g, vars.name ? ', ' + vars.name : '')
+      .replace(/\{pet\}/g, vars.pet || '')
+      .replace(/\{[a-z]+\}/gi, ' ')
+      .replace(/\b([A-Za-z])-\1/gi, '$1')                      // "H-hi" -> "Hi"
+      .replace(/[\p{Extended_Pictographic}\uFE0F\u200D]+/gu, '\u0001') // emoji marks a pause
+      .replace(/\.{3,}|…/g, '…')
+      .replace(/[A-Za-z']+/g, (w) => {
+        if (!/(.)\1\1/i.test(w)) return w;
+        const one = w.replace(/(.)\1{2,}/gi, '$1');
+        return w === w.toUpperCase() ? one[0].toUpperCase() + one.slice(1).toLowerCase() : one;
+      })
+      .replace(/([A-Za-z0-9'])\s*\u0001[\s\u0001]*/g, '$1. ').replace(/\u0001+/g, ' ')
+      .replace(/\s+/g, ' ').replace(/\s+([.,!?…;:])/g, '$1').replace(/^[\s,.!?…;:]+/, '').trim();
+    if (!/[A-Za-z0-9]/.test(s)) return '';
+    return /[.!?…]$/.test(s) ? s : s + '.';
+  }
+
   // What the reply shows on screen, in screen order. English only: Hindi and
   // Hinglish stay on text.
   function replyLines(r) {
@@ -35,6 +59,6 @@
       .map((s) => String(s || '').trim()).filter(Boolean);
   }
 
-  root.VoiceText = { splitSentences, respell, fixTranscript, replyLines };
+  root.VoiceText = { splitSentences, respell, fixTranscript, replyLines, speakable };
   if (typeof module !== 'undefined') module.exports = root.VoiceText;
 })(typeof window !== 'undefined' ? window : globalThis);

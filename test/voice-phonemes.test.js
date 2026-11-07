@@ -4,7 +4,7 @@ const assert = require('assert');
 const { createPhonemizer, fromArpabet, numberWords } = require('../src/voice/phonemes');
 
 const DICT = {
-  hello: 'HH AH0 L OW1', world: 'W ER1 L D', the: 'DH AH0', dog: 'D AO1 G', cat: 'K AE1 T',
+  hello: 'HH AH0 L OW1', yo: 'Y OW1', world: 'W ER1 L D', the: 'DH AH0', dog: 'D AO1 G', cat: 'K AE1 T',
   dish: 'D IH1 SH', is: 'IH1 Z', to: 'T UW1', i: 'AY1', am: 'AE1 M', here: 'HH IY1 R',
   nine: 'N AY1 N', eight: 'EY1 T', twelve: 'T W EH1 L V', "don't": 'D OW1 N T', well: 'W EH1 L',
   being: 'B IY1 IH0 NG', us: 'AH1 S', u: 'Y UW1', s: 'EH1 S', it: 'IH1 T', happy: 'HH AE1 P IY0',
@@ -38,6 +38,8 @@ assert.strictEqual(ps('US'), 'jˈuː ˈɛs');
 assert.strictEqual(ps('us'), 'ʌs');
 assert.strictEqual(ps('call the US now').split(' ')[2], 'jˈuː');
 assert.strictEqual(ps('IT IS'), 'ɪt ɪz', 'all-caps text is not spelled out');
+assert.strictEqual(ps('YO, hello'), 'jˈoʊ, həlˈoʊ', 'a short capitalised word in the dictionary is a word, not an acronym');
+assert.strictEqual(ps('XQZ').split(' ').length, 3, 'unknown short capitals are spelled');
 
 // Unknown compounds are built from two known words; app words come from overrides.
 {

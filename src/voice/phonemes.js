@@ -30,6 +30,10 @@ const BUILT_IN_OVERRIDES = {
   to: 'tə', of: 'əv',               // reduced, as people say them
 };
 
+// Short capitals that are really spelled out. Other 2-3 capital words are spelled only if the
+// dictionary does not know them as a word ("YO" and "GO" are words, "XQZ" is not).
+const ACRONYMS = new Set(['US', 'UK', 'EU', 'UN', 'AI', 'HR', 'TV', 'PC', 'OK', 'ID', 'PM', 'CV', 'CEO', 'ATM', 'FAQ', 'USA', 'UAE', 'DIY']);
+
 const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven',
   'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
 const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
@@ -138,7 +142,8 @@ function createPhonemizer(dict, { overrides = {} } = {}) {
       if (/^\d+$/.test(t)) {
         if (t.length <= 2) for (const n of numberWords(Number(t)).split(' ')) add(word(n, oov));
         else for (const d of t) add(word(ONES[Number(d)], oov));
-      } else if (!shouting && /^[A-Z]{2,3}$/.test(t) && over[t.toLowerCase()] === undefined) {
+      } else if (!shouting && /^[A-Z]{2,3}$/.test(t) && over[t.toLowerCase()] === undefined
+        && (ACRONYMS.has(t) || !Object.prototype.hasOwnProperty.call(dict, t.toLowerCase()))) {
         for (const letter of t) add(word(letter, oov)); // US -> "you ess"
       } else if (/^[A-Za-z]/.test(t)) {
         add(word(t, oov));

@@ -13,6 +13,7 @@ const { createPhonemizer } = require('../src/voice/phonemes');
 const { respell } = require('../src/voice/text');
 const Voices = require('../src/voice/voices');
 const { KOKORO_ID } = require('../src/voice/engine');
+const { writeWav } = require('./wav');
 
 const SENTENCES = [
   'Hello, I am here with you.',
@@ -35,15 +36,7 @@ const SENTENCES = [
 
 function arg(name, dflt) { const i = process.argv.indexOf('--' + name); return i > 0 ? process.argv[i + 1] : dflt; }
 
-function wav(file, pcm, rate) {
-  const b = Buffer.alloc(44 + pcm.length * 2);
-  b.write('RIFF', 0); b.writeUInt32LE(36 + pcm.length * 2, 4); b.write('WAVEfmt ', 8);
-  b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22); b.writeUInt32LE(rate, 24);
-  b.writeUInt32LE(rate * 2, 28); b.writeUInt16LE(2, 32); b.writeUInt16LE(16, 34); b.write('data', 36);
-  b.writeUInt32LE(pcm.length * 2, 40);
-  for (let i = 0; i < pcm.length; i++) b.writeInt16LE(Math.round(Math.max(-1, Math.min(1, pcm[i])) * 32767), 44 + i * 2);
-  fs.writeFileSync(file, b);
-}
+const wav = writeWav;
 
 (async () => {
   const [packDir, outDir] = process.argv.slice(2).filter((a, i, all) => !a.startsWith('--') && !all[i - 1]?.startsWith('--'));
