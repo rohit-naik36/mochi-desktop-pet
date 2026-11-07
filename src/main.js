@@ -12,6 +12,7 @@ const Ai = require('./ai');
 const Apps = require('./apps');
 const Device = require('./device');
 const Idle = require('./idle');
+const VoicePerms = require('./voice/permissions');
 // The demo app only (see src/demo-flag.js): normal and Store builds leave
 // src/demo out of the package and never load it.
 const DEMO = require('./demo-flag').isDemo(require('../package.json'), app.isPackaged, process.env);
@@ -983,12 +984,23 @@ ipcMain.on('save-state', (_e, partial) => {
   if (boardWin && !boardWin.isDestroyed()) boardWin.webContents.send('state', state);
 });
 
+// Voice: the only window that may ever use the microphone is the hidden
+// recorder, and only while a hold is active (see src/voice/permissions.js).
+let recorderWin = null;
+let holdOn = false;
+const voicePolicy = VoicePerms.createPolicy({
+  recorderId: () => (recorderWin && !recorderWin.isDestroyed() ? recorderWin.webContents.id : null),
+  holdActive: () => holdOn,
+});
+
 // Security: every window shows only Mochi's own local pages. No links open,
 // no navigation away, no pop-ups, no permission prompts (camera, mic...).
 app.on('web-contents-created', (_e, contents) => {
   contents.setWindowOpenHandler(() => ({ action: 'deny' }));
   contents.on('will-navigate', (e) => e.preventDefault());
-  contents.session.setPermissionRequestHandler((_wc, _perm, cb) => cb(false));
+  // Denied for every window, except the hidden recorder during a push-to-talk hold.
+  contents.session.setPermissionRequestHandler((wc, perm, cb, details) => cb(voicePolicy.request(wc && wc.id, perm, details)));
+  contents.session.setPermissionCheckHandler((wc, perm, _origin, details) => voicePolicy.check(wc && wc.id, perm, details));
 });
 
 // Opened straight from the downloaded disk image, Mochi isn't installed and
