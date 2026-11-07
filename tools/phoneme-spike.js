@@ -78,7 +78,7 @@ function wav(file, pcm, rate) {
   for (let i = 0; i < sentences.length; i++) {
     const text = respell(sentences[i]);
     const n = String(i + 1).padStart(2, '0');
-    const [theirs] = await espeak(text, 'en-us');
+    const theirs = (await espeak(text, 'en-us')).join(' | '); // one piece per clause
     const { ps, oov } = mine.phonemize(text);
     for (const w of oov) allOov.set(w, (allOov.get(w) || 0) + 1);
     for (const ch of ps) if (!vocab.has(ch)) dropped.add(ch);

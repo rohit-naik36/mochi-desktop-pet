@@ -18,11 +18,16 @@ const VOWEL = new Set(['AA', 'AE', 'AH', 'AO', 'AW', 'AY', 'EH', 'ER', 'EY', 'IH
 const FUNCTION_WORDS = new Set((
   'a an the and or but nor so to of in on at by for from with as into onto up if than that this ' +
   'is am are was were be been it its i me my we us our you your he him his she her they them their ' +
-  'can could will would shall should do does did has have had not no'
+  'can could will would shall should do does did has have had not no ' +
+  "i'm i'll i've i'd you're you'll you've you'd we're we'll we've they're they'll it's he's she's that's what's let's there's"
 ).split(' '));
 
 // Words the dictionary gets wrong for us. Lowercase key, IPA value.
-const BUILT_IN_OVERRIDES = { mochi: 'mˈoʊtʃi', 'mo-chee': 'mˈoʊtʃi' };
+const BUILT_IN_OVERRIDES = {
+  mochi: 'mˈoʊtʃi', 'mo-chee': 'mˈoʊtʃi',
+  icall: 'ˈaɪkɔːl',                 // helpline name
+  to: 'tə', of: 'əv',               // reduced, as people say them
+};
 
 const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven',
   'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
@@ -42,7 +47,8 @@ function fromArpabet(pron, { demote = false } = {}) {
     if (!m || !ARPA[m[1]]) continue;
     const [, ph, stress] = m;
     if (!VOWEL.has(ph)) { out += ARPA[ph]; continue; }
-    if (stress === '0' && ph === 'AH') out += 'ə';
+    if (stress === '0' && ph === 'IY') out += 'i'; // happy, really: short, not "ee"
+    else if (stress === '0' && ph === 'AH') out += 'ə';
     else if (stress === '0' && ph === 'ER') out += 'ɚ';
     else if (stress === '1' && !demote) out += 'ˈ' + ARPA[ph];
     else if (stress === '2') out += 'ˌ' + ARPA[ph];
@@ -100,11 +106,20 @@ function createPhonemizer(dict, { overrides = {} } = {}) {
     if (p !== null) return p;
     if (w.includes('-')) return w.split('-').filter(Boolean).map((part) => word(part, oov)).join(' ');
     const poss = /^(.+)'s$/.exec(w);
+    const compound = () => {          // helpline = help + line
+      for (let i = 3; i <= w.length - 3; i++) {
+        const a = lookup(w.slice(0, i)), b = lookup(w.slice(i));
+        if (a !== null && b !== null) return a + b.replace('ˈ', 'ˌ');
+      }
+      return null;
+    };
     const base = poss ? poss[1] : w.endsWith('es') && lookup(w.slice(0, -2)) !== null ? w.slice(0, -2)
       : w.endsWith('s') ? w.slice(0, -1) : null;
     if (base && (over[base] !== undefined || lookup(base) !== null)) {
       return plural(over[base] !== undefined ? over[base] : lookup(base));
     }
+    const c = compound();
+    if (c !== null) return c;
     oov.add(w);
     return letterToSound(w);
   }
@@ -113,12 +128,17 @@ function createPhonemizer(dict, { overrides = {} } = {}) {
     const oov = new Set();
     const src = String(text == null ? '' : text).replace(/[’‘]/g, "'").replace(/[“”«»"]/g, ' ');
     const tokens = src.match(/[A-Za-z]+(?:['-][A-Za-z]+)*|\d+|[.,!?;:…—]|\S/g) || [];
+    // A run of capitalised words is shouting, not acronyms; a lone "US" is an acronym.
+    const caps = tokens.filter((t) => /^[A-Za-z]{2,}$/.test(t));
+    const shouting = caps.length >= 2 && caps.every((t) => t === t.toUpperCase());
     let out = '', needSpace = false;
     const add = (piece) => { out += (needSpace ? ' ' : '') + piece; needSpace = true; };
     for (const t of tokens) {
       if (/^\d+$/.test(t)) {
         if (t.length <= 2) for (const n of numberWords(Number(t)).split(' ')) add(word(n, oov));
         else for (const d of t) add(word(ONES[Number(d)], oov));
+      } else if (!shouting && /^[A-Z]{2,3}$/.test(t) && over[t.toLowerCase()] === undefined) {
+        for (const letter of t) add(word(letter, oov)); // US -> "you ess"
       } else if (/^[A-Za-z]/.test(t)) {
         add(word(t, oov));
       } else if (/^[.,!?;:…]$/.test(t)) {
