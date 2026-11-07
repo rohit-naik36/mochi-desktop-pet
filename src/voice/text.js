@@ -18,9 +18,11 @@
   }
 
   // Whisper's usual near-misses for the buddy's name.
-  function fixTranscript(raw, names = []) {
+  // `heard` is [{ to, heard: ['near miss', ...] }], see characters.js.
+  function fixTranscript(raw, names = [], heard = []) {
     let out = String(raw || '').replace(/\b(?:mo[\s-]?chi|mo[\s-]?chee|mochie|mochy)\b/gi, 'Mochi');
     for (const n of names) out = out.replace(new RegExp('\\b' + esc(n) + '\\b', 'gi'), n);
+    for (const h of heard) out = out.replace(new RegExp('\\b(?:' + h.heard.map(esc).join('|') + ')\\b', 'gi'), h.to);
     return out;
   }
 

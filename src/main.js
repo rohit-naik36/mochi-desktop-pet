@@ -16,6 +16,7 @@ const VoicePerms = require('./voice/permissions');
 const VoicePack = require('./voice/pack');
 const VoiceHold = require('./voice/hold');
 const VoiceText = require('./voice/text');
+const VoiceCharacters = require('./voice/characters');
 const Voices = require('./voice/voices');
 // The demo app only (see src/demo-flag.js): normal and Store builds leave
 // src/demo out of the package and never load it.
@@ -280,7 +281,7 @@ ipcMain.on('rec-done', async (e, samples) => {
   if (!(samples instanceof Float32Array) || samples.length < 16000 * 0.3 || samples.length > 16000 * 31) return toPlay('voice-transcript', '');
   try {
     const text = await getVoice().getHost().transcribe(samples);
-    toPlay('voice-transcript', VoiceText.fixTranscript(text));
+    toPlay('voice-transcript', VoiceText.fixTranscript(text, [], VoiceCharacters.heardFixes()));
   } catch { toPlay('voice-error', 'failed'); }
 });
 

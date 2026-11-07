@@ -24,7 +24,8 @@ const FUNCTION_WORDS = new Set((
 
 // Words the dictionary gets wrong for us. Lowercase key, IPA value.
 const BUILT_IN_OVERRIDES = {
-  mochi: 'mˈoʊtʃi', 'mo-chee': 'mˈoʊtʃi',
+  ...require('./characters').sayMap(),   // Mochi, Cinder, Mist, Dusk, Hope
+  'mo-chee': 'mˈoʊtʃi',
   icall: 'ˈaɪkɔːl',                 // helpline name
   to: 'tə', of: 'əv',               // reduced, as people say them
 };
