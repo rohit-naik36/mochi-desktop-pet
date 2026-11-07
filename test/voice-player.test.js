@@ -24,4 +24,16 @@ p.stop();
 assert(c.nodes.every((n) => n.stopped)); assert.strictEqual(p.isPlaying(), false);
 p.enqueue(chunk());
 assert(c.nodes[3].at < 1, 'queue restarts after stop');
+// A context the browser left suspended would stay silent forever: it must be resumed.
+{
+  const sc = ctx(); sc.state = 'suspended'; sc.resumed = 0; sc.resume = () => { sc.resumed++; sc.state = 'running'; return Promise.resolve(); };
+  const sp = createPlayer(() => sc);
+  sp.enqueue(chunk());
+  assert.strictEqual(sc.resumed, 1, 'suspended context resumed');
+  sp.enqueue(chunk());
+  assert.strictEqual(sc.resumed, 1, 'running context left alone');
+  // and a context whose resume() rejects must not break playback
+  const bad = ctx(); bad.state = 'suspended'; bad.resume = () => Promise.reject(new Error('no'));
+  createPlayer(() => bad).enqueue(chunk());
+}
 console.log('voice-player ok');

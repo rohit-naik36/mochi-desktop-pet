@@ -40,7 +40,8 @@ function createVoice({ getState, packDir, spawn, sendToPlay }) {
         sentences, voice: voice.kokoro, speed: Voices.speedFor(voice.id, v.pace),
         onAudio: (chunk) => sendToPlay('voice-audio', chunk),
       });
-    } catch {
+    } catch (e) {
+      console.error('[voice] speak failed:', (e && e.message) || e);
       sendToPlay('voice-error', 'failed');
     }
   }

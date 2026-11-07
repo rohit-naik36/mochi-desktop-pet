@@ -164,9 +164,13 @@ function openPlay(game) {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      autoplayPolicy: 'no-user-gesture-required', // spoken replies arrive without a click
     },
   });
   playWin.setAlwaysOnTop(true, 'floating'); // above normal windows, not above everything
+  if (!app.isPackaged) { // running from source: show the play window's console in this terminal
+    playWin.webContents.on('console-message', (ev, level, message) => console.log('[play]', typeof message === 'string' ? message : ev.message));
+  }
   const query = { px: String(pb.x - wa.x + PET_CX), py: String(pb.y - wa.y + PET_CY) };
   if (game) query.game = game;
   if (Demo && game === 'worry' && Demo.worryText()) query.demoWorry = Demo.worryText();
@@ -223,7 +227,11 @@ function dropVoice() { if (voice) { voice.shutdown(); voice = null; } }
 // Speaks exactly the lines the reply shows on screen (the window decides the
 // lines; crisis and heavy-wording routing has already run by then).
 ipcMain.on('voice-speak', (e, lines) => {
-  if (!playSender(e) || !state.voice.on || !Array.isArray(lines)) return;
+  if (!playSender(e) || !state.voice.on || !Array.isArray(lines)) {
+    console.log('[voice] not speaking:', !playSender(e) ? 'request not from the play window' : !state.voice.on ? 'voice is off' : 'bad lines');
+    return;
+  }
+  console.log('[voice] speaking', lines.length, 'line(s)');
   getVoice().speak(lines.filter((l) => typeof l === 'string').slice(0, 12).map((l) => l.slice(0, 600)));
 });
 ipcMain.on('voice-stop', (e) => { if (playSender(e)) stopVoice(); });
@@ -260,7 +268,12 @@ function dropRecorder() {
 }
 
 let wantHold = false;
-ipcMain.handle('voice-ready', (e) => playSender(e) && voiceReady());
+ipcMain.handle('voice-ready', (e) => {
+  const ok = playSender(e) && voiceReady();
+  console.log('[voice] mic offered:', ok, '| windows:', process.platform === 'win32', '| voice on:', !!state.voice.on,
+    '| pack:', VoicePack.status(voicePackDir(), require('./voice/pack-manifest.json')));
+  return ok;
+});
 ipcMain.on('voice-hold', async (e, on) => {
   if (!playSender(e)) return;
   wantHold = !!on;

@@ -8,6 +8,11 @@
 
     function enqueue({ pcm, rate }) {
       if (!ctx) ctx = makeContext();
+      // A context created without a click can start suspended, and a suspended one is silent forever.
+      if (ctx.state === 'suspended' && typeof ctx.resume === 'function') {
+        try { Promise.resolve(ctx.resume()).catch(() => {}); } catch { /* try again on the next chunk */ }
+      }
+      if (!active.size && typeof console !== 'undefined') console.log('[voice-player] chunk', pcm.length, 'samples at', rate, 'Hz, context', ctx.state);
       const buf = ctx.createBuffer(1, pcm.length, rate);
       buf.copyToChannel(pcm, 0);
       const src = ctx.createBufferSource();
