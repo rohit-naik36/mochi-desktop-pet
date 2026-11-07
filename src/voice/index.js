@@ -33,11 +33,17 @@ function createVoice({ getState, packDir, spawn, sendToPlay }) {
     const v = settings();
     const voice = chosen();
     if (!v.on || !voice || !Array.isArray(lines)) return;
-    const sentences = lines.flatMap(Text.splitSentences).map((s) => Text.respell(s));
+    // A short breath after each sentence, a longer one between lines, none at the very end.
+    const sentences = [], pauses = [];
+    for (const line of lines) {
+      const parts = Text.splitSentences(line).map((s) => Text.respell(s));
+      parts.forEach((s, i) => { sentences.push(s); pauses.push(i < parts.length - 1 ? 350 : 700); });
+    }
     if (!sentences.length) return;
+    pauses[pauses.length - 1] = 0;
     try {
       await getHost().speak({
-        sentences, voice: voice.kokoro, speed: Voices.speedFor(voice.id, v.pace),
+        sentences, pauses, voice: voice.kokoro, speed: Voices.speedFor(voice.id, v.pace),
         onAudio: (chunk) => sendToPlay('voice-audio', chunk),
       });
     } catch (e) {

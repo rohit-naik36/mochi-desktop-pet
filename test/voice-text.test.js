@@ -45,4 +45,15 @@ assert.deepStrictEqual(V.replyLines({ lang: 'en' }), [])// speakable: persona li
   assert.strictEqual(S('👉👈', v), '', 'only emoji leaves nothing to say');
 }
 
-;
+;// spokenLines: what the reply SAYS. Stage directions and emoji are gone, helplines stay word for word.
+{
+  const r = { lang: 'en', opener: '*chews thoughtfully*', reflect: '"i want to continue"... gone. I ate it. 🔥',
+    comfort: 'You are carrying more than people can see.', helplines: [{ name: 'iCall', number: '9152987821' }],
+    step: 'Put on one song 💛', ask: 'Is this a today-worry?' };
+  assert.deepStrictEqual(V.spokenLines(r), ['"i want to continue"… gone. I ate it.', 'You are carrying more than people can see.',
+    'iCall, 9152987821', 'Put on one song.', 'Is this a today-worry?']);
+  assert.deepStrictEqual(V.spokenLines({ ...r, lang: 'hi' }), []);
+  assert(!V.spokenLines(r).join(' ').includes('*'));
+}
+
+

@@ -25,6 +25,13 @@ const timers = () => { const t = { fn: null }; t.set = (fn) => { t.fn = fn; retu
     assert.strictEqual(ch.sent[0].voice, 'af_heart'); assert.strictEqual(ch.sent[0].speed, 0.9);
     assert.strictEqual(h.isLoaded(), true); h.shutdown(); }
 
+  // pauses: the gap after each sentence is passed along with its audio
+  { const ch = fake(); const h = createHost({ spawn: () => ch });
+    const got = [];
+    await h.speak({ sentences: ['One.', 'Two.', 'Three.'], pauses: [350, 700], voice: 'v', speed: 1, onAudio: (c) => got.push(c) });
+    assert.deepStrictEqual(got.map((c) => c.pause), [350, 700, 0]);
+    h.shutdown(); }
+
   // stop() cancels: no more chunks, a cancel message goes out
   { const ch = fake(); const h = createHost({ spawn: () => ch }); const got = [];
     const p = h.speak({ sentences: ['One.', 'Two.', 'Three.'], voice: 'v', speed: 1, onAudio: (c) => { got.push(c); h.stop(); } });

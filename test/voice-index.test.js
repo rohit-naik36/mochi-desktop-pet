@@ -38,7 +38,11 @@ const mk = (voice, extra = {}) => {
     assert.deepStrictEqual(tts.map((m) => m.text), ['Mo-chee says hi.', 'Two sentences.']);
     assert.strictEqual(tts[0].voice, 'af_heart'); assert.strictEqual(tts[0].speed, 0.9);
     assert.strictEqual(sent.filter(([c]) => c === 'voice-audio').length, 2);
-    // chosen voice + slower pace
+    // a short breath after each sentence, a longer one between lines, none at the very end
+  { const { v, sent } = mk({ on: true });
+    await v.speak(['One. Two.', 'Three.']);
+    assert.deepStrictEqual(sent.filter(([c]) => c === 'voice-audio').map(([, p]) => p.pause), [350, 700, 0]); v.shutdown(); }
+  // chosen voice + slower pace
     v.shutdown(); }
   { const { v, log } = mk({ on: true, voice: 'bella', pace: 'slower' });
     await v.speak(['Hello there.']);

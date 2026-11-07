@@ -50,7 +50,7 @@ function createHost({ spawn, idleMs = 600000, setTimer = setTimeout, clearTimer 
     });
   }
 
-  async function speak({ sentences, voice, speed, onAudio }) {
+  async function speak({ sentences, pauses = [], voice, speed, onAudio }) {
     if (current) current.cancelled = true;
     const mine = { cancelled: false };
     current = mine;
@@ -60,7 +60,7 @@ function createHost({ spawn, idleMs = 600000, setTimer = setTimeout, clearTimer 
       try { reply = await request({ type: 'tts', text: sentences[i], voice, speed }); }
       catch (e) { if (mine.cancelled) return; throw e; }
       if (mine.cancelled) return;
-      onAudio({ pcm: reply.pcm, rate: reply.rate, index: i, last: i === sentences.length - 1 });
+      onAudio({ pcm: reply.pcm, rate: reply.rate, index: i, last: i === sentences.length - 1, pause: pauses[i] || 0 });
     }
     if (current === mine) current = null;
   }

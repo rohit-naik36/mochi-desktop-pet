@@ -59,6 +59,13 @@
       .map((s) => String(s || '').trim()).filter(Boolean);
   }
 
-  root.VoiceText = { splitSentences, respell, fixTranscript, replyLines, speakable };
+  // What the reply SAYS: the on-screen lines minus stage directions, emoji and the like.
+  // Helplines are the exception: spoken exactly as shown, word for word.
+  function spokenLines(r) {
+    const help = new Set(((r && r.helplines) || []).map((h) => `${h.name}, ${h.number}`));
+    return replyLines(r).map((l) => (help.has(l) ? l : speakable(l))).filter(Boolean);
+  }
+
+  root.VoiceText = { splitSentences, respell, fixTranscript, replyLines, speakable, spokenLines };
   if (typeof module !== 'undefined') module.exports = root.VoiceText;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -6,7 +6,7 @@
     let nextAt = 0;
     const active = new Set();
 
-    function enqueue({ pcm, rate }) {
+    function enqueue({ pcm, rate, pause = 0 }) {
       if (!ctx) ctx = makeContext();
       // A context created without a click can start suspended, and a suspended one is silent forever.
       if (ctx.state === 'suspended' && typeof ctx.resume === 'function') {
@@ -19,7 +19,7 @@
       src.buffer = buf;
       src.connect(ctx.destination);
       const at = Math.max(ctx.currentTime + 0.05, nextAt);
-      nextAt = at + buf.duration;
+      nextAt = at + buf.duration + pause / 1000; // pause: a breath before the next sentence
       active.add(src);
       src.onended = () => active.delete(src);
       src.start(at);

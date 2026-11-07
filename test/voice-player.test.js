@@ -24,6 +24,14 @@ p.stop();
 assert(c.nodes.every((n) => n.stopped)); assert.strictEqual(p.isPlaying(), false);
 p.enqueue(chunk());
 assert(c.nodes[3].at < 1, 'queue restarts after stop');
+// a pause after a chunk leaves a gap before the next one starts
+{
+  const pc = ctx(); const pp = createPlayer(() => pc);
+  pp.enqueue({ pcm: new Float32Array(24000), rate: 24000, pause: 500 });
+  pp.enqueue({ pcm: new Float32Array(24000), rate: 24000 });
+  assert(pc.nodes[1].at >= pc.nodes[0].at + 1 + 0.5 - 1e-9, 'gap of 0.5 s after the first chunk');
+}
+
 // A context the browser left suspended would stay silent forever: it must be resumed.
 {
   const sc = ctx(); sc.state = 'suspended'; sc.resumed = 0; sc.resume = () => { sc.resumed++; sc.state = 'running'; return Promise.resolve(); };

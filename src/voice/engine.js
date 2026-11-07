@@ -4,6 +4,7 @@
 //   <packDir>/models/onnx-community/Kokoro-82M-v1.0-ONNX/...   (fp32 + voices)
 //   <packDir>/models/Xenova/whisper-base.en/...
 const path = require('path');
+const { createPhonemizer } = require('./phonemes');
 
 const KOKORO_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX';
 const WHISPER_ID = 'Xenova/whisper-base.en';
@@ -13,7 +14,20 @@ async function createEngine(packDir) {
   env.allowRemoteModels = false; // this process can never download anything
   env.allowLocalModels = true;
   env.localModelPath = path.join(packDir, 'models');
-  let tts = null, asr = null;
+  let tts = null, asr = null, phon = null;
+
+  // Our own phonemizer (no GPL code), built on the CMU pronouncing dictionary.
+  async function phonemizer() {
+    if (phon) return phon;
+    try {
+      const m = await import('cmu-pronouncing-dictionary');
+      phon = createPhonemizer(m.dictionary || m.default);
+    } catch (e) {
+      console.error('[voice] pronunciation dictionary missing, using the built-in phonemizer:', e && e.message);
+      phon = { builtIn: true };
+    }
+    return phon;
+  }
 
   return {
     async tts(text, voice, speed) {
@@ -21,7 +35,13 @@ async function createEngine(packDir) {
         const { KokoroTTS } = await import('kokoro-js');
         tts = await KokoroTTS.from_pretrained(KOKORO_ID, { dtype: 'fp32', device: 'cpu' });
       }
-      const audio = await tts.generate(text, { voice, speed });
+      const p = await phonemizer();
+      let audio;
+      if (p.builtIn) audio = await tts.generate(text, { voice, speed });
+      else {
+        const { input_ids } = tts.tokenizer(p.phonemize(text).ps, { truncation: true });
+        audio = await tts.generate_from_ids(input_ids, { voice, speed });
+      }
       return { pcm: audio.audio, rate: audio.sampling_rate };
     },
     async stt(samples) {

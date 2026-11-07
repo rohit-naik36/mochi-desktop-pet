@@ -525,7 +525,7 @@ function Shake() {
 const speakerBtn = document.getElementById('speaker');
 function speakReply(r) {
   if (!S.voice || !S.voice.on || !window.VoiceText) return;
-  const lines = window.VoiceText.replyLines(r);
+  const lines = window.VoiceText.spokenLines(r);
   if (lines.length) window.play.voice.speak(lines);
 }
 function stopSpeaking() {
