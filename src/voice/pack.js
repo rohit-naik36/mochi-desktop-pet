@@ -65,13 +65,14 @@ async function download({ dir, manifest, baseUrl, onProgress, signal }) {
   for (const f of manifest.files) {
     const final = path.join(dir, f.name);
     if (exists(final) && exists(ok(dir, f.name))) { done += f.bytes; continue; }
+    try { fs.mkdirSync(path.dirname(final), { recursive: true }); } catch { return { ok: false, reason: 'disk' }; }
     const part = final + '.part';
     let start = 0;
     try { start = fs.statSync(part).size; } catch { /* fresh */ }
     if (start > f.bytes) { fs.rmSync(part, { force: true }); start = 0; }
     if (start < f.bytes) {
       const r = await fetchPart({
-        url: baseUrl + f.name, part, start, signal,
+        url: baseUrl + (f.asset || f.name), part, start, signal,
         onBytes: (n) => onProgress && onProgress(done + n),
       });
       if (r !== 'done') return { ok: false, reason: r };

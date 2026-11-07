@@ -29,7 +29,11 @@
       "src/**/*",
       "!src/demo/**",
       "!node_modules/@node-llama-cpp/*cuda*/**",
-      "!node_modules/node-llama-cpp/llama/gitRelease.bundle"
+      "!node_modules/node-llama-cpp/llama/gitRelease.bundle",
+      "!node_modules/sharp/**",
+      "!node_modules/@img/**",
+      "!node_modules/onnxruntime-node/bin/napi-v3/darwin/**",
+      "!node_modules/onnxruntime-node/bin/napi-v3/linux/**"
     ],
     "extraResources": [
       { "from": "models", "to": "models", "filter": ["*.gguf"] }
@@ -103,6 +107,10 @@
       "applicationId": "Mochi",
       "backgroundColor": "#E2EDFA",
       "showNameOnTiles": false,
+      "capabilities": [
+        "runFullTrust",
+        "microphone"
+      ],
       "languages": [
         "en-US"
       ],
@@ -112,10 +120,13 @@
       "node_modules/node-llama-cpp/bins/**",
       "node_modules/node-llama-cpp/llama/localBuilds/**",
       "node_modules/@node-llama-cpp/*/bins/**",
+      "node_modules/onnxruntime-node/bin/**",
       "**/*.node"
     ]
   },
   "dependencies": {
+    "@huggingface/transformers": "^3.8.0",
+    "kokoro-js": "^1.2.1",
     "node-llama-cpp": "3.22.2"
   }
 }

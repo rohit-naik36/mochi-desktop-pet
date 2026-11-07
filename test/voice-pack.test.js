@@ -10,7 +10,8 @@ const Pack = require('../src/voice/pack');
 const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
 const A = Buffer.alloc(300000, 'a');
 const B = Buffer.alloc(120000, 'b');
-const FILES = { 'a.bin': A, 'b.bin': B };
+const C = Buffer.alloc(5000, 'c');
+const FILES = { 'a.bin': A, 'b.bin': B, 'sub__c.bin': C };
 const manifest = (over = {}) => ({
   version: 't1',
   totalBytes: A.length + B.length,
@@ -94,6 +95,13 @@ function serve({ cutAt = 0 } = {}) {
     const r = await p;
     assert.strictEqual(r.ok, false); assert.strictEqual(r.reason, 'aborted');
     assert.notStrictEqual(Pack.status(dir, manifest()), 'ready');
+    s.srv.close(); }
+
+  // nested pack paths come from flat release asset names
+  { const s = await serve(); const dir = tmp();
+    const m = { version: 't', totalBytes: C.length, files: [{ name: 'sub/c.bin', asset: 'sub__c.bin', bytes: C.length, sha256: sha(C) }] };
+    assert.deepStrictEqual(await Pack.download({ dir, manifest: m, baseUrl: s.url }), { ok: true });
+    assert(fs.existsSync(path.join(dir, 'sub', 'c.bin'))); assert.strictEqual(Pack.status(dir, m), 'ready');
     s.srv.close(); }
 
   assert.strictEqual(Pack.packDir('/u'), path.join('/u', 'voice-pack'));
