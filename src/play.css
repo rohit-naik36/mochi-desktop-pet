@@ -127,3 +127,4 @@ body.pass-through #veil { opacity: .35; }
 #shake-dots span.done { background: #8fa2ff; }
 #shake-q { color: #d7dbf0; font-style: italic; }
 #shake-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+#worry-mic.holding { background: rgba(255,120,120,.35); }

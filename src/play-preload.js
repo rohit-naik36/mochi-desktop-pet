@@ -15,6 +15,9 @@ contextBridge.exposeInMainWorld('play', {
   voice: {
     speak: (lines) => ipcRenderer.send('voice-speak', lines),
     stop: () => ipcRenderer.send('voice-stop'),
+    ready: () => ipcRenderer.invoke('voice-ready'),
+    hold: (on) => ipcRenderer.send('voice-hold', !!on),
+    onTranscript: (fn) => ipcRenderer.on('voice-transcript', (_e, text) => fn(text)),
     onAudio: (fn) => ipcRenderer.on('voice-audio', (_e, chunk) => fn(chunk)),
     onStopped: (fn) => ipcRenderer.on('voice-stopped', () => fn()),
     onError: (fn) => ipcRenderer.on('voice-error', (_e, code) => fn(code)),

@@ -74,7 +74,7 @@
       shakeSmall: ['Tiny thing: write down the very next action, just one.', 'Tiny thing: a glass of water, then five minutes on something easy.', 'Tiny thing: stand up and roll your shoulders back.', 'Tiny thing: message one person you trust, even just "rough day".'],
       shakeLetGo: ["Let it go it is. I'm proud of you{n}.", 'Gone. Look, the room feels lighter.', 'Bye, feeling. Hi, rest of the day.'],
       worryHint: "What's weighing on you? I'll eat it. Nothing is saved.", worryPlaceholder: 'e.g. the deadline on Friday',
-      feedIt: 'Feed it', typeSomething: 'Type anything, big or small.',
+      feedIt: 'Feed it', typeSomething: 'Type anything, big or small.', micMissing: "I can't find a microphone. You can still type.", micBlocked: "Windows isn't letting me use the microphone. You can turn it on in Windows privacy settings, or just type.", micBusy: 'Another app is using the microphone right now. You can type instead.', voiceFailed: "Voice isn't working right now. Typing still works.",
       feedAnother: 'Feed another', breatheWithMe: 'Breathe with me', thanks: 'Thanks, {pet}', okay: 'Okay',
       tinyStep: 'Tiny next step: ',
       thanksReply: ["Anytime{n}. I'm always hungry for worries.", "That's what friends are for. 💛", "I've got you. Always."],

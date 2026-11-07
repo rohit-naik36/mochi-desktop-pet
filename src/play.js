@@ -561,6 +561,23 @@ function Worry() {
     actions: document.getElementById('reply-actions'),
   };
 
+  // Push to talk (voice on and pack ready): hold the button, speak, release.
+  // The words land in the box for editing; nothing is sent by itself.
+  const mic = document.getElementById('worry-mic');
+  const micMsg = { 'no-mic': 'micMissing', denied: 'micBlocked', busy: 'micBusy', failed: 'voiceFailed' };
+  if (S.voice && S.voice.on) window.play.voice.ready().then((ok) => { if (ok) mic.classList.remove('hidden'); });
+  const holdOff = () => { mic.classList.remove('holding'); window.play.voice.hold(false); };
+  mic.onpointerdown = (e) => { e.preventDefault(); stopSpeaking(); mic.classList.add('holding'); mic.setPointerCapture(e.pointerId); window.play.voice.hold(true); };
+  mic.onpointerup = holdOff;
+  mic.onpointercancel = holdOff;
+  window.addEventListener('blur', holdOff);
+  window.play.voice.onTranscript((t) => {
+    if (!t) return;
+    text.value = ((text.value ? text.value + ' ' : '') + t).slice(0, 280);
+    text.focus();
+  });
+  window.play.voice.onError((code) => { holdOff(); say(T(micMsg[code] || 'voiceFailed'), 4000); });
+
   const hint = document.getElementById('worry-hint');
   function askMode() {
     stopSpeaking();

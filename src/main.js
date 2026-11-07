@@ -14,6 +14,8 @@ const Device = require('./device');
 const Idle = require('./idle');
 const VoicePerms = require('./voice/permissions');
 const VoicePack = require('./voice/pack');
+const VoiceHold = require('./voice/hold');
+const VoiceText = require('./voice/text');
 // The demo app only (see src/demo-flag.js): normal and Store builds leave
 // src/demo out of the package and never load it.
 const DEMO = require('./demo-flag').isDemo(require('../package.json'), app.isPackaged, process.env);
@@ -176,6 +178,7 @@ function openPlay(game) {
   playWin.on('closed', () => {
     playWin = null;
     stopVoice();
+    dropRecorder();
     if (hidingUntil) return; // stays hidden until it's ready to come back
     win.showInactive();
     send('action', 'play-closed');
@@ -222,6 +225,63 @@ ipcMain.on('voice-speak', (e, lines) => {
   getVoice().speak(lines.filter((l) => typeof l === 'string').slice(0, 12).map((l) => l.slice(0, 600)));
 });
 ipcMain.on('voice-stop', (e) => { if (playSender(e)) stopVoice(); });
+
+// Push-to-talk. The hidden recorder window is created on the first hold and
+// may use the microphone only while a hold is active (permissions.js).
+const voicePackDir = () => VoicePack.packDir(app.getPath('userData'));
+const voiceReady = () => process.platform === 'win32' && !!state.voice.on
+  && VoicePack.status(voicePackDir(), require('./voice/pack-manifest.json')) === 'ready';
+const toPlay = (channel, payload) => { if (playWin && !playWin.isDestroyed()) playWin.webContents.send(channel, payload); };
+const toRecorder = (channel) => { if (recorderWin && !recorderWin.isDestroyed()) recorderWin.webContents.send(channel); };
+
+const hold = VoiceHold.createHold({
+  onStart: () => { holdOn = true; Calls.setPaused(true); toRecorder('rec-start'); },
+  onStop: () => { holdOn = false; Calls.setPaused(false); toRecorder('rec-stop'); },
+});
+function endHold() { hold.stop(); }
+
+function ensureRecorder() {
+  if (recorderWin && !recorderWin.isDestroyed()) return Promise.resolve();
+  recorderWin = new BrowserWindow({
+    show: false, width: 200, height: 100, skipTaskbar: true,
+    webPreferences: { preload: path.join(__dirname, 'recorder-preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true },
+  });
+  const w = recorderWin;
+  w.on('closed', () => { if (recorderWin === w) recorderWin = null; endHold(); });
+  w.webContents.on('render-process-gone', () => endHold());
+  return w.loadFile(path.join(__dirname, 'recorder.html'));
+}
+function dropRecorder() {
+  endHold();
+  if (recorderWin && !recorderWin.isDestroyed()) recorderWin.destroy();
+  recorderWin = null;
+}
+
+let wantHold = false;
+ipcMain.handle('voice-ready', (e) => playSender(e) && voiceReady());
+ipcMain.on('voice-hold', async (e, on) => {
+  if (!playSender(e)) return;
+  wantHold = !!on;
+  if (!on) return endHold();
+  if (!voiceReady()) return toPlay('voice-error', 'failed');
+  try { await ensureRecorder(); } catch { return toPlay('voice-error', 'failed'); }
+  if (wantHold) hold.start(); // released while the window was loading: do nothing
+});
+const recorderSender = (e) => !!recorderWin && !recorderWin.isDestroyed() && e.sender === recorderWin.webContents;
+ipcMain.on('rec-error', (e, code) => {
+  if (!recorderSender(e)) return;
+  endHold();
+  toPlay('voice-error', ['no-mic', 'denied', 'busy'].includes(code) ? code : 'failed');
+});
+ipcMain.on('rec-done', async (e, samples) => {
+  if (!recorderSender(e)) return;
+  // Under 0.3 s is a tap, not speech. Samples stay in memory and are dropped after this call.
+  if (!(samples instanceof Float32Array) || samples.length < 16000 * 0.3 || samples.length > 16000 * 31) return toPlay('voice-transcript', '');
+  try {
+    const text = await getVoice().getHost().transcribe(samples);
+    toPlay('voice-transcript', VoiceText.fixTranscript(text));
+  } catch { toPlay('voice-error', 'failed'); }
+});
 
 // ---------- notice which app I'm in (opt-in) ----------
 
@@ -1093,6 +1153,6 @@ if (!gotLock) {
     powerMonitor.on('resume', reportActivity);
     powerMonitor.on('unlock-screen', reportActivity);
   });
-  app.on('before-quit', () => { Apps.stop(); dropVoice(); saveState(); });
+  app.on('before-quit', () => { Apps.stop(); dropRecorder(); dropVoice(); saveState(); });
   app.on('window-all-closed', () => app.quit());
 }
