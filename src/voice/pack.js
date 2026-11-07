@@ -34,7 +34,7 @@ function remove(dir) { try { fs.rmSync(dir, { recursive: true, force: true }); }
 const DISK = new Set(['ENOSPC', 'EACCES', 'EPERM', 'EROFS', 'ENOTDIR', 'EEXIST', 'ENOENT', 'EISDIR', 'EMFILE']);
 
 // One file. Resolves 'done' | 'network' | 'disk' | 'aborted'.
-function fetchPart({ url, part, start, signal, onBytes }) {
+function fetchPart({ url, part, start, signal, onBytes, hops = 0 }) {
   return new Promise((resolve) => {
     if (signal && signal.aborted) return resolve('aborted');
     const lib = url.startsWith('https:') ? https : http;
@@ -42,6 +42,14 @@ function fetchPart({ url, part, start, signal, onBytes }) {
     let settled = false;
     const finish = (v) => { if (!settled) { settled = true; resolve(v); } };
     const req = lib.get(url, { headers }, (res) => {
+      // GitHub release assets answer with a redirect to a CDN host. Follow a few.
+      if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
+        res.resume();
+        if (hops >= 5) return finish('network');
+        let next;
+        try { next = new URL(res.headers.location, url).toString(); } catch { return finish('network'); }
+        return fetchPart({ url: next, part, start, signal, onBytes, hops: hops + 1 }).then(finish);
+      }
       if (res.statusCode !== 200 && res.statusCode !== 206) { res.resume(); return finish('network'); }
       const resumed = res.statusCode === 206;
       let out;

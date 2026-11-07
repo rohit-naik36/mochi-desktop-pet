@@ -26,6 +26,9 @@ function serve({ cutAt = 0 } = {}) {
   const seen = [];
   let cutDone = !cutAt;
   const srv = http.createServer((req, res) => {
+    // GitHub release assets answer with a 302 to another host; /r/<file> mimics that.
+    if (req.url.startsWith('/r/')) { res.statusCode = 302; res.setHeader('Location', '/' + req.url.slice(3)); return res.end(); }
+    if (req.url === '/loop') { res.statusCode = 302; res.setHeader('Location', '/loop'); return res.end(); }
     const buf = FILES[req.url.slice(1)];
     if (!buf) { res.statusCode = 404; return res.end(); }
     const m = /bytes=(\d+)-/.exec(req.headers.range || '');
@@ -54,6 +57,19 @@ function serve({ cutAt = 0 } = {}) {
     assert(prog.length > 0 && prog[prog.length - 1] === m.totalBytes && prog.every((v, i) => !i || v >= prog[i - 1]));
     // Remove empties it.
     Pack.remove(dir); assert.strictEqual(Pack.status(dir, m), 'missing');
+    s.srv.close(); }
+
+  // redirected downloads (GitHub release assets) are followed, including with Range on resume
+  { const s = await serve(); const dir = tmp(); const m = manifest();
+    const r = await Pack.download({ dir, manifest: m, baseUrl: s.url + 'r/' });
+    assert.deepStrictEqual(r, { ok: true });
+    assert.strictEqual(Pack.status(dir, m), 'ready');
+    s.srv.close(); }
+
+  // a redirect loop gives up as a network failure
+  { const s = await serve(); const dir = tmp(); const m = manifest();
+    const r = await Pack.download({ dir, manifest: { ...m, files: [{ name: 'loop', bytes: 10, sha256: sha(A) }] }, baseUrl: s.url });
+    assert.deepStrictEqual(r, { ok: false, reason: 'network' });
     s.srv.close(); }
 
   // wrong hash: file deleted
