@@ -10,8 +10,12 @@ const run = (cmd, args) => new Promise((resolve) => {
 
 // `reg query ...ConsentStore\microphone /s` output -> true if an app has
 // started using the device and not stopped yet.
-function deviceInUse(regText) {
+// `own`: lower-case fragments of Mochi's own key (Store package name, or the
+// .exe path with \ written as #). Mochi's own voice use must not count as a call.
+function deviceInUse(regText, { own = [] } = {}) {
   for (const block of String(regText || '').split(/\r?\n(?=HKEY_)/)) {
+    const key = block.split(/\r?\n/, 1)[0].toLowerCase();
+    if (own.some((o) => key.includes(o))) continue;
     const start = /LastUsedTimeStart\s+REG_QWORD\s+0x([0-9a-f]+)/i.exec(block);
     const stop = /LastUsedTimeStop\s+REG_QWORD\s+0x([0-9a-f]+)/i.exec(block);
     if (start && stop && /[1-9a-f]/i.test(start[1]) && !/[1-9a-f]/i.test(stop[1])) return true;
@@ -25,14 +29,24 @@ const STORE = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\CapabilityAcc
 let override = null;
 function setOverride(fn) { override = typeof fn === 'function' ? fn : null; }
 
+// While a push-to-talk hold is active Mochi's own microphone use is expected;
+// the call check stands down until the hold ends.
+let paused = false;
+function setPaused(p) { paused = !!p; }
+
+function ownTokens() {
+  return ['littlesmokestudio.mochi-deskbuddy_', String(process.execPath).toLowerCase().replace(/\\/g, '#')];
+}
+
 async function onCall() {
+  if (paused) return false;
   if (override) return !!override();
   if (process.platform === 'win32') {
     const [mic, cam] = await Promise.all([run('reg', ['query', STORE + 'microphone', '/s']), run('reg', ['query', STORE + 'webcam', '/s'])]);
-    return deviceInUse(mic) || deviceInUse(cam);
+    return deviceInUse(mic, { own: ownTokens() }) || deviceInUse(cam);
   }
   if (process.platform === 'darwin') return (await run('pgrep', ['-x', 'CptHost'])).trim() !== '';
   return false;
 }
 
-module.exports = { onCall, deviceInUse, setOverride };
+module.exports = { onCall, deviceInUse, setOverride, setPaused, ownTokens };
