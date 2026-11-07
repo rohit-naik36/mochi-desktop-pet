@@ -13,6 +13,7 @@ const Apps = require('./apps');
 const Device = require('./device');
 const Idle = require('./idle');
 const VoicePerms = require('./voice/permissions');
+const VoicePack = require('./voice/pack');
 // The demo app only (see src/demo-flag.js): normal and Store builds leave
 // src/demo out of the package and never load it.
 const DEMO = require('./demo-flag').isDemo(require('../package.json'), app.isPackaged, process.env);
@@ -71,6 +72,7 @@ const defaults = {
   silent: { auto: true, until: 0 }, // quiet on calls; until = manual silent mode end (ms)
   apps: false, // notice which app is in front (name only) for playful lines; off by default
   ai: { on: true }, // Smarter replies: the small model that ships with Mochi
+  voice: { on: false, voice: null, pace: 'default', packVersion: null }, // optional spoken replies (English); off by default
 };
 
 function loadState() {
@@ -173,6 +175,7 @@ function openPlay(game) {
   playWin.webContents.on('console-message', (_e, level, msg) => process.env.MOCHI_DEBUG && level >= 2 && console.log('play error:', msg));
   playWin.on('closed', () => {
     playWin = null;
+    stopVoice();
     if (hidingUntil) return; // stays hidden until it's ready to come back
     win.showInactive();
     send('action', 'play-closed');
@@ -193,6 +196,32 @@ ipcMain.handle('ai-reply', (_e, req = {}) => {
   if (!aiOn() || Ai.status().state !== 'ready' || !Ai.allowed(req.r, req.text)) return null;
   return Ai.reply({ text: req.text, lang: req.lang, name: state.userName, pet: state.name, skin: state.skin });
 });
+
+// ---------- voice (optional, English, on this PC only) ----------
+
+// The voice module and its process load only after the user turns voice on.
+let voice = null;
+const playSender = (e) => !!playWin && !playWin.isDestroyed() && e.sender === playWin.webContents;
+function getVoice() {
+  if (!voice) {
+    voice = require('./voice').createVoice({
+      getState: () => state,
+      packDir: VoicePack.packDir(app.getPath('userData')),
+      sendToPlay: (channel, payload) => { if (playWin && !playWin.isDestroyed()) playWin.webContents.send(channel, payload); },
+    });
+  }
+  return voice;
+}
+function stopVoice() { if (voice) voice.stop(); }
+function dropVoice() { if (voice) { voice.shutdown(); voice = null; } }
+
+// Speaks exactly the lines the reply shows on screen (the window decides the
+// lines; crisis and heavy-wording routing has already run by then).
+ipcMain.on('voice-speak', (e, lines) => {
+  if (!playSender(e) || !state.voice.on || !Array.isArray(lines)) return;
+  getVoice().speak(lines.filter((l) => typeof l === 'string').slice(0, 12).map((l) => l.slice(0, 600)));
+});
+ipcMain.on('voice-stop', (e) => { if (playSender(e)) stopVoice(); });
 
 // ---------- notice which app I'm in (opt-in) ----------
 
@@ -1032,6 +1061,7 @@ if (!gotLock) {
     if (IS_MAC) app.dock?.hide();
     loadState();
     state.ai = { ...defaults.ai, ...state.ai };
+    state.voice = { ...defaults.voice, ...state.voice };
     Ai.init(state.ai, aiChanged);
     if (state.apps && Apps.supported()) Apps.start(onApp);
     autoJoin();
@@ -1063,6 +1093,6 @@ if (!gotLock) {
     powerMonitor.on('resume', reportActivity);
     powerMonitor.on('unlock-screen', reportActivity);
   });
-  app.on('before-quit', () => { Apps.stop(); saveState(); });
+  app.on('before-quit', () => { Apps.stop(); dropVoice(); saveState(); });
   app.on('window-all-closed', () => app.quit());
 }

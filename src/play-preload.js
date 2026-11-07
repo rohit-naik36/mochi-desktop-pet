@@ -12,5 +12,12 @@ contextBridge.exposeInMainWorld('play', {
   insight: (kind, value) => ipcRenderer.send('insight', kind, value),
   aiReply: (req) => ipcRenderer.invoke('ai-reply', req),
   jar: (text) => ipcRenderer.send('jar-add', text),
+  voice: {
+    speak: (lines) => ipcRenderer.send('voice-speak', lines),
+    stop: () => ipcRenderer.send('voice-stop'),
+    onAudio: (fn) => ipcRenderer.on('voice-audio', (_e, chunk) => fn(chunk)),
+    onStopped: (fn) => ipcRenderer.on('voice-stopped', () => fn()),
+    onError: (fn) => ipcRenderer.on('voice-error', (_e, code) => fn(code)),
+  },
   onAchievement: (fn) => ipcRenderer.on('achievement', (_e, id) => fn(id)),
 });
