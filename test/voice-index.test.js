@@ -67,5 +67,16 @@ const mk = (voice, extra = {}) => {
     await v.speak(['Hi.']);
     assert(sent.some(([c, p]) => c === 'voice-error' && p === 'failed')); v.shutdown(); }
 
+  // gender not chosen yet: the neutral first voice (Fable) is used
+  { const { v, log } = mk({ on: true }, { }); v.shutdown();
+    const sent = [], l2 = []; const state = { petGender: null, voice: { on: true, voice: null, pace: 'default' } };
+    const v2 = createVoice({ getState: () => state, packDir: '/x', spawn: () => fakeChannel(l2), sendToPlay: (c, p) => sent.push([c, p]) });
+    await v2.speak(['Hi.']); assert.strictEqual(l2.find((m) => m.type === 'tts').voice, 'bm_fable'); v2.shutdown(); }
+
+  // a saved voice from another gender is not used (gender changed after choosing)
+  { const l3 = []; const state = { petGender: 'male', voice: { on: true, voice: 'bella', pace: 'default' } };
+    const v3 = createVoice({ getState: () => state, packDir: '/x', spawn: () => fakeChannel(l3), sendToPlay() {} });
+    await v3.speak(['Hi.']); assert.strictEqual(l3.find((m) => m.type === 'tts').voice, 'am_puck'); v3.shutdown(); }
+
   console.log('voice-index ok');
 })().catch((e) => { console.error(e); process.exit(1); });

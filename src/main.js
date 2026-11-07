@@ -16,6 +16,7 @@ const VoicePerms = require('./voice/permissions');
 const VoicePack = require('./voice/pack');
 const VoiceHold = require('./voice/hold');
 const VoiceText = require('./voice/text');
+const Voices = require('./voice/voices');
 // The demo app only (see src/demo-flag.js): normal and Store builds leave
 // src/demo out of the package and never load it.
 const DEMO = require('./demo-flag').isDemo(require('../package.json'), app.isPackaged, process.env);
@@ -335,6 +336,119 @@ function appsItem(M) {
 
 // One checkbox in Settings, on by default. Hidden in builds without the
 // model and outside a company.
+// ---------- voice settings (Windows, English) ----------
+
+let voiceDl = null; // { pct } while the voice pack downloads
+const VM = (key, count) => I18N.t(state.lang, 'menu.' + key, { pet: state.name, count });
+const voiceManifest = () => require('./voice/pack-manifest.json');
+const voicePackStatus = () => VoicePack.status(voicePackDir(), voiceManifest());
+const note = (key) => dialog.showMessageBox({ type: 'info', message: VM(key), buttons: ['OK'] });
+let voiceMenuAt = 0;
+
+async function downloadVoicePack() {
+  if (voiceDl) return;
+  const m = voiceManifest();
+  const choice = dialog.showMessageBoxSync({
+    type: 'question', message: VM('voiceConsentTitle'), detail: VM('voiceConsentBody', Math.round(m.totalBytes / 1e6)),
+    buttons: [VM('voiceDownloadYes'), I18N.t(state.lang, 'menu.moveNo')], defaultId: 0, cancelId: 1,
+  });
+  if (choice !== 0) return;
+  voiceDl = { pct: 0 };
+  refreshTrayMenu();
+  const res = await VoicePack.download({
+    dir: voicePackDir(), manifest: m, baseUrl: m.baseUrl,
+    onProgress: (b) => {
+      const pct = Math.min(100, Math.floor((100 * b) / m.totalBytes));
+      if (pct !== voiceDl.pct && Date.now() - voiceMenuAt > 1000) { voiceDl.pct = pct; voiceMenuAt = Date.now(); refreshTrayMenu(); }
+    },
+  });
+  voiceDl = null;
+  refreshTrayMenu();
+  if (!res.ok && res.reason !== 'aborted') note('voiceDlFailed_' + res.reason);
+}
+
+function turnVoiceOff() {
+  state.voice.on = false;
+  dropRecorder();
+  dropVoice();
+  saveState();
+  refreshTrayMenu();
+}
+
+async function turnVoiceOn() {
+  if (voicePackStatus() !== 'ready') { refreshTrayMenu(); return note('voiceNeedPack'); }
+  state.voice.on = true;
+  saveState();
+  refreshTrayMenu();
+  // First time on: a short sentence is spoken to check this PC keeps up.
+  const r = await speedCheck();
+  if (r === 'ok') return;
+  turnVoiceOff();
+  note(r === 'slow' ? 'voiceTooSlow' : 'voiceFailedMenu');
+}
+
+async function speedCheck() {
+  const gender = state.petGender || 'nonbinary';
+  const saved = Voices.byId(state.voice.voice);
+  const voice = saved && saved.gender === gender ? saved : Voices.byId(Voices.defaultVoice(gender));
+  try {
+    const r = await getVoice().getHost().speedTest(voice.kokoro, Voices.speedFor(voice.id, state.voice.pace));
+    return r.ok ? 'ok' : 'slow';
+  } catch (e) {
+    console.error('[voice] speed test failed', e && e.message);
+    return 'failed';
+  }
+}
+
+async function testVoiceSpeed() {
+  const r = await speedCheck();
+  if (r === 'ok') note('voiceSpeedOk');
+  else if (r === 'slow') note('voiceTooSlow');
+  else note('voiceFailedMenu');
+}
+
+function removeVoicePack() {
+  state.voice.on = false;
+  dropRecorder();
+  dropVoice();
+  VoicePack.remove(voicePackDir());
+  saveState();
+  refreshTrayMenu();
+}
+
+// The preview plays in the play room (the only place audio is played).
+function previewVoice() {
+  if (!state.voice.on) return;
+  const line = ["Hi, it's good to see you."];
+  if (playWin && !playWin.isDestroyed()) return getVoice().speak(line);
+  openPlay('worry');
+  setTimeout(() => { if (state.voice.on) getVoice().speak(line); }, 1500);
+}
+
+function voiceItem(M) {
+  if (process.platform !== 'win32') return null; // voice is Windows-only in 0.13.0
+  const model = require('./voice/menu').voiceMenuModel(state, voicePackStatus(), !!voiceDl);
+  const pack = model.packAction === 'downloading'
+    ? { label: VM('voiceDownloading', voiceDl ? voiceDl.pct : 0), enabled: false }
+    : model.packAction === 'remove'
+      ? { label: VM('voiceRemove'), click: removeVoicePack }
+      : { label: VM('voiceDownload', Math.round(voiceManifest().totalBytes / 1e6)), click: downloadVoicePack };
+  return { label: VM('voice'), submenu: [
+    { label: VM('voiceOn'), type: 'checkbox', checked: model.enabled, enabled: model.canEnable,
+      click: (i) => { if (i.checked) turnVoiceOn(); else turnVoiceOff(); } },
+    { type: 'separator' },
+    ...model.voices.map((v) => ({ label: v.label, type: 'radio', checked: v.checked,
+      click: () => { state.voice.voice = v.id; saveState(); refreshTrayMenu(); } })),
+    { label: VM('voiceHear'), enabled: model.enabled, click: previewVoice },
+    { label: VM('voicePace'), submenu: [['default', 'paceDefault'], ['slower', 'paceSlower']].map(([id, key]) => ({
+      label: VM(key), type: 'radio', checked: model.pace === id,
+      click: () => { state.voice.pace = id; saveState(); refreshTrayMenu(); } })) },
+    { type: 'separator' },
+    pack,
+    { label: VM('voiceTest'), enabled: model.enabled, click: testVoiceSpeed },
+  ] };
+}
+
 function aiItem(M) {
   const s = Ai.status();
   if (s.state === 'missing' || !teamsOn()) return null;
@@ -832,6 +946,7 @@ function buildMenu() {
     { type: 'separator' },
     { label: M('settings'), submenu: [
       ...[aiItem(M)].filter(Boolean),
+      ...[voiceItem(M)].filter(Boolean),
       ...(Apps.supported() ? [appsItem(M)] : []),
       { label: state.teams ? '🏢 ' + state.teams.name : M('teams'), ...tip('teams'), click: openTeams },
       { type: 'separator' },
@@ -864,7 +979,7 @@ function buildMenu() {
         label: I18N.t(state.lang, 'gender.' + g),
         type: 'radio',
         checked: state.petGender === g,
-        click: () => { state.petGender = g; saveState(); refreshTrayMenu(); send('state', state); send('action', 'gender-changed'); },
+        click: () => { state.petGender = g; state.voice.voice = null; saveState(); refreshTrayMenu(); send('state', state); send('action', 'gender-changed'); },
       })) },
       { label: M('language'), ...tip('language'), submenu: I18N.LANGS.map((l) => ({
         label: l.label,

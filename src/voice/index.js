@@ -16,7 +16,12 @@ function createVoice({ getState, packDir, spawn, sendToPlay }) {
   const getHost = () => host || (host = require('./host').createHost({ spawn: spawn ? () => spawn(packDir) : () => electronSpawn(packDir) }));
 
   const settings = () => (getState().voice || {});
-  const chosen = () => Voices.byId(settings().voice) || Voices.byId(Voices.defaultVoice(getState().petGender));
+  // The saved voice, if it still belongs to the buddy's gender; else the first for that gender.
+  const chosen = () => {
+    const gender = getState().petGender || 'nonbinary';
+    const saved = Voices.byId(settings().voice);
+    return saved && saved.gender === gender ? saved : Voices.byId(Voices.defaultVoice(gender));
+  };
 
   function stop() {
     if (host) host.stop();
