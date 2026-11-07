@@ -5,9 +5,12 @@
 // sizes and SHA-256. Upload everything in <outDir>/assets to the release.
 const fs = require('fs');
 const path = require('path');
+const dns = require('dns');
 const crypto = require('crypto');
 const { Readable } = require('stream');
 const { pipeline } = require('stream/promises');
+
+dns.setDefaultResultOrder('ipv4first'); // a common cause of ECONNRESET on Windows
 
 const args = process.argv.slice(2);
 const out = args[0];
@@ -22,12 +25,51 @@ const SOURCES = [
   { id: 'Xenova/whisper-base.en', want: (f) => /^(config|generation_config|preprocessor_config|tokenizer|tokenizer_config|special_tokens_map|normalizer|added_tokens|vocab)\.json$|^merges\.txt$|^onnx\/(encoder_model|decoder_model_merged)\.onnx$/.test(f) },
 ];
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const TRIES = 8;
+
+// Retry any network step: connections to huggingface.co sometimes reset.
+async function retry(label, fn) {
+  for (let i = 1; ; i++) {
+    try { return await fn(); } catch (e) {
+      const why = (e && e.cause && e.cause.code) || (e && e.code) || (e && e.message);
+      if (i >= TRIES) throw new Error(`${label} failed after ${TRIES} tries: ${why}`);
+      console.log(`  ${label}: ${why}; retry ${i}/${TRIES - 1} in ${2 * i}s`);
+      await sleep(2000 * i);
+    }
+  }
+}
+
+const sha256File = (file) => new Promise((resolve, reject) => {
+  const h = crypto.createHash('sha256');
+  fs.createReadStream(file).on('data', (d) => h.update(d)).on('end', () => resolve(h.digest('hex'))).on('error', reject);
+});
+
+// Resumable: keeps <dest>.part and continues from where it stopped.
+async function download(url, dest) {
+  if (fs.existsSync(dest)) return;
+  const part = dest + '.part';
+  await retry(path.basename(dest), async () => {
+    const have = fs.existsSync(part) ? fs.statSync(part).size : 0;
+    const res = await fetch(url, { headers: have ? { Range: `bytes=${have}-` } : {} });
+    if (res.status === 416) { fs.renameSync(part, dest); return; } // already complete
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const ws = fs.createWriteStream(part, { flags: res.status === 206 ? 'a' : 'w' });
+    await pipeline(Readable.fromWeb(res.body), ws);
+    fs.renameSync(part, dest);
+  });
+}
+
 async function main() {
   const assets = path.join(out, 'assets');
   fs.mkdirSync(assets, { recursive: true });
   const files = [];
   for (const src of SOURCES) {
-    const info = await (await fetch(`https://huggingface.co/api/models/${src.id}`)).json();
+    const info = await retry('file list for ' + src.id, async () => {
+      const r = await fetch(`https://huggingface.co/api/models/${src.id}`);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    });
     const names = (info.siblings || []).map((s) => s.rfilename).filter(src.want);
     console.log(src.id, '->', names.length, 'files');
     if (!names.length) throw new Error('no files matched for ' + src.id);
@@ -35,15 +77,10 @@ async function main() {
       const name = `models/${src.id}/${rel}`;
       const asset = name.replace(/\//g, '__');
       const dest = path.join(assets, asset);
-      const res = await fetch(`https://huggingface.co/${src.id}/resolve/main/${rel}`);
-      if (!res.ok) throw new Error(`${res.status} for ${src.id}/${rel}`);
-      const hash = crypto.createHash('sha256');
-      const ws = fs.createWriteStream(dest);
-      const body = Readable.fromWeb(res.body);
-      body.on('data', (d) => hash.update(d));
-      await pipeline(body, ws);
+      await download(`https://huggingface.co/${src.id}/resolve/main/${rel}`, dest);
+      const hash = await sha256File(dest);
       const bytes = fs.statSync(dest).size;
-      files.push({ name, asset, bytes, sha256: hash.digest('hex') });
+      files.push({ name, asset, bytes, sha256: hash });
       console.log('  ', rel, (bytes / 1e6).toFixed(1) + ' MB');
     }
   }
