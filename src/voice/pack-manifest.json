@@ -1,0 +1,8 @@
+{
+  "version": "0.13.0-pack1",
+  "baseUrl": "https://github.com/rohit-naik36/mochi-desktop-pet/releases/download/voice-pack-1/",
+  "totalBytes": 0,
+  "files": [
+    { "name": "TBD-FILLED-BY-tools-make-voice-pack.js", "bytes": 0, "sha256": "TBD-FROM-TASK-11" }
+  ]
+}
