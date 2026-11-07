@@ -24,10 +24,19 @@ Worries you type into **Feed me a worry** are never saved. Mochi reads them on y
 
 **Smarter replies (beta)**, in the Mochi for Teams edition, uses a small open AI model (Qwen3.5) that is installed with Mochi. It writes replies on your computer, so your worries are never sent anywhere. You can turn it off in Settings.
 
+## Voice (optional, English, off by default)
+
+Voice is off unless you turn it on in Settings. When it is on, Mochi can read its replies out loud and you can hold a button to speak a worry instead of typing it.
+
+- **Everything happens on your computer.** The voices and the listening model run on your PC. Your voice and Mochi's replies are never sent anywhere.
+- **No audio is saved.** The microphone is used only while you hold the talk button (up to 30 seconds). The sound is turned into text in memory and then thrown away. The text goes into the box so you can edit it. Nothing is sent until you press Feed it.
+- **One download.** Voice needs a voice pack of roughly 600 MB. It is downloaded once, only after you say yes, from this project's public GitHub releases, checked against a fingerprint, and kept in Mochi's folder on your computer. This is the only time voice uses the internet. Settings has a button to remove it.
+- **English only for now.** Hindi and Hinglish stay as text.
+
 ## What Mochi does not do
 
-- No internet connection (apart from Mochi for Teams, below, if your employer uses it): no accounts, analytics, tracking, advertising or cloud sync.
-- No access to your files, camera, microphone, location or contacts.
+- No internet connection (apart from Mochi for Teams, below, if your employer uses it, and the one-time voice pack download, if you choose it): no accounts, analytics, tracking, advertising or cloud sync.
+- No access to your files, camera, location or contacts. The microphone is used only if you turn on Voice and hold the talk button (see Voice above).
 - **Notice which app I'm in** is off unless you turn it on. When it's on, Mochi checks the name of the app in front about once a minute (for example "Excel"), so it can make a joke and suggest a break after a long stretch. It never reads window titles, websites or what's on your screen, and the app name is never saved or sent anywhere, including to an employer.
 - To know when you're away, Mochi asks Windows how many seconds it has been since the mouse or keyboard was last used. It never sees what you type or where you click.
 - So its eyes can follow your mouse pointer, Mochi checks where the pointer is on screen a few times a second. That position is used only for the eyes, never saved and never sent anywhere.
