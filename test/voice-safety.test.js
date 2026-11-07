@@ -37,4 +37,12 @@ for (const f of fs.readdirSync(path.join(__dirname, '../src/voice'))) {
   const src = fs.readFileSync(path.join(__dirname, '../src/voice', f), 'utf8');
   assert(!/require\(['"]\.\/engine['"]\)/.test(src), f + ' must not load the engine');
 }
+// Regression (self-review): Worry() is built before the saved state arrives, so
+// the mic button must be revealed from the getState().then(...) block.
+const playSrc = fs.readFileSync(path.join(__dirname, '../src/play.js'), 'utf8');
+const afterState = playSrc.slice(playSrc.indexOf('window.play.getState().then'));
+assert(/voice\.ready\(\)/.test(afterState), 'mic button revealed once state is known');
+// Regression: a quick tap must not show a permission error when the hold ended before getUserMedia answered.
+const rec = fs.readFileSync(path.join(__dirname, '../src/recorder.js'), 'utf8');
+assert(/released/.test(rec) && /if \(!released\)/.test(rec), 'recorder stays quiet when released early');
 console.log('voice-safety ok');

@@ -565,7 +565,6 @@ function Worry() {
   // The words land in the box for editing; nothing is sent by itself.
   const mic = document.getElementById('worry-mic');
   const micMsg = { 'no-mic': 'micMissing', denied: 'micBlocked', busy: 'micBusy', failed: 'voiceFailed' };
-  if (S.voice && S.voice.on) window.play.voice.ready().then((ok) => { if (ok) mic.classList.remove('hidden'); });
   const holdOff = () => { mic.classList.remove('holding'); window.play.voice.hold(false); };
   mic.onpointerdown = (e) => { e.preventDefault(); stopSpeaking(); mic.classList.add('holding'); mic.setPointerCapture(e.pointerId); window.play.voice.hold(true); };
   mic.onpointerup = holdOff;
@@ -796,6 +795,8 @@ window.play.onAchievement((id) => {
 placePet(home.x, home.y);
 window.play.getState().then((s) => {
   S = s;
+  // Push to talk is offered only when voice is on and its pack is installed.
+  if (S.voice && S.voice.on) window.play.voice.ready().then((ok) => { if (ok) document.getElementById('worry-mic').classList.remove('hidden'); });
   document.body.dataset.skin = s.skin || 'smoke';
   for (const b of document.querySelectorAll('#tabs button')) b.textContent = T('tabs.' + b.dataset.game);
   document.querySelector('#bubbles .hint').textContent = T('bubblesHint');

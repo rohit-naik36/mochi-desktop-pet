@@ -1,7 +1,7 @@
 // Captures the microphone while the button is held, then hands 16 kHz mono
 // samples to the main process. Nothing is written to disk; the samples live
 // in memory only until they are transcribed.
-let stream = null, ctx = null, node = null, chunks = [], starting = null;
+let stream = null, ctx = null, node = null, chunks = [], starting = null, released = false;
 
 const codeFor = (e) => (e && e.name === 'NotFoundError' ? 'no-mic' : e && e.name === 'NotAllowedError' ? 'denied' : e && e.name === 'NotReadableError' ? 'busy' : 'failed');
 
@@ -25,14 +25,15 @@ async function begin() {
     return true;
   } catch (e) {
     release();
-    window.recorder.error(codeFor(e));
+    if (!released) window.recorder.error(codeFor(e)); // a tap that ended before the mic answered is not an error
     return false;
   }
 }
 
-window.recorder.onStart(() => { starting = begin(); });
+window.recorder.onStart(() => { released = false; starting = begin(); });
 
 window.recorder.onStop(async () => {
+  released = true;
   const ok = starting ? await starting : false;
   starting = null;
   if (!ok) return;
