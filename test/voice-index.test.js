@@ -35,13 +35,14 @@ const mk = (voice, extra = {}) => {
     await v.speak(['Mochi says hi. Two sentences.']);
     assert(loaded('host.js')); assert(!loaded('engine.js'), 'engine never in the main process');
     const tts = log.filter((m) => m.type === 'tts');
-    assert.deepStrictEqual(tts.map((m) => m.text), ['Mo-chee says hi.', 'Two sentences.']);
+    assert.deepStrictEqual(tts.map((m) => m.text), ['Mo-chee says hi. Two sentences.']);
     assert.strictEqual(tts[0].voice, 'af_heart'); assert.strictEqual(tts[0].speed, 0.9);
-    assert.strictEqual(sent.filter(([c]) => c === 'voice-audio').length, 2);
-    // a short breath after each sentence, a longer one between lines, none at the very end
-  { const { v, sent } = mk({ on: true });
+    assert.strictEqual(sent.filter(([c]) => c === 'voice-audio').length, 1, 'one line, one chunk');
+    // a whole line per chunk, a breath between lines, none at the very end
+  { const { v, sent, log } = mk({ on: true });
     await v.speak(['One. Two.', 'Three.']);
-    assert.deepStrictEqual(sent.filter(([c]) => c === 'voice-audio').map(([, p]) => p.pause), [350, 700, 0]); v.shutdown(); }
+    assert.deepStrictEqual(log.filter((m) => m.type === 'tts').map((m) => m.text), ['One. Two.', 'Three.']);
+    assert.deepStrictEqual(sent.filter(([c]) => c === 'voice-audio').map(([, p]) => p.pause), [450, 0]); v.shutdown(); }
   // chosen voice + slower pace
     v.shutdown(); }
   { const { v, log } = mk({ on: true, voice: 'bella', pace: 'slower' });

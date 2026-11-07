@@ -56,4 +56,21 @@ assert.deepStrictEqual(V.replyLines({ lang: 'en' }), [])// speakable: persona li
   assert(!V.spokenLines(r).join(' ').includes('*'));
 }
 
+// chunkLines: speak a whole line at a time so the voice has flow; short fragments sound robotic.
+{
+  assert.deepStrictEqual(V.chunkLines(['One. Two. Three.']), [{ text: 'One. Two. Three.', pause: 0 }]);
+  assert.deepStrictEqual(V.chunkLines(['A b c.', 'D e.']), [{ text: 'A b c.', pause: 450 }, { text: 'D e.', pause: 0 }]);
+  assert.deepStrictEqual(V.chunkLines([]), []);
+  assert.deepStrictEqual(V.chunkLines(['', '  ']), []);
+  const sent = Array(19).fill('word').join(' ') + '.'; // 95 characters
+  const long = [sent, sent, sent].join(' ');
+  const out = V.chunkLines([long], 220);
+  assert.strictEqual(out.length, 2, 'split only because the line is long');
+  assert(out[0].text.length <= 220 && out[0].pause === 250 && out[1].pause === 0);
+  assert.strictEqual(out.map((c) => c.text).join(' '), long, 'nothing lost or reordered');
+  // one huge sentence is never cut mid-sentence
+  const huge = 'x'.repeat(400) + '.';
+  assert.deepStrictEqual(V.chunkLines([huge]), [{ text: huge, pause: 0 }]);
+}
+
 

@@ -59,6 +59,26 @@
       .map((s) => String(s || '').trim()).filter(Boolean);
   }
 
+  // Speak a whole line at a time. A voice sounds much more natural with a full stretch of text
+  // than with one short fragment at a time. A line is only split, between sentences, when it
+  // is long. [{ text, pause }]: pause is the breath in ms before the next chunk (0 at the end).
+  function chunkLines(lines, max = 220) {
+    const out = [];
+    for (const line of lines || []) {
+      const sentences = splitSentences(line);
+      const chunks = [];
+      let cur = '';
+      for (const s of sentences) {
+        if (cur && (cur + ' ' + s).length > max) { chunks.push(cur); cur = s; }
+        else cur = cur ? cur + ' ' + s : s;
+      }
+      if (cur) chunks.push(cur);
+      chunks.forEach((text, i) => out.push({ text, pause: i < chunks.length - 1 ? 250 : 450 }));
+    }
+    if (out.length) out[out.length - 1].pause = 0;
+    return out;
+  }
+
   // What the reply SAYS: the on-screen lines minus stage directions, emoji and the like.
   // Helplines are the exception: spoken exactly as shown, word for word.
   function spokenLines(r) {
@@ -66,6 +86,6 @@
     return replyLines(r).map((l) => (help.has(l) ? l : speakable(l))).filter(Boolean);
   }
 
-  root.VoiceText = { splitSentences, respell, fixTranscript, replyLines, speakable, spokenLines };
+  root.VoiceText = { splitSentences, respell, fixTranscript, replyLines, speakable, spokenLines, chunkLines };
   if (typeof module !== 'undefined') module.exports = root.VoiceText;
 })(typeof window !== 'undefined' ? window : globalThis);

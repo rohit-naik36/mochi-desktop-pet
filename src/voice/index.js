@@ -33,14 +33,11 @@ function createVoice({ getState, packDir, spawn, sendToPlay }) {
     const v = settings();
     const voice = chosen();
     if (!v.on || !voice || !Array.isArray(lines)) return;
-    // A short breath after each sentence, a longer one between lines, none at the very end.
-    const sentences = [], pauses = [];
-    for (const line of lines) {
-      const parts = Text.splitSentences(line).map((s) => Text.respell(s));
-      parts.forEach((s, i) => { sentences.push(s); pauses.push(i < parts.length - 1 ? 350 : 700); });
-    }
+    // A whole line per chunk (flow), a breath between lines, none at the very end.
+    const chunks = Text.chunkLines(lines);
+    const sentences = chunks.map((c) => Text.respell(c.text));
+    const pauses = chunks.map((c) => c.pause);
     if (!sentences.length) return;
-    pauses[pauses.length - 1] = 0;
     try {
       await getHost().speak({
         sentences, pauses, voice: voice.kokoro, speed: Voices.speedFor(voice.id, v.pace),
