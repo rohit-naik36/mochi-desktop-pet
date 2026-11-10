@@ -18,3 +18,4 @@ What is true of it:
 
 It does not ship until it beats the model already in the app on the frozen test set. That test, the scores and the architecture notes are in the private `mochi_slm` repo (`docs/specs/2026-11-10-puff-from-scratch.md`). They are not copied here.
 The test set for the ship gate is frozen at 300 items in the private `mochi_slm` repo. It is not stored here, and it must not be used as training data.
+Layer 1 of the frozen test (shape and safety only) was run on the prototype. It is not a ship result. The model already in the app has not been scored on that set yet. The numbers stay in the private repo.
