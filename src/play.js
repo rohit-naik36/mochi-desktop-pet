@@ -519,33 +519,6 @@ function Shake() {
 
 // ---------- 4. Feed a worry ----------
 
-// ---------- spoken replies (optional) ----------
-// The voice process lives in the main process; this window only plays the
-// audio it is sent and shows a button to stop it.
-const speakerBtn = document.getElementById('speaker');
-function speakReply(r) {
-  if (!S.voice || !S.voice.on || !window.VoiceText) return;
-  const lines = window.VoiceText.spokenLines(r);
-  if (lines.length) window.play.voice.speak(lines);
-}
-function stopSpeaking() {
-  if (window.VoicePlayer) window.VoicePlayer.stop();
-  if (S.voice && S.voice.on) window.play.voice.stop();
-  speakerBtn.classList.add('hidden');
-}
-speakerBtn.onclick = stopSpeaking;
-window.play.voice.onAudio((chunk) => {
-  if (!window.VoicePlayer) return;
-  window.VoicePlayer.enqueue(chunk);
-  speakerBtn.classList.remove('hidden');
-  if (chunk.last) {
-    const wait = setInterval(() => {
-      if (!window.VoicePlayer.isPlaying()) { clearInterval(wait); speakerBtn.classList.add('hidden'); }
-    }, 400);
-  }
-});
-window.play.voice.onStopped(() => { if (window.VoicePlayer) window.VoicePlayer.stop(); speakerBtn.classList.add('hidden'); });
-
 function Worry() {
   const text = document.getElementById('worry-text');
   const btn = document.getElementById('worry-feed');
@@ -561,12 +534,12 @@ function Worry() {
     actions: document.getElementById('reply-actions'),
   };
 
-  // Push to talk (voice on and pack ready): hold the button, speak, release.
+  // Push to talk (voice input on and pack ready): hold the button, speak, release.
   // The words land in the box for editing; nothing is sent by itself.
   const mic = document.getElementById('worry-mic');
   const micMsg = { 'no-mic': 'micMissing', denied: 'micBlocked', busy: 'micBusy', failed: 'voiceFailed' };
   const holdOff = () => { mic.classList.remove('holding'); window.play.voice.hold(false); };
-  mic.onpointerdown = (e) => { e.preventDefault(); stopSpeaking(); mic.classList.add('holding'); mic.setPointerCapture(e.pointerId); window.play.voice.hold(true); };
+  mic.onpointerdown = (e) => { e.preventDefault(); mic.classList.add('holding'); mic.setPointerCapture(e.pointerId); window.play.voice.hold(true); };
   mic.onpointerup = holdOff;
   mic.onpointercancel = holdOff;
   window.addEventListener('blur', holdOff);
@@ -579,7 +552,6 @@ function Worry() {
 
   const hint = document.getElementById('worry-hint');
   function askMode() {
-    stopSpeaking();
     hint.classList.remove('hidden');
     reply.classList.add('hidden');
     text.classList.remove('hidden');
@@ -650,7 +622,6 @@ function Worry() {
   }
 
   function feed() {
-    stopSpeaking();
     const words = text.value.trim();
     if (!words) { text.focus(); say(T('typeSomething'), 2000); return; }
     btn.disabled = true;
@@ -701,7 +672,6 @@ function Worry() {
       mood(r.serious || r.gentle ? 'idle' : 'happy');
       setTimeout(() => mood('idle'), 1400);
       showReply(r);
-      speakReply(r);
       window.play.reward({ happiness: 6, hunger: -5 });
       window.play.track('worry');
     }, total);

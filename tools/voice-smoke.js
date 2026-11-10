@@ -1,11 +1,9 @@
-// Run on the Windows PC once the pack is in place:
-//   node tools/voice-smoke.js <packDir> [recording.wav]
-// Prints, for each of the six voices, how long the first sentence takes and the
-// real-time factor (under 1.0 is fine), and transcribes a 16 kHz mono 16-bit WAV if given.
+// Run on the Windows PC once the speech pack is in place:
+//   node tools/voice-smoke.js <packDir> <recording.wav>
+// Transcribes a 16 kHz mono 16-bit WAV with the real listening model and prints
+// the text plus how long it took (the first run also loads the model).
 const fs = require('fs');
 const { createEngine } = require('../src/voice/engine');
-const Voices = require('../src/voice/voices');
-const { MAX_RTF, MAX_FIRST_MS } = require('../src/voice/host');
 
 function readWav(file) {
   const b = fs.readFileSync(file);
@@ -16,15 +14,15 @@ function readWav(file) {
 
 (async () => {
   const [packDir, wav] = process.argv.slice(2);
-  if (!packDir) { console.error('usage: node tools/voice-smoke.js <packDir> [recording.wav]'); process.exit(1); }
+  if (!packDir || !wav) { console.error('usage: node tools/voice-smoke.js <packDir> <recording.wav>'); process.exit(1); }
+  const samples = readWav(wav);
+  const secs = samples.length / 16000;
   const eng = await createEngine(packDir);
-  await eng.tts('Hi.', Voices.VOICES[0].kokoro, 1); // load models, not timed
-  for (const v of Voices.VOICES) {
+  for (const label of ['first run (loads the model)', 'second run']) {
     const t0 = Date.now();
-    const r = await eng.tts('Hello, I am here with you.', v.kokoro, Voices.speedFor(v.id, 'default'));
-    const ms = Date.now() - t0, rtf = ms / ((r.pcm.length / r.rate) * 1000);
-    console.log(v.id.padEnd(8), v.kokoro.padEnd(10), 'first', String(ms).padStart(5), 'ms', 'rtf', rtf.toFixed(2),
-      rtf < MAX_RTF && ms < MAX_FIRST_MS ? 'OK' : 'TOO SLOW');
+    const text = await eng.stt(samples);
+    const ms = Date.now() - t0;
+    console.log(`${label}: ${ms} ms for ${secs.toFixed(1)} s of audio (x${(ms / 1000 / secs).toFixed(2)})`);
+    console.log('  transcript:', JSON.stringify(text));
   }
-  if (wav) console.log('transcript:', JSON.stringify(await eng.stt(readWav(wav))));
 })().catch((e) => { console.error(e); process.exit(1); });

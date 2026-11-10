@@ -15,9 +15,8 @@ const Idle = require('./idle');
 const VoicePerms = require('./voice/permissions');
 const VoicePack = require('./voice/pack');
 const VoiceHold = require('./voice/hold');
-const VoiceText = require('./voice/text');
+const VoiceTranscript = require('./voice/transcript');
 const VoiceCharacters = require('./voice/characters');
-const Voices = require('./voice/voices');
 // The demo app only (see src/demo-flag.js): normal and Store builds leave
 // src/demo out of the package and never load it.
 const DEMO = require('./demo-flag').isDemo(require('../package.json'), app.isPackaged, process.env);
@@ -76,7 +75,7 @@ const defaults = {
   silent: { auto: true, until: 0 }, // quiet on calls; until = manual silent mode end (ms)
   apps: false, // notice which app is in front (name only) for playful lines; off by default
   ai: { on: true }, // Smarter replies: the small model that ships with Mochi
-  voice: { on: false, voice: null, pace: 'default', packVersion: null }, // optional spoken replies (English); off by default
+  voice: { on: false, packVersion: null }, // optional voice input (English, push to talk); off by default
 };
 
 function loadState() {
@@ -183,7 +182,6 @@ function openPlay(game) {
   playWin.webContents.on('console-message', (_e, level, msg) => process.env.MOCHI_DEBUG && level >= 2 && console.log('play error:', msg));
   playWin.on('closed', () => {
     playWin = null;
-    stopVoice();
     dropRecorder();
     if (hidingUntil) return; // stays hidden until it's ready to come back
     win.showInactive();
@@ -206,35 +204,17 @@ ipcMain.handle('ai-reply', (_e, req = {}) => {
   return Ai.reply({ text: req.text, lang: req.lang, name: state.userName, pet: state.name, skin: state.skin });
 });
 
-// ---------- voice (optional, English, on this PC only) ----------
+// ---------- voice input (optional, English, on this PC only) ----------
 
-// The voice module and its process load only after the user turns voice on.
+// The voice module and its process load only after the user turns voice input on.
+// Mochi listens; it does not speak.
 let voice = null;
 const playSender = (e) => !!playWin && !playWin.isDestroyed() && e.sender === playWin.webContents;
 function getVoice() {
-  if (!voice) {
-    voice = require('./voice').createVoice({
-      getState: () => state,
-      packDir: VoicePack.packDir(app.getPath('userData')),
-      sendToPlay: (channel, payload) => { if (playWin && !playWin.isDestroyed()) playWin.webContents.send(channel, payload); },
-    });
-  }
+  if (!voice) voice = require('./voice').createVoice({ packDir: VoicePack.packDir(app.getPath('userData')) });
   return voice;
 }
-function stopVoice() { if (voice) voice.stop(); }
 function dropVoice() { if (voice) { voice.shutdown(); voice = null; } }
-
-// Speaks exactly the lines the reply shows on screen (the window decides the
-// lines; crisis and heavy-wording routing has already run by then).
-ipcMain.on('voice-speak', (e, lines) => {
-  if (!playSender(e) || !state.voice.on || !Array.isArray(lines)) {
-    console.log('[voice] not speaking:', !playSender(e) ? 'request not from the play window' : !state.voice.on ? 'voice is off' : 'bad lines');
-    return;
-  }
-  console.log('[voice] speaking', lines.length, 'line(s)');
-  getVoice().speak(lines.filter((l) => typeof l === 'string').slice(0, 12).map((l) => l.slice(0, 600)));
-});
-ipcMain.on('voice-stop', (e) => { if (playSender(e)) stopVoice(); });
 
 // Push-to-talk. The hidden recorder window is created on the first hold and
 // may use the microphone only while a hold is active (permissions.js).
@@ -294,7 +274,7 @@ ipcMain.on('rec-done', async (e, samples) => {
   if (!(samples instanceof Float32Array) || samples.length < 16000 * 0.3 || samples.length > 16000 * 31) return toPlay('voice-transcript', '');
   try {
     const text = await getVoice().getHost().transcribe(samples);
-    toPlay('voice-transcript', VoiceText.fixTranscript(text, [], VoiceCharacters.heardFixes()));
+    toPlay('voice-transcript', VoiceTranscript.fixTranscript(text, [], VoiceCharacters.heardFixes()));
   } catch { toPlay('voice-error', 'failed'); }
 });
 
@@ -350,7 +330,7 @@ function appsItem(M) {
 
 // One checkbox in Settings, on by default. Hidden in builds without the
 // model and outside a company.
-// ---------- voice settings (Windows, English) ----------
+// ---------- voice input settings (Windows, English) ----------
 
 let voiceDl = null; // { pct } while the voice pack downloads
 const VM = (key, count) => I18N.t(state.lang, 'menu.' + key, { pet: state.name, count });
@@ -389,36 +369,11 @@ function turnVoiceOff() {
   refreshTrayMenu();
 }
 
-async function turnVoiceOn() {
+function turnVoiceOn() {
   if (voicePackStatus() !== 'ready') { refreshTrayMenu(); return note('voiceNeedPack'); }
   state.voice.on = true;
   saveState();
   refreshTrayMenu();
-  // First time on: a short sentence is spoken to check this PC keeps up.
-  const r = await speedCheck();
-  if (r === 'ok') return;
-  turnVoiceOff();
-  note(r === 'slow' ? 'voiceTooSlow' : 'voiceFailedMenu');
-}
-
-async function speedCheck() {
-  const gender = state.petGender || 'nonbinary';
-  const saved = Voices.byId(state.voice.voice);
-  const voice = saved && saved.gender === gender ? saved : Voices.byId(Voices.defaultVoice(gender));
-  try {
-    const r = await getVoice().getHost().speedTest(voice.kokoro, Voices.speedFor(voice.id, state.voice.pace));
-    return r.ok ? 'ok' : 'slow';
-  } catch (e) {
-    console.error('[voice] speed test failed', e && e.message);
-    return 'failed';
-  }
-}
-
-async function testVoiceSpeed() {
-  const r = await speedCheck();
-  if (r === 'ok') note('voiceSpeedOk');
-  else if (r === 'slow') note('voiceTooSlow');
-  else note('voiceFailedMenu');
 }
 
 function removeVoicePack() {
@@ -430,36 +385,19 @@ function removeVoicePack() {
   refreshTrayMenu();
 }
 
-// The preview plays in the play room (the only place audio is played).
-function previewVoice() {
-  if (!state.voice.on) return;
-  const line = ["Hi, it's good to see you."];
-  if (playWin && !playWin.isDestroyed()) return getVoice().speak(line);
-  openPlay('worry');
-  setTimeout(() => { if (state.voice.on) getVoice().speak(line); }, 1500);
-}
-
 function voiceItem(M) {
-  if (process.platform !== 'win32') return null; // voice is Windows-only in 0.13.0
-  const model = require('./voice/menu').voiceMenuModel(state, voicePackStatus(), !!voiceDl);
-  const pack = model.packAction === 'downloading'
-    ? { label: VM('voiceDownloading', voiceDl ? voiceDl.pct : 0), enabled: false }
-    : model.packAction === 'remove'
+  if (process.platform !== 'win32') return null; // voice input is Windows-only in 0.13.0
+  const ready = voicePackStatus() === 'ready';
+  const pack = voiceDl
+    ? { label: VM('voiceDownloading', voiceDl.pct), enabled: false }
+    : ready
       ? { label: VM('voiceRemove'), click: removeVoicePack }
       : { label: VM('voiceDownload', Math.round(voiceManifest().totalBytes / 1e6)), click: downloadVoicePack };
   return { label: VM('voice'), submenu: [
-    { label: VM('voiceOn'), type: 'checkbox', checked: model.enabled, enabled: model.canEnable,
+    { label: VM('voiceOn'), type: 'checkbox', checked: !!state.voice.on, enabled: ready && !voiceDl,
       click: (i) => { if (i.checked) turnVoiceOn(); else turnVoiceOff(); } },
     { type: 'separator' },
-    ...model.voices.map((v) => ({ label: v.label, type: 'radio', checked: v.checked,
-      click: () => { state.voice.voice = v.id; saveState(); refreshTrayMenu(); } })),
-    { label: VM('voiceHear'), enabled: model.enabled, click: previewVoice },
-    { label: VM('voicePace'), submenu: [['default', 'paceDefault'], ['slower', 'paceSlower']].map(([id, key]) => ({
-      label: VM(key), type: 'radio', checked: model.pace === id,
-      click: () => { state.voice.pace = id; saveState(); refreshTrayMenu(); } })) },
-    { type: 'separator' },
     pack,
-    { label: VM('voiceTest'), enabled: model.enabled, click: testVoiceSpeed },
   ] };
 }
 
@@ -993,7 +931,7 @@ function buildMenu() {
         label: I18N.t(state.lang, 'gender.' + g),
         type: 'radio',
         checked: state.petGender === g,
-        click: () => { state.petGender = g; state.voice.voice = null; saveState(); refreshTrayMenu(); send('state', state); send('action', 'gender-changed'); },
+        click: () => { state.petGender = g; saveState(); refreshTrayMenu(); send('state', state); send('action', 'gender-changed'); },
       })) },
       { label: M('language'), ...tip('language'), submenu: I18N.LANGS.map((l) => ({
         label: l.label,
@@ -1250,7 +1188,8 @@ if (!gotLock) {
     if (IS_MAC) app.dock?.hide();
     loadState();
     state.ai = { ...defaults.ai, ...state.ai };
-    state.voice = { ...defaults.voice, ...state.voice };
+    state.voice = { on: !!(state.voice && state.voice.on), packVersion: (state.voice && state.voice.packVersion) || null }; // older saves also held voice/pace choices
+    VoicePack.removeLegacy(VoicePack.packDir(app.getPath('userData'))); // files from the retired spoken-replies model
     Ai.init(state.ai, aiChanged);
     if (state.apps && Apps.supported()) Apps.start(onApp);
     autoJoin();

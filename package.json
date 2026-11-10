@@ -126,8 +126,6 @@
   },
   "dependencies": {
     "@huggingface/transformers": "^3.8.0",
-    "cmu-pronouncing-dictionary": "^3.0.0",
-    "kokoro-js": "^1.2.1",
     "node-llama-cpp": "3.22.2"
   }
 }

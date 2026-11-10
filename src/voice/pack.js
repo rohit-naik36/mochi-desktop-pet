@@ -31,6 +31,10 @@ function status(dir, manifest) {
 
 function remove(dir) { try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* already gone */ } }
 
+// Mochi used to speak replies too. Its model (about 330 MB) is no longer used, so delete it
+// from a pack downloaded earlier. The listening model is never touched.
+function removeLegacy(dir) { remove(path.join(dir, 'models', 'onnx-community')); }
+
 const DISK = new Set(['ENOSPC', 'EACCES', 'EPERM', 'EROFS', 'ENOTDIR', 'EEXIST', 'ENOENT', 'EISDIR', 'EMFILE']);
 
 // One file. Resolves 'done' | 'network' | 'disk' | 'aborted'.
@@ -95,4 +99,4 @@ async function download({ dir, manifest, baseUrl, onProgress, signal }) {
   return { ok: true };
 }
 
-module.exports = { packDir, status, download, remove, sha256File };
+module.exports = { packDir, status, download, remove, removeLegacy, sha256File };

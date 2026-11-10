@@ -11,77 +11,36 @@ function fakeChannel(log) {
   const ch = { handlers: {} };
   ch.postMessage = (m) => {
     log.push(m);
-    if (m.type === 'tts') setImmediate(() => ch.handlers.message({ id: m.id, type: 'audio', pcm: new Float32Array(2400), rate: 24000 }));
+    if (m.type === 'stt') setImmediate(() => ch.handlers.message({ id: m.id, type: 'text', text: ' hello there ' }));
   };
   ch.on = (e, f) => { ch.handlers[e] = f; };
-  ch.kill = () => {};
+  ch.kill = () => { ch.killed = true; };
   return ch;
 }
-const mk = (voice, extra = {}) => {
-  const sent = [], log = [];
-  const state = { petGender: 'female', voice: { on: false, voice: null, pace: 'default', ...voice } };
-  const v = createVoice({ getState: () => state, packDir: '/x', spawn: () => fakeChannel(log), sendToPlay: (c, p) => sent.push([c, p]), ...extra });
-  return { v, sent, log, state };
-};
 
 (async () => {
-  // off: nothing happens, host never loaded
-  { const { v, log } = mk({ on: false });
-    await v.speak(['Hi.']);
-    assert.strictEqual(log.length, 0); assert(!loaded('host.js'), 'host not loaded while off'); v.shutdown(); }
+  const log = [];
+  let spawnedWith = null, ch = null;
+  const v = createVoice({ packDir: '/x', spawn: (dir) => { spawnedWith = dir; ch = fakeChannel(log); return ch; } });
+  assert(!loaded('host.js'), 'host not loaded until first use');
 
-  // on: respelled, kokoro id and speed passed, chunks forwarded
-  { const { v, sent, log } = mk({ on: true });
-    await v.speak(['Mochi says hi. Two sentences.']);
-    assert(loaded('host.js')); assert(!loaded('engine.js'), 'engine never in the main process');
-    const tts = log.filter((m) => m.type === 'tts');
-    assert.deepStrictEqual(tts.map((m) => m.text), ['Mo-chee says hi. Two sentences.']);
-    assert.strictEqual(tts[0].voice, 'af_heart'); assert.strictEqual(tts[0].speed, 0.9);
-    assert.strictEqual(sent.filter(([c]) => c === 'voice-audio').length, 1, 'one line, one chunk');
-    // a whole line per chunk, a breath between lines, none at the very end
-  { const { v, sent, log } = mk({ on: true });
-    await v.speak(['One. Two.', 'Three.']);
-    assert.deepStrictEqual(log.filter((m) => m.type === 'tts').map((m) => m.text), ['One. Two.', 'Three.']);
-    assert.deepStrictEqual(sent.filter(([c]) => c === 'voice-audio').map(([, p]) => p.pause), [450, 0]); v.shutdown(); }
-  // chosen voice + slower pace
-    v.shutdown(); }
-  { const { v, log } = mk({ on: true, voice: 'bella', pace: 'slower' });
-    await v.speak(['Hello there.']);
-    assert.strictEqual(log.find((m) => m.type === 'tts').voice, 'af_bella');
-    assert.strictEqual(log.find((m) => m.type === 'tts').speed, 0.86); v.shutdown(); }
+  // Listening works through the host; the engine never loads in the main process.
+  const text = await v.getHost().transcribe(new Float32Array(16000));
+  assert.strictEqual(text, ' hello there ');
+  assert(loaded('host.js')); assert(!loaded('engine.js'), 'engine never in the main process');
+  assert.strictEqual(spawnedWith, '/x');
+  assert.deepStrictEqual(log.map((m) => m.type), ['stt']);
 
-  // stop() tells the player
-  { const { v, sent } = mk({ on: true });
-    await v.speak(['One.']); sent.length = 0; v.stop();
-    assert(sent.some(([c]) => c === 'voice-stopped')); v.shutdown(); }
+  // Mochi does not speak any more: no speaking API, no audio messages.
+  assert.strictEqual(typeof v.speak, 'undefined');
+  assert.strictEqual(typeof v.getHost().speak, 'undefined');
+  assert.strictEqual(typeof v.getHost().speedTest, 'undefined');
 
-  // a new speak stops the old one first
-  { const { v, sent } = mk({ on: true });
-    const p1 = v.speak(['One. Two. Three.']); const p2 = v.speak(['Fresh.']);
-    await Promise.all([p1, p2]);
-    const firstStop = sent.findIndex(([c]) => c === 'voice-stopped');
-    assert(firstStop >= 0); v.shutdown(); }
-
-  // empty lines: nothing to say
-  { const { v, log } = mk({ on: true }); await v.speak([]); assert.strictEqual(log.length, 0); v.shutdown(); }
-
-  // worker failure is reported, not thrown
-  { const sent = []; const state = { petGender: 'male', voice: { on: true, voice: null, pace: 'default' } };
-    const bad = { handlers: {}, postMessage(m) { setImmediate(() => bad.handlers.message({ id: m.id, type: 'error', message: 'boom' })); }, on(e, f) { bad.handlers[e] = f; }, kill() {} };
-    const v = createVoice({ getState: () => state, packDir: '/x', spawn: () => bad, sendToPlay: (c, p) => sent.push([c, p]) });
-    await v.speak(['Hi.']);
-    assert(sent.some(([c, p]) => c === 'voice-error' && p === 'failed')); v.shutdown(); }
-
-  // gender not chosen yet: the neutral first voice (Fable) is used
-  { const { v, log } = mk({ on: true }, { }); v.shutdown();
-    const sent = [], l2 = []; const state = { petGender: null, voice: { on: true, voice: null, pace: 'default' } };
-    const v2 = createVoice({ getState: () => state, packDir: '/x', spawn: () => fakeChannel(l2), sendToPlay: (c, p) => sent.push([c, p]) });
-    await v2.speak(['Hi.']); assert.strictEqual(l2.find((m) => m.type === 'tts').voice, 'bm_fable'); v2.shutdown(); }
-
-  // a saved voice from another gender is not used (gender changed after choosing)
-  { const l3 = []; const state = { petGender: 'male', voice: { on: true, voice: 'bella', pace: 'default' } };
-    const v3 = createVoice({ getState: () => state, packDir: '/x', spawn: () => fakeChannel(l3), sendToPlay() {} });
-    await v3.speak(['Hi.']); assert.strictEqual(l3.find((m) => m.type === 'tts').voice, 'am_puck'); v3.shutdown(); }
-
+  // Shutdown stops the process, and a later call starts a new one.
+  v.shutdown(); assert.strictEqual(ch.killed, true);
+  const before = log.length;
+  await v.getHost().transcribe(new Float32Array(16000));
+  assert.strictEqual(log.length, before + 1);
+  v.shutdown();
   console.log('voice-index ok');
 })().catch((e) => { console.error(e); process.exit(1); });

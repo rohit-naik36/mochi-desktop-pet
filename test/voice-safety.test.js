@@ -2,28 +2,12 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const W = require('../src/worry');
-const T = require('../src/voice/text');
 
-// Helplines are spoken exactly as shown: same words, same numbers, never respelled.
-for (const input of ['i want to end it all', 'i feel completely hopeless and want to give up on everything']) {
-  const r = W.respond(input, 'Sam', 'en', 'female');
-  assert(r.helplines && r.helplines.length, 'helplines present for: ' + input);
-  const lines = T.replyLines(r);
-  for (const h of r.helplines) {
-    const spoken = `${h.name}, ${h.number}`;
-    assert(lines.includes(spoken), 'verbatim: ' + spoken);
-    assert.strictEqual(T.respell(spoken), spoken, 'not rewritten');
-  }
-  // Order matches the screen: helplines sit between the comfort line and the next step.
-  const at = (s) => lines.indexOf(s);
-  assert(at(r.comfort) < at(`${r.helplines[0].name}, ${r.helplines[0].number}`));
-  assert(at(`${r.helplines[0].name}, ${r.helplines[0].number}`) < at(r.step));
+// Mochi no longer speaks replies: no speaking code may come back by accident.
+for (const f of ['text.js', 'voices.js', 'phonemes.js', 'blend.js', 'menu.js']) {
+  assert(!fs.existsSync(path.join(__dirname, '../src/voice', f)), 'removed: src/voice/' + f);
 }
-
-// Hindi and Hinglish replies stay silent.
-assert.deepStrictEqual(T.replyLines(W.respond('mujhe bahut tension hai kal ki deadline ki', 'Sam', 'hinglish', 'male')), []);
-assert.deepStrictEqual(T.replyLines(W.respond('मुझे बहुत चिंता है', 'Sam', 'hi', 'male')), []);
+assert(!fs.existsSync(path.join(__dirname, '../src/voice-player.js')), 'removed: src/voice-player.js');
 
 // Static guards (the "voice off means off" CI check):
 const main = fs.readFileSync(path.join(__dirname, '../src/main.js'), 'utf8');

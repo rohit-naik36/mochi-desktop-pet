@@ -8,7 +8,9 @@ const b = pkg.build;
 assert(b.files.includes('!node_modules/sharp/**'), 'sharp (LGPL) stays out of the packaged app');
 assert(b.asarUnpack.includes('node_modules/onnxruntime-node/bin/**'), 'onnxruntime native files unpacked');
 assert(b.appx.capabilities.includes('microphone') && b.appx.capabilities.includes('runFullTrust'));
-assert(pkg.dependencies['kokoro-js'] && pkg.dependencies['@huggingface/transformers']);
+assert(pkg.dependencies['@huggingface/transformers'], 'speech-to-text engine is a dependency');
+// Spoken replies are gone: no speech-synthesis or pronunciation packages (one of them embedded GPL code).
+for (const d of ['kokoro-js', 'phonemizer', 'cmu-pronouncing-dictionary']) assert(!pkg.dependencies[d], d + ' must not be a dependency');
 // The voice pack is never bundled in the installer.
 assert(!JSON.stringify(b.extraResources).includes('voice'), 'no voice pack in extraResources');
 assert(!b.files.some((f) => /voice-pack/.test(f)) || b.files.every((f) => !/^src\/voice-pack/.test(f)));
@@ -21,8 +23,9 @@ const m = require('../src/voice/pack-manifest.json');
 if (!m.files.some((f) => /^TBD/.test(f.sha256))) {
   assert(m.files.every((f) => /^[0-9a-f]{64}$/.test(f.sha256) && f.bytes > 0));
   assert.strictEqual(m.totalBytes, m.files.reduce((n, f) => n + f.bytes, 0));
-  for (const v of ['af_heart', 'af_bella', 'am_puck', 'am_echo', 'bm_fable', 'af_alloy']) {
-    assert(m.files.some((f) => f.name.endsWith('voices/' + v + '.bin')), 'voice file for ' + v);
-  }
+  // Listening only: the pack holds the speech-to-text model and nothing that speaks.
+  assert(m.files.every((f) => /^models\/Xenova\/whisper-base\.en\//.test(f.name)), 'only the Whisper files');
+  assert(m.files.some((f) => /encoder_model\.onnx$/.test(f.name)) && m.files.some((f) => /decoder_model_merged\.onnx$/.test(f.name)));
+  assert(!m.files.some((f) => /kokoro|voices\//i.test(f.name)), 'no speaking files');
 }
 console.log('package-voice ok');

@@ -1,6 +1,6 @@
 // Run on the Windows PC (the build sandbox cannot reach huggingface.co):
 //   node tools/make-voice-pack.js <outDir> [--tag voice-pack-1] [--repo rohit-naik36/mochi-desktop-pet]
-// Downloads the Kokoro and Whisper files, writes them flat for a GitHub release
+// Downloads the Whisper (speech-to-text) files, writes them flat for a GitHub release
 // (slashes become "__"), and writes src/voice/pack-manifest.json with real
 // sizes and SHA-256. Upload everything in <outDir>/assets to the release.
 const fs = require('fs');
@@ -19,9 +19,7 @@ if (!out) { console.error('usage: node tools/make-voice-pack.js <outDir> [--tag 
 const tag = opt('--tag', 'voice-pack-1');
 const repo = opt('--repo', 'rohit-naik36/mochi-desktop-pet');
 
-const VOICE_FILES = ['af_heart', 'af_bella', 'am_puck', 'am_echo', 'bm_fable', 'af_alloy', 'bf_isabella', 'am_fenrir'].map((v) => `voices/${v}.bin`);
 const SOURCES = [
-  { id: 'onnx-community/Kokoro-82M-v1.0-ONNX', want: (f) => /^(config\.json|tokenizer\.json|tokenizer_config\.json|onnx\/model\.onnx)$/.test(f) || VOICE_FILES.includes(f) },
   { id: 'Xenova/whisper-base.en', want: (f) => /^(config|generation_config|preprocessor_config|tokenizer|tokenizer_config|special_tokens_map|normalizer|added_tokens|vocab)\.json$|^merges\.txt$|^onnx\/(encoder_model|decoder_model_merged)\.onnx$/.test(f) },
 ];
 

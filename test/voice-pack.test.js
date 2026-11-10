@@ -120,6 +120,19 @@ function serve({ cutAt = 0 } = {}) {
     assert(fs.existsSync(path.join(dir, 'sub', 'c.bin'))); assert.strictEqual(Pack.status(dir, m), 'ready');
     s.srv.close(); }
 
+  // removeLegacy deletes the retired spoken-replies model and leaves the listening model alone
+  { const dir = tmp();
+    const old = path.join(dir, 'models', 'onnx-community', 'Kokoro-82M-v1.0-ONNX', 'onnx');
+    const keep = path.join(dir, 'models', 'Xenova', 'whisper-base.en', 'onnx');
+    fs.mkdirSync(old, { recursive: true }); fs.mkdirSync(keep, { recursive: true });
+    fs.writeFileSync(path.join(old, 'model.onnx'), 'k'); fs.writeFileSync(path.join(keep, 'encoder_model.onnx'), 'w');
+    Pack.removeLegacy(dir);
+    assert(!fs.existsSync(path.join(dir, 'models', 'onnx-community')), 'speaking model removed');
+    assert(fs.existsSync(path.join(keep, 'encoder_model.onnx')), 'listening model kept');
+    Pack.removeLegacy(dir); // safe to repeat
+    Pack.removeLegacy(path.join(dir, 'does-not-exist')); // safe when there is no pack
+  }
+
   assert.strictEqual(Pack.packDir('/u'), path.join('/u', 'voice-pack'));
   console.log('voice-pack ok');
 })().catch((e) => { console.error(e); process.exit(1); });

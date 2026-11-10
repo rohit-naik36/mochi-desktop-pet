@@ -1,3 +1,5 @@
+> **Superseded 10 Nov 2026.** Spoken replies (text to speech, voices, phonemizer, characters) were removed. Mochi now only listens (push-to-talk). Kept for history; see `voice-windows-test-pass.md` and `voice-licences.md` for what ships.
+
 # Mochi voice: design spec (v0.13.0)
 
 Date: 2026-11-06. Status: DRAFT, design approved by the founder in chat on 6 Nov; this written spec is awaiting review.

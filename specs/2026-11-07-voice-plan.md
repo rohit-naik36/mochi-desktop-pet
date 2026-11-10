@@ -1,3 +1,5 @@
+> **Superseded 10 Nov 2026.** Spoken replies (text to speech, voices, phonemizer, characters) were removed. Mochi now only listens (push-to-talk). Kept for history; see `voice-windows-test-pass.md` and `voice-licences.md` for what ships.
+
 # Mochi Voice (v0.13.0) Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
