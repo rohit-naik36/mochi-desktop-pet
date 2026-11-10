@@ -19,3 +19,4 @@ What is true of it:
 Decision, 10 Nov 2026: proceed with the model already in the app. Puff stays a lab prototype and will not be wired into the pet.
 
 Layer 1 of the frozen test (shape and safety only) was run on both. The score table, the two misses, and the handoff for Notion are in the private `mochi_slm` repo at `eval/results/2026-11-10-decision.md`. Quality scores are not done. This is not a release, and the test set is not stored here.
+A first pass of the five quality scores was written for the model already in the app. It is a draft. It is not trusted until 50 replies are scored by hand. The sheet stays in the private repo. This is not a release.
