@@ -131,6 +131,8 @@ npm run dist:mac     # on a Mac
 
 Code: `src/main.js` (window, tray, movement), `src/pet.html|css|js` (the pet, its moods, reminders).
 
+Worry-model progress, including the 10 Nov prototype that is not in the app yet, is in [PROGRESS.md](PROGRESS.md).
+
 ### Mochi for Teams (company edition)
 
 The buddy stays free. Companies add their own helplines, anonymous weekly insights and the HR dashboard. Where things live:
