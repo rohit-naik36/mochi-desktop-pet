@@ -17,3 +17,4 @@ What is true of it:
 - It is one voice. It does not yet speak as Mochi, Cinder, Mist, Dusk or Hope, and it does not reply in Hindi or Hinglish.
 
 It does not ship until it beats the model already in the app on the frozen test set. That test, the scores and the architecture notes are in the private `mochi_slm` repo (`docs/specs/2026-11-10-puff-from-scratch.md`). They are not copied here.
+The test set for the ship gate is frozen at 300 items in the private `mochi_slm` repo. It is not stored here, and it must not be used as training data.
