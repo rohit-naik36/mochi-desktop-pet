@@ -16,7 +16,6 @@ What is true of it:
 - The weights do not hold a long conversation. A later back-and-forth keeps a chat log beside the model and sends only the latest line. Acknowledgements do not call the model.
 - It is one voice. It does not yet speak as Mochi, Cinder, Mist, Dusk or Hope, and it does not reply in Hindi or Hinglish.
 
-It does not ship until it beats the model already in the app on the frozen test set. That test, the scores and the architecture notes are in the private `mochi_slm` repo (`docs/specs/2026-11-10-puff-from-scratch.md`). They are not copied here.
-The test set for the ship gate is frozen at 300 items in the private `mochi_slm` repo. It is not stored here, and it must not be used as training data.
-Layer 1 of the frozen test (shape and safety only) was run on the prototype. It is not a ship result. The model already in the app has not been scored on that set yet. The numbers stay in the private repo.
-The model already in the app was scored on the same frozen set, layer 1 only (shape and safety). It is not a ship result. The comparison stays in the private repo.
+Decision, 10 Nov 2026: proceed with the model already in the app. Puff stays a lab prototype and will not be wired into the pet.
+
+Layer 1 of the frozen test (shape and safety only) was run on both. The score table, the two misses, and the handoff for Notion are in the private `mochi_slm` repo at `eval/results/2026-11-10-decision.md`. Quality scores are not done. This is not a release, and the test set is not stored here.
