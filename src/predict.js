@@ -43,8 +43,8 @@
   }
 
   // Beta(1,1) prior plus the slot's counts and half of each neighbour's.
-  function range(a, b, n) {
-    const A = a + 1, B = b + 1, p = A / (A + B), sd = Math.sqrt((p * (1 - p)) / (A + B + 1));
+  function range(a, b, n, pa = 1, pb = 1) {
+    const A = a + pa, B = b + pb, p = A / (A + B), sd = Math.sqrt((p * (1 - p)) / (A + B + 1));
     return { p, lo: Math.max(0, p - Z * sd), hi: Math.min(1, p + Z * sd), n, ready: n >= MIN_N };
   }
 
@@ -71,6 +71,47 @@
     return 0;
   }
 
-  root.Predict = { NUDGES, SLOTS, fresh, sanitize, slotOf, record, predict, should, wait };
+  // ---- mood: how likely is a low day (1 or 2) after the last three days? ----
+  const MOOD_SOFT = 0.35; // the opener turns gentle only when the lower bound reaches this
+
+  function parseDay(s) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s));
+    return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null;
+  }
+  const dayKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+  // 0 = low, 1 = mid, 2 = high: the mean mood of the three days before d (at least two must exist).
+  function context(moods, d) {
+    const got = [];
+    for (let k = 1; k <= 3; k++) {
+      const v = moods[dayKey(new Date(d.getFullYear(), d.getMonth(), d.getDate() - k))];
+      if (typeof v === 'number' && v >= 1 && v <= 5) got.push(v);
+    }
+    if (got.length < 2) return null;
+    const mean = got.reduce((x, y) => x + y, 0) / got.length;
+    return mean < 2.5 ? 0 : mean < 3.5 ? 1 : 2;
+  }
+
+  function lowMoodChance(moods, today) {
+    const none = range(0, 0, 0, 2, 3), t = parseDay(today);
+    if (!moods || typeof moods !== 'object' || Array.isArray(moods) || !t) return none;
+    const ctx = context(moods, t);
+    if (ctx == null) return none;
+    let low = 0, total = 0;
+    for (const k of Object.keys(moods)) {
+      const d = parseDay(k), v = moods[k];
+      if (!d || typeof v !== 'number' || v < 1 || v > 5 || context(moods, d) !== ctx) continue;
+      total++;
+      if (Math.round(v) <= 2) low++;
+    }
+    return range(low, total - low, total, 2, 3); // Dirichlet(1 x 5) folded to low vs not low
+  }
+
+  function softOpener(moods, today) {
+    const x = lowMoodChance(moods, today);
+    return x.ready && x.lo >= MOOD_SOFT;
+  }
+
+  root.Predict = { NUDGES, SLOTS, fresh, sanitize, slotOf, record, predict, should, wait, lowMoodChance, softOpener };
   if (typeof module !== 'undefined') module.exports = root.Predict;
 })(typeof window !== 'undefined' ? window : globalThis);

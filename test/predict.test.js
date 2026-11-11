@@ -93,3 +93,46 @@ test('record ignores an unknown nudge or outcome', () => {
   P.record(r, 'water', 'maybe', at(0, 9));
   assert.equal(JSON.stringify(r), before);
 });
+
+// ---- mood ----
+const key = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+// n consecutive days ending the day before `today`, every day given by mood(i), i = 0 oldest
+const history = (today, n, mood) => {
+  const [y, m, d] = today.split('-').map(Number), out = {};
+  for (let i = 0; i < n; i++) out[key(new Date(y, m - 1, d - n + i))] = mood(i);
+  return out;
+};
+
+test('with no mood history the mood model is not ready and does not change the opener', () => {
+  const x = P.lowMoodChance({}, '2026-11-11');
+  assert.equal(x.ready, false);
+  assert.equal(P.softOpener({}, '2026-11-11'), false);
+});
+
+test('after a long run of low days, another low day looks likely and the opener turns soft', () => {
+  const moods = history('2026-11-11', 30, (i) => 1 + (i % 2));
+  const x = P.lowMoodChance(moods, '2026-11-11');
+  assert.equal(x.ready, true);
+  assert.ok(x.p > 0.7);
+  assert.equal(P.softOpener(moods, '2026-11-11'), true);
+});
+
+test('after a run of good days the opener stays normal, even with plenty of history', () => {
+  const moods = history('2026-11-11', 30, (i) => 4 + (i % 2));
+  const x = P.lowMoodChance(moods, '2026-11-11');
+  assert.equal(x.ready, true);
+  assert.ok(x.p < 0.2);
+  assert.equal(P.softOpener(moods, '2026-11-11'), false);
+});
+
+test('days across a year boundary count as consecutive', () => {
+  const moods = history('2027-01-01', 30, () => 1);
+  assert.equal(P.softOpener(moods, '2027-01-01'), true);
+});
+
+test('garbage mood data never throws and never turns the opener soft', () => {
+  for (const bad of [null, undefined, 'x', [], { '2026-11-10': 9, '2026-11-09': 'x', '2026-11-08': null }]) {
+    assert.equal(P.softOpener(bad, '2026-11-11'), false);
+  }
+  assert.equal(P.softOpener({}, 'not a date'), false);
+});
