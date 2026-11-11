@@ -180,7 +180,7 @@ window.pet.onAction((a) => {
   else if (a === 'mood') askMood();
   else if (a === 'gratitude') askGratitude();
   else if (a === 'big-call') bigCall();
-  else if (a.startsWith('demo-nudge-') && NUDGES[a.slice(11)]) fireNudge(a.slice(11)); // sent by the demo app only
+  else if (a.startsWith('demo-nudge-') && NUDGES[a.slice(11)]) fireNudge(a.slice(11), true); // sent by the demo app only: never deferred
   else if (a.startsWith('app-') && !bubbleSticky && !hushed() && !asleep) { setMode('happy', 900); say(T('apps.' + a.slice(4)), { ms: 8000 }); }
   else if (a.startsWith('sneaky-') && !bubbleSticky && !hushed()) { float('👀'); say(T('sneaky.' + a.slice(7)), { ms: 7000 }); }
   else if (a === 'schedule-changed') {
@@ -258,7 +258,7 @@ function nudgeButtons(key) {
   ];
 }
 
-function fireNudge(key) {
+function fireNudge(key, force = false) {
   const nd = NUDGES[key];
   if (!S.nudges[key]) return scheduleNudge(key, nd.every());
   if (bubbleSticky || upsetKey) return scheduleNudge(key, 2); // don't stack reminders
@@ -266,6 +266,19 @@ function fireNudge(key) {
   if (hushed()) return scheduleNudge(key, 3); // on a call or in silent mode: try again after
   if (asleep) return scheduleNudge(key, nd.every()); // you're away or it's bedtime
   if (idleSec >= 5 * 60) return scheduleNudge(key, 5); // nobody at the desk right now
+  if (force) return showNudge(key);
+  // Learn my rhythm: only after every guard above. It may say "a better time is
+  // coming" (minutes), never more than one extra interval; when it is not ready
+  // or the lookup fails, the reminder shows on the normal timer.
+  window.pet.rhythmWait(key, nd.every()).catch(() => 0).then((m) => {
+    if (m > 0) return scheduleNudge(key, m);
+    if (bubbleSticky || upsetKey || asleep) return scheduleNudge(key, 2); // changed while we asked
+    showNudge(key);
+  });
+}
+
+function showNudge(key) {
+  const nd = NUDGES[key];
   if (mode === 'sleep') setMode('idle', 0);
   if (nd.anim) setMode(nd.anim, 3200);
   say(T(key + '.lines'), { sticky: true, actions: nudgeButtons(key) });
@@ -279,6 +292,7 @@ function fireNudge(key) {
 function getUpset(key) {
   if (upsetKey) return;
   upsetKey = key;
+  window.pet.rhythmNote(key, 'ignored'); // a reminder nobody answered teaches the model too
   window.pet.glideCenter();
   setMode('upset', Infinity);
   say(T(key + '.upset'), { sticky: true, actions: nudgeButtons(key) });
@@ -308,6 +322,7 @@ function nudgeDone(key) {
 
 function nudgeSnoozed(key) {
   window.pet.insight('snoozed', key);
+  window.pet.rhythmNote(key, 'ignored');
   clearTimeout(upsetTimers[key]);
   const wasUpset = calmDown();
   setMode('idle', 3000);
