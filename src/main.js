@@ -12,6 +12,7 @@ const Ai = require('./ai');
 const Apps = require('./apps');
 const Device = require('./device');
 const Idle = require('./idle');
+const Away = require('./away');
 // The demo app only (see src/demo-flag.js): normal and Store builds leave
 // src/demo out of the package and never load it.
 const DEMO = require('./demo-flag').isDemo(require('../package.json'), app.isPackaged, process.env);
@@ -293,25 +294,21 @@ ipcMain.on('track', (_e, event, n = 1) => {
 // ---------- breaks, calls and silent mode ----------
 
 // "Done" is only a click. After it, see whether the keyboard and mouse really
-// go quiet for a moment within a few minutes. Only yes or no is kept.
-const AWAY_SEC = { eyes: 20, water: 45, stretch: 60 };
+// go quiet for a moment within a few minutes (src/away.js). This runs for
+// everyone; only yes or no is kept, and the playful nudge and the company
+// counts are for Mochi for Teams only.
 let lastSneaky = 0;
 function checkAway(key) {
-  const need = AWAY_SEC[key];
-  if (!need || !teamsOn()) return;
-  const started = Date.now();
-  const timer = setInterval(() => {
-    const idle = Idle.get();
-    if (idle >= need) {
-      clearInterval(timer);
-      noteInsight('away', key);
+  Away.watch(key, {
+    onAway: () => {
+      if (teamsOn()) noteInsight('away', key); // unchanged: company counts only while the company is active
       saveState();
-    } else if (Date.now() - started > 4 * MIN_MS) {
-      clearInterval(timer);
+    },
+    onNoBreak: () => {
       // A playful nudge, at most once every two hours, never on a call.
-      if (!quietNow() && Date.now() - lastSneaky > 120 * MIN_MS) { lastSneaky = Date.now(); send('action', 'sneaky-' + key); }
-    }
-  }, 2000);
+      if (teamsOn() && !quietNow() && Date.now() - lastSneaky > 120 * MIN_MS) { lastSneaky = Date.now(); send('action', 'sneaky-' + key); }
+    },
+  });
 }
 
 // On a call (mic or camera in use), or in manual silent mode, Mochi fades
