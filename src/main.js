@@ -282,7 +282,7 @@ function aiChanged(s) {
 ipcMain.on('track', (_e, event, n = 1) => {
   if (typeof event !== 'string') return;
   n = Math.max(1, Math.min(100, Math.round(Number(n)) || 1));
-  if (Insights.NUDGES.includes(event)) { noteInsight('done', event); checkAway(event); }
+  if (Insights.NUDGES.includes(event)) { noteInsight('done', event); reminderLog.done(event); checkAway(event); }
   else noteInsight('feature', event);
   const unlocked = Progress.record(state.stats, event, n);
   saveState();
@@ -309,8 +309,12 @@ function noteRhythm(nudge, outcome) {
   Predict.record(rhythm(), nudge, outcome, new Date());
   saveState();
 }
+// One reminder, one outcome (see Predict.reminderLog): 'upset' = nobody answered, 'ignored' = snoozed.
+const reminderLog = Predict.reminderLog(noteRhythm);
 ipcMain.on('rhythm-note', (_e, key, outcome) => {
-  if (Predict.NUDGES.includes(key) && outcome === 'ignored') noteRhythm(key, outcome);
+  if (!Predict.NUDGES.includes(key)) return;
+  if (outcome === 'ignored') reminderLog.snoozed(key);
+  else if (outcome === 'upset') reminderLog.upset(key);
 });
 // The pet asks before showing a reminder: minutes to wait, 0 = show it now.
 const dueSince = {};
@@ -385,6 +389,7 @@ function noteInsight(kind, value) {
 }
 ipcMain.on('insight', (_e, kind, value) => {
   if (!['mood', 'worry', 'shown', 'snoozed'].includes(kind)) return;
+  if (kind === 'shown' && Predict.NUDGES.includes(value)) reminderLog.shown(value); // settles an unanswered one from before
   noteInsight(kind, typeof value === 'number' ? value : String(value || '').slice(0, 20));
   saveState();
 });

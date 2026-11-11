@@ -10,6 +10,7 @@
   const Z = 1.28; // about an 80% lower bound
   const THRESHOLD = 0.5; // act on a reminder only when the lower bound reaches this
   const STEP_MIN = 15;
+  const EXPLORE = 0.2; // one in five reminders at an unlikely hour is shown anyway, so a changed routine can be learned
 
   const zeros = () => new Array(SLOTS).fill(0);
 
@@ -24,9 +25,9 @@
   // Anything that is not a well-formed rhythm (missing, old, damaged) becomes an empty one.
   function sanitize(x) {
     const f = fresh();
+    if (x && typeof x === 'object' && typeof x.on === 'boolean') f.on = x.on; // an opt-out survives a damaged file
     if (!x || typeof x !== 'object' || x.v !== 1 || !x.w || !NUDGES.every((n) => x.w[n] && okArr(x.w[n].a) && okArr(x.w[n].b))) return f;
     for (const n of NUDGES) f.w[n] = { a: x.w[n].a.slice(), b: x.w[n].b.slice() };
-    if (typeof x.on === 'boolean') f.on = x.on;
     return f;
   }
 
@@ -62,13 +63,27 @@
 
   // Minutes to wait before showing a reminder that was due at dueSince: 0 = show it now.
   // Never waits past maxMin in total, and only waits for a slot that looks better.
-  function wait(r, nudge, now, dueSince, maxMin) {
+  function wait(r, nudge, now, dueSince, maxMin, rand = Math.random) {
     const left = maxMin - (now - dueSince) / 60000;
-    if (left <= 0 || should(r, nudge, now)) return 0;
+    if (left <= 0 || should(r, nudge, now) || rand() < EXPLORE) return 0;
     for (let m = STEP_MIN; m <= left; m += STEP_MIN) {
       if (should(r, nudge, new Date(now.getTime() + m * 60000))) return m;
     }
     return 0;
+  }
+
+  // One reminder, one outcome. A reminder nobody answers (upset), then snoozed or
+  // answered late, must not be counted two or three times. record(key, 'ignored')
+  // is called once per reminder that ends unanswered or snoozed; a Done is
+  // settled by the break check instead (see main.js), so done() only clears.
+  function reminderLog(record) {
+    const open = {};
+    return {
+      upset: (k) => { open[k] = true; },
+      shown: (k) => { if (open[k]) { delete open[k]; record(k, 'ignored'); } }, // the last one never got an answer
+      snoozed: (k) => { delete open[k]; record(k, 'ignored'); },
+      done: (k) => { delete open[k]; },
+    };
   }
 
   // ---- mood: how likely is a low day (1 or 2) after the last three days? ----
@@ -112,6 +127,6 @@
     return x.ready && x.lo >= MOOD_SOFT;
   }
 
-  root.Predict = { NUDGES, SLOTS, fresh, sanitize, slotOf, record, predict, should, wait, lowMoodChance, softOpener };
+  root.Predict = { NUDGES, SLOTS, fresh, sanitize, slotOf, record, predict, should, wait, reminderLog, lowMoodChance, softOpener };
   if (typeof module !== 'undefined') module.exports = root.Predict;
 })(typeof window !== 'undefined' ? window : globalThis);

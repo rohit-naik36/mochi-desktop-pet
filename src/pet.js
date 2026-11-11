@@ -292,7 +292,7 @@ function showNudge(key) {
 function getUpset(key) {
   if (upsetKey) return;
   upsetKey = key;
-  window.pet.rhythmNote(key, 'ignored'); // a reminder nobody answered teaches the model too
+  window.pet.rhythmNote(key, 'upset'); // nobody answered: counted once, when it is settled
   window.pet.glideCenter();
   setMode('upset', Infinity);
   say(T(key + '.upset'), { sticky: true, actions: nudgeButtons(key) });

@@ -71,11 +71,11 @@ test('wait: not ready fires now; a good hour ahead is waited for; nothing good o
   many(r, 'water', 'acted', at(0, 11), 20);
   many(r, 'water', 'acted', at(0, 12), 20);
   const now = at(0, 10, 15);
-  assert.equal(P.wait(r, 'water', now, now, 120), 45);
-  assert.equal(P.wait(r, 'water', now, new Date(now - 120 * 60_000), 120), 0, 'already waited the whole cap');
+  assert.equal(P.wait(r, 'water', now, now, 120, () => 0.9), 45);
+  assert.equal(P.wait(r, 'water', now, new Date(now - 120 * 60_000), 120, () => 0.9), 0, 'already waited the whole cap');
   const bad = P.fresh();
   for (const h of [10, 11, 12, 13]) many(bad, 'water', 'ignored', at(0, h), 20);
-  assert.equal(P.wait(bad, 'water', at(0, 10), at(0, 10), 60), 0, 'no better slot inside the window');
+  assert.equal(P.wait(bad, 'water', at(0, 10), at(0, 10), 60, () => 0.9), 0, 'no better slot inside the window');
 });
 
 test('sanitize turns anything invalid into an empty rhythm and keeps the on flag', () => {
@@ -135,4 +135,31 @@ test('garbage mood data never throws and never turns the opener soft', () => {
     assert.equal(P.softOpener(bad, '2026-11-11'), false);
   }
   assert.equal(P.softOpener({}, 'not a date'), false);
+});
+
+test('an unlikely hour is sometimes tried anyway, so a changed routine can be learned', () => {
+  const r = P.fresh();
+  many(r, 'water', 'ignored', at(0, 9), 20);
+  many(r, 'water', 'ignored', at(0, 10), 20);
+  many(r, 'water', 'acted', at(0, 11), 20);
+  many(r, 'water', 'acted', at(0, 12), 20);
+  const now = at(0, 10, 15);
+  assert.equal(P.wait(r, 'water', now, now, 120, () => 0.1), 0, 'explore: show it now');
+  assert.equal(P.wait(r, 'water', now, now, 120, () => 0.9), 45, 'otherwise wait for the good hour');
+});
+
+test('a damaged rhythm still keeps the opt-out', () => {
+  assert.equal(P.sanitize({ on: false, v: 1, w: {} }).on, false);
+  assert.deepEqual(P.sanitize({ on: false, v: 1, w: {} }).w, P.fresh().w);
+});
+
+test('one reminder is counted once however it ends', () => {
+  const run = (f) => { const seen = []; const L = P.reminderLog((k, o) => seen.push(k + ':' + o)); f(L); return seen; };
+  assert.deepEqual(run((L) => { L.upset('water'); L.shown('water'); }), ['water:ignored'], 'ignored until the next one appears');
+  assert.deepEqual(run((L) => { L.upset('water'); L.snoozed('water'); L.shown('water'); }), ['water:ignored'], 'snoozed after sulking: once');
+  assert.deepEqual(run((L) => { L.upset('water'); L.upset('water'); L.snoozed('water'); }), ['water:ignored']);
+  assert.deepEqual(run((L) => { L.upset('water'); L.done('water'); L.shown('water'); }), [], 'a late Done replaces the sulk');
+  assert.deepEqual(run((L) => { L.snoozed('eyes'); }), ['eyes:ignored']);
+  assert.deepEqual(run((L) => { L.shown('eyes'); }), [], 'nothing to settle');
+  assert.deepEqual(run((L) => { L.upset('water'); L.shown('eyes'); }), [], 'other reminders are separate');
 });

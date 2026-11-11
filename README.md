@@ -28,7 +28,7 @@ Mochi goes to bed at 11pm (pick 10pm, 11pm, 12am or 1am under **🌙 Sleep sched
 
 ## Learns your rhythm
 
-Mochi counts, per hour of the week, whether you acted on each reminder (after you tap Done it also checks that your keyboard and mouse really went quiet for a moment, using only the time since your last input). It uses the counts to hold a reminder for a better moment, never more than one extra interval, and to open the daily mood question gently after a run of low days. It takes about two months of use before it starts to change anything, and until then reminders keep their normal timing. Everything stays on your computer and none of it goes into company totals. Right-click → **Reminders** → **Learn my rhythm** turns it off, **Forget my rhythm** clears it.
+Mochi counts, per hour of the week, whether you acted on each reminder (after you tap Done it also checks that your keyboard and mouse really went quiet for a moment, using only the time since your last input). It uses the counts to hold a reminder for a better moment, never more than one extra interval, and to open the daily mood question gently after a run of low days. It needs a few weeks of use (up to about two months for a reminder that comes once an hour) before it starts to change anything, and until then reminders keep their normal timing. Everything stays on your computer and none of it goes into company totals. Right-click → **Settings** → **Reminders** → **Learn my rhythm** turns it off, **Forget my rhythm** clears it.
 
 ## Mood check-in and gratitude jar
 
