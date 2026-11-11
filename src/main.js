@@ -324,6 +324,9 @@ ipcMain.handle('rhythm-wait', (_e, key, everyMin) => {
   return m;
 });
 
+// After a run of low days, the daily mood question opens more gently.
+ipcMain.handle('rhythm-soft', () => rhythm().on && Predict.softOpener(state.moods || {}, Progress.dayKey()));
+
 function checkAway(key) {
   Away.watch(key, {
     onAway: () => {

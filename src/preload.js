@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld('pet', {
   track: (event, n) => ipcRenderer.send('track', event, n),
   insight: (kind, value) => ipcRenderer.send('insight', kind, value),
   rhythmWait: (key, everyMin) => ipcRenderer.invoke('rhythm-wait', key, everyMin),
+  rhythmSoft: () => ipcRenderer.invoke('rhythm-soft'),
   rhythmNote: (key, outcome) => ipcRenderer.send('rhythm-note', key, outcome),
   onAchievement: (fn) => ipcRenderer.on('achievement', (_e, id) => fn(id)),
   onQuiet: (fn) => ipcRenderer.on('quiet', (_e, q) => fn(q)),

@@ -461,9 +461,10 @@ function dailyCheckIns() {
   else if (h >= 18 && h < 23 && !jar.some((g) => g.d === today()) && moods[today()]) askGratitude();
 }
 
-function askMood() {
+async function askMood() {
   const faces = ['😞', '🙁', '😐', '🙂', '😄'];
-  say(T('moodAsk'), {
+  const soft = await window.pet.rhythmSoft().catch(() => false); // a low day looks likely: ask gently
+  say(T(soft ? 'moodAskSoft' : 'moodAsk'), {
     sticky: true,
     actions: faces.map((f, i) => ({ label: f, run: () => saveMood(i + 1) })),
   });

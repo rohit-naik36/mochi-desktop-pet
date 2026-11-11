@@ -694,6 +694,7 @@
       breakStart: ['Break time! Stand up, stretch, sip water. I\'ll call you back ☕', 'Five minutes off the clock. Look out a window ☕'],
       breakOver: ['Break\'s over{n}! Ready for another round?', 'Recharged? Let\'s do one more focus round together.'],
       moodAsk: ['How are you feeling today{n}?', 'Quick check-in: how\'s your heart today?', 'Weather report for your mood, please? ☁️'],
+      moodAskSoft: ['No pressure{n}, just checking in. How are you today?', 'No pressure{n}. How is your heart today? Any answer is okay. 🤍'],
       moodReply: {
         1: ["I'm really sorry it's a rough one{n}. I'm right here. Want to tell me about it?", "Oh no. Come here, cloud hug 🤗 Want to talk or breathe for a bit?"],
         2: ["Meh days are allowed. Want to feed me whatever's bugging you?", "Not great, huh? Let's make the rest of today a little softer."],
@@ -753,6 +754,7 @@
       breakStart: ['ब्रेक टाइम! उठो, स्ट्रेच करो, पानी पियो। मैं वापस बुला {g:लूँगा|लूँगी} ☕'],
       breakOver: ['ब्रेक ख़त्म{n}! एक और राउंड?', 'रीचार्ज हो गए? चलो एक और फ़ोकस राउंड साथ में।'],
       moodAsk: ['आज कैसा महसूस कर रहे हो{n}?', 'छोटा सा चेक-इन: आज दिल का मौसम कैसा है? ☁️'],
+      moodAskSoft: ['कोई दबाव नहीं{n}। आज दिल कैसा है? जो भी जवाब हो, ठीक है। 🤍'],
       moodReply: {
         1: ['मुझे बहुत अफ़सोस है कि आज का दिन भारी है{n}। मैं यहीं हूँ। बताना चाहोगे?', 'अरे। इधर आओ, बादल वाली झप्पी 🤗 बात करें या थोड़ा साँस लें?'],
         2: ['फीके दिन भी चलते हैं। जो परेशान कर रहा है, मुझे खिला दो?', 'ज़्यादा अच्छा नहीं, हम्म? बाक़ी दिन थोड़ा नरम बनाते हैं।'],
@@ -799,6 +801,7 @@
       breakStart: ['Break time! Utho, stretch karo, paani piyo. Main wapas bula {g:lunga|lungi} ☕'],
       breakOver: ['Break khatam{n}! Ek aur round?', 'Recharge ho gaye? Chalo ek aur focus round saath mein.'],
       moodAsk: ['Aaj kaisa feel kar rahe ho{n}?', 'Chhota sa check-in: aaj dil ka mausam kaisa hai? ☁️'],
+      moodAskSoft: ['Koi pressure nahi{n}. Aaj dil kaisa hai? Jo bhi jawab ho, theek hai. 🤍'],
       moodReply: {
         1: ['Mujhe bahut afsos hai ki aaj ka din heavy hai{n}. Main yahin hoon. Batana chahoge?', 'Arre. Idhar aao, cloud wali jhappi 🤗 Baat karein ya thoda saans lein?'],
         2: ['Meh din bhi chalte hain. Jo pareshaan kar raha hai, mujhe khila do?', 'Zyada accha nahi, hmm? Baaki din thoda soft banate hain.'],
