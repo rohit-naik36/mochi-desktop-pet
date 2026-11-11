@@ -26,6 +26,10 @@ Right-click → **Focus with me** → 25 or 50 minutes. A small 🛡️ timer ap
 
 Mochi goes to bed at 11pm (pick 10pm, 11pm, 12am or 1am under **🌙 Sleep schedule**). If you're still busy at the computer a while after its bedtime, it opens one eye and asks if you work night shifts. Say yes and it keeps your hours instead: it works through the night with you and sleeps whenever you're away for a long while. It dozes off when nobody has touched the mouse or keyboard for 30 minutes, and reminders wait while you're away. When you come back after a proper sleep, it asks how you slept and gives you something positive for the day.
 
+## Learns your rhythm
+
+Mochi counts, per hour of the week, whether you acted on each reminder (after you tap Done it also checks that your keyboard and mouse really went quiet for a moment, using only the time since your last input). It uses the counts to hold a reminder for a better moment, never more than one extra interval, and to open the daily mood question gently after a run of low days. It takes about two months of use before it starts to change anything, and until then reminders keep their normal timing. Everything stays on your computer and none of it goes into company totals. Right-click → **Reminders** → **Learn my rhythm** turns it off, **Forget my rhythm** clears it.
+
 ## Mood check-in and gratitude jar
 
 Once a day (from late morning) your buddy asks how you feel with five faces. On a rough day it offers to eat a worry or breathe with you, and gives back one good thing from your gratitude jar. Each evening it asks for one good thing that happened today and keeps it in the jar. Both are also in the right-click menu. Everything stays on your computer.
