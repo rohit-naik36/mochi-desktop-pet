@@ -1,0 +1,51 @@
+{
+  "_comment": "Mochi LinkedIn autopilot settings. Edit freely; the workflow reads this on every run.",
+  "model": "claude-sonnet-5-5",
+  "cliModel": "sonnet",
+  "linkedinVersion": "202610",
+  "cadence": {
+    "maxPostsPerWeek": 2,
+    "minDaysBetweenPosts": 2,
+    "noRepeatTopicDays": 21,
+    "lookbackDaysFirstRun": 30
+  },
+  "gates": {
+    "minSelectScore": 28,
+    "minCriticScore": 8,
+    "minChars": 400,
+    "maxChars": 1800,
+    "maxHashtags": 3,
+    "maxEmoji": 2
+  },
+  "pillars": {
+    "ship": { "target": 0.4, "what": "A released feature, explained through the moment it changes for the user." },
+    "build": { "target": 0.3, "what": "One engineering or product decision and its trade-off (offline-first, privacy, licensing, performance)." },
+    "why": { "target": 0.2, "what": "Why a calm desk buddy matters: focus, breaks, wellbeing at work. Founder perspective, no medical claims." },
+    "teams": { "target": 0.1, "what": "Mochi for Teams. Only used once teamsIsPublic is true." }
+  },
+  "teamsIsPublic": false,
+  "buildInPublicScopes": [],
+  "ignoreTypes": ["chore", "test", "ci", "build", "style", "refactor"],
+  "bannedTerms": [
+    "Ascendion", "Canibuild", "intern", "revenue", "pricing", "price", "investor", "funding",
+    "excited to announce", "thrilled to announce", "game-changer", "revolutionary",
+    "Codex", "small language model", "SLM", "distillation", "LoRA", "Pulse"
+  ],
+  "allowedLinks": ["mochicuddle.com", "apps.microsoft.com", "github.com/rohit-naik36/mochi-desktop-pet"],
+  "defaultLink": "https://mochicuddle.com",
+  "metrics": {
+    "_comment": "Only numbers listed here (or present in the source material) may appear in a post. Update when you have real figures.",
+    "facts": []
+  },
+  "images": {
+    "default": "docs/assets/press",
+    "byScope": {
+      "worry": "docs/assets/press/4-worry.png",
+      "focus": "docs/assets/press/6-focus.png",
+      "sleep": "docs/assets/press/7-sleep.png",
+      "play": "docs/assets/press/9-play.png",
+      "skins": "docs/assets/press/2-skins.png",
+      "remind": "docs/assets/press/3-remind.png"
+    }
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "_comment": "Company operating settings. Agents read this; the CEO changes it.",
+  "productPublicName": "Mochi",
+  "renamePending": "Kemu (on hold)",
+  "branches": {
+    "integration": "develop",
+    "release": "main",
+    "agentPrefix": "agent/"
+  },
+  "devCycle": {
+    "maxIssuesPerCycle": 1,
+    "maxFixRounds": 2
+  },
+  "guard": {
+    "maxFiles": 30,
+    "maxChangedLines": 800,
+    "protectedPaths": [
+      ".github/",
+      "LICENSE",
+      "PRIVACY.md",
+      "company/CHARTER.md",
+      "company/config.json",
+      "package-lock.json",
+      "build/",
+      "docs/privacy.html",
+      "docs/terms.html",
+      "growth/linkedin/config.json",
+      "company/scripts/",
+      "company/workflows/",
+      "company/test/",
+      "AGENTS.md",
+      ".claude/",
+      "growth/linkedin/linkedin-autopilot.yml",
+      "company/agents/",
+      "company/playbooks/"
+    ],
+    "protectedPackageJsonKeys": [
+      "version",
+      "build",
+      "dependencies",
+      "devDependencies",
+      "license"
+    ],
+    "sensitivePatterns": [
+      {
+        "name": "network call",
+        "paths": [
+          "src/",
+          "server/",
+          "teams/",
+          "pulse/"
+        ],
+        "regex": "\\bfetch\\(|https?://|\\bnet\\.request|XMLHttpRequest|new WebSocket|\\baxios\\b|\\bhttps?\\.(request|get)\\("
+      },
+      {
+        "name": "permission or device access",
+        "paths": [
+          "src/"
+        ],
+        "regex": "setPermissionRequestHandler|setPermissionCheckHandler|getUserMedia|askForMediaAccess|desktopCapturer|setLoginItemSettings|powerMonitor"
+      },
+      {
+        "name": "telemetry or analytics",
+        "paths": [
+          ""
+        ],
+        "regex": "telemetry|analytics|sentry|posthog|mixpanel|segment\\.io|amplitude",
+        "flags": "i"
+      },
+      {
+        "name": "weakened Electron security",
+        "paths": [
+          "src/"
+        ],
+        "regex": "nodeIntegration:\\s*true|contextIsolation:\\s*false|webSecurity:\\s*false|sandbox:\\s*false|allowRunningInsecureContent"
+      },
+      {
+        "name": "possible secret",
+        "paths": [
+          ""
+        ],
+        "regex": "sk-ant-[A-Za-z0-9_-]{8,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----"
+      },
+      {
+        "name": "confidential HQ material",
+        "paths": [
+          ""
+        ],
+        "regex": "\\bCONFIDENTIAL\\b|INTERNAL ONLY|little-smoke-hq",
+        "flags": "i"
+      }
+    ],
+    "binaryLineWeight": 50
+  },
+  "models": {
+    "default": "sonnet",
+    "strategy": "opus"
+  },
+  "notion": {
+    "enabled": false,
+    "_comment": "Replaced by the private HQ repo (free). Kept off."
+  },
+  "codex": {
+    "enabled": false,
+    "_comment": "When true, the Engineering Manager may label issues agent:codex; the CEO's account triggers Codex on them (see README)."
+  },
+  "hq": {
+    "repo": "rohit-naik36/little-smoke-hq",
+    "_comment": "Private repo for briefs, approvals, weekly reports and strategy. Agents reach it only through company/scripts/hq.mjs, which refuses public repos and the code repo."
+  },
+  "codeRepo": "rohit-naik36/mochi-desktop-pet",
+  "release": {
+    "allowedFiles": [
+      "package.json",
+      "package-lock.json",
+      "docs/changelog.html"
+    ],
+    "branchPrefix": "release/"
+  },
+  "requiredChecks": [
+    "company-tests",
+    "company-security-verdict"
+  ],
+  "rulesets": {
+    "_comment": "Required status checks for the branch rulesets (activation checklist). Tests check these match the jobs the workflows produce.",
+    "develop": [
+      "company-tests",
+      "company-security-verdict"
+    ],
+    "main": [
+      "company-tests"
+    ]
+  }
+}

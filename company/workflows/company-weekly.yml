@@ -1,0 +1,44 @@
+name: "Company · Weekly exec meeting"
+# Third-party actions are referenced by tag until you run company/scripts/pin-actions.sh,
+# which pins each one to the commit SHA the tag points at (review the diff before committing).
+on:
+  schedule:
+    - cron: "17 2 * * 1"   # Monday 07:47 IST
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: company
+  cancel-in-progress: false
+jobs:
+  exec:
+    if: vars.COMPANY_MODE == 'on'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      actions: read
+      id-token: write   # required by claude-code-action
+    env:
+      HQ_REPO: ${{ vars.HQ_REPO }}
+      HQ_GH_TOKEN: ${{ secrets.HQ_GH_TOKEN }}
+      CODE_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with: { fetch-depth: 0, ref: develop }
+      - name: Agent git identity
+        run: |
+          git config --global user.name "Little Smoke Studio Bot"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - uses: anthropics/claude-code-action@8a29bc6f0ae11a363721054b6739feba6adabe57 # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are the Chief of Staff chairing Little Smoke Studio's weekly exec meeting with the CPO, CTO, CMO and COO (subagents in .claude/agents/). Read company/agents/chief-of-staff.md and company/CHARTER.md first.
+            Run company/playbooks/weekly.md now. Repository: ${{ github.repository }}. Document changes go on a branch named agent/weekly-<date> with a PR to develop.
+          claude_args: >-
+            --model ${{ vars.COMPANY_STRATEGY_MODEL || 'opus' }}
+            --max-turns 100
+            --allowedTools "Read,Glob,Grep,Task,Bash(ls:*),Bash(cat:*),Bash(date:*),Bash(TZ=Asia/Kolkata date:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh run list:*),Bash(gh run view:*),Bash(gh label list:*),Bash(gh issue create:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh issue close:*),Bash(node company/scripts/hq.mjs:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git fetch:*),Bash(git branch:*),Bash(git rev-parse:*),Bash(git merge-base:*),Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin agent/:*),Bash(git push -u origin agent/:*),Bash(gh pr create:*),Edit,Write"
+            --disallowedTools "WebFetch,WebSearch"
