@@ -1,0 +1,47 @@
+name: "Company · Dev cycle"
+# Third-party actions are referenced by tag until you run company/scripts/pin-actions.sh,
+# which pins each one to the commit SHA the tag points at (review the diff before committing).
+on:
+  schedule:
+    - cron: "47 4,8,12,16,20 * * *"   # 10:17, 14:17, 18:17, 22:17, 02:17 IST
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: company
+  cancel-in-progress: false
+jobs:
+  build:
+    if: vars.COMPANY_MODE == 'on'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write   # required by claude-code-action
+    env:
+      HQ_REPO: ${{ vars.HQ_REPO }}
+      HQ_GH_TOKEN: ${{ secrets.HQ_GH_TOKEN }}
+      CODE_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with: { fetch-depth: 0, ref: develop }
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci --ignore-scripts
+      - name: Agent git identity
+        run: |
+          git config --global user.name "Little Smoke Studio Bot"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - uses: anthropics/claude-code-action@8a29bc6f0ae11a363721054b6739feba6adabe57 # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are the Engineering Manager of Little Smoke Studio. Your role: company/agents/engineering-manager.md (read it first), and company/CHARTER.md.
+            Run company/playbooks/dev-cycle.md now. Delegate implementation to the engineer subagents in .claude/agents/.
+            Repository: ${{ github.repository }}. Base branch for all PRs: develop. Push only branches named agent/<issue>-<slug>.
+          claude_args: >-
+            --model ${{ vars.COMPANY_MODEL || 'sonnet' }}
+            --max-turns 120
+            --allowedTools "Read,Glob,Grep,Task,Bash(ls:*),Bash(cat:*),Bash(date:*),Bash(TZ=Asia/Kolkata date:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh run list:*),Bash(gh run view:*),Bash(gh label list:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git fetch:*),Bash(git branch:*),Bash(git rev-parse:*),Bash(git merge-base:*),Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin agent/:*),Bash(git push -u origin agent/:*),Bash(gh pr create:*),Bash(gh pr comment:*),Bash(gh pr edit:*),Bash(npm test),Edit,Write,Bash(node company/scripts/hq.mjs:*)"
+            --disallowedTools "WebFetch,WebSearch"

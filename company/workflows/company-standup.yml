@@ -1,0 +1,59 @@
+name: "Company · Daily standup"
+# Third-party actions are referenced by tag until you run company/scripts/pin-actions.sh,
+# which pins each one to the commit SHA the tag points at (review the diff before committing).
+on:
+  schedule:
+    - cron: "17 1 * * *"   # 06:47 IST
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: company
+  cancel-in-progress: false
+jobs:
+  standup:
+    # Runs when on (full standup) or paused (brief only). Off stops it.
+    if: vars.COMPANY_MODE == 'on' || vars.COMPANY_MODE == 'pause'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+      actions: read
+      id-token: write   # required by claude-code-action to obtain its GitHub App token
+    env:
+      HQ_REPO: ${{ vars.HQ_REPO }}
+      HQ_GH_TOKEN: ${{ secrets.HQ_GH_TOKEN }}   # HQ-only token; never the code-repo token
+      CODE_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with: { persist-credentials: false }
+      - name: Full standup
+        if: vars.COMPANY_MODE == 'on'
+        uses: anthropics/claude-code-action@8a29bc6f0ae11a363721054b6739feba6adabe57 # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are the Chief of Staff of Little Smoke Studio. Your role: company/agents/chief-of-staff.md (read it first).
+            Run company/playbooks/standup.md now. Today's date in IST: run `TZ=Asia/Kolkata date +%F`.
+            Company mode: on. Repository: ${{ github.repository }}. The CEO is @${{ github.repository_owner }}.
+          claude_args: >-
+            --model ${{ vars.COMPANY_MODEL || 'sonnet' }}
+            --max-turns 80
+            --allowedTools "Read,Glob,Grep,Task,Bash(ls:*),Bash(cat:*),Bash(date:*),Bash(TZ=Asia/Kolkata date:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh run list:*),Bash(gh run view:*),Bash(gh label list:*),Bash(gh issue create:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh issue close:*),Bash(node company/scripts/hq.mjs:*),Write"
+            --disallowedTools "WebFetch,WebSearch"
+      - name: Brief only (paused)
+        if: vars.COMPANY_MODE == 'pause'
+        uses: anthropics/claude-code-action@8a29bc6f0ae11a363721054b6739feba6adabe57 # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are the Chief of Staff of Little Smoke Studio. Your role: company/agents/chief-of-staff.md (read it first).
+            The company is PAUSED. Do only steps 1 (read state) and 6 (write the brief) of company/playbooks/standup.md.
+            Do not apply decisions, triage, label, create work or open approvals. Start the brief with "Company paused".
+            Today's date in IST: run `TZ=Asia/Kolkata date +%F`. Repository: ${{ github.repository }}.
+          claude_args: >-
+            --model ${{ vars.COMPANY_MODEL || 'sonnet' }}
+            --max-turns 40
+            --allowedTools "Read,Glob,Grep,Task,Bash(ls:*),Bash(cat:*),Bash(date:*),Bash(TZ=Asia/Kolkata date:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh run list:*),Bash(gh run view:*),Bash(gh label list:*),Bash(node company/scripts/hq.mjs:*),Write"
+            --disallowedTools "WebFetch,WebSearch"

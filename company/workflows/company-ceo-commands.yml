@@ -1,0 +1,34 @@
+name: "Company · CEO commands"
+# Install in BOTH the code repo and the private HQ repo. No AI runs here. Works in every mode,
+# so the CEO can always /pause, /resume, /approve or /reject.
+# Third-party actions are referenced by tag until you run company/scripts/pin-actions.sh,
+# which pins each one to the commit SHA the tag points at (review the diff before committing).
+on:
+  issue_comment:
+    types: [created]
+permissions: {}
+concurrency:
+  group: ceo-${{ github.repository }}-${{ github.event.issue.number }}
+  cancel-in-progress: false
+jobs:
+  command:
+    if: >-
+      github.event.comment.user.login == github.repository_owner &&
+      github.event.comment.author_association == 'OWNER' &&
+      startsWith(github.event.comment.body, '/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with: { persist-credentials: false }
+      - name: Apply command
+        env:
+          GH_TOKEN: ${{ secrets.COMPANY_GH_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
+          IS_PR: ${{ github.event.issue.pull_request != null }}
+          BODY: ${{ github.event.comment.body }}
+          CODE_REPO: ${{ vars.CODE_REPO || github.repository }}
+          COMPANY_MODE: ${{ vars.COMPANY_MODE }}   # read by /approve; PR merges need "on"
+        run: node company/scripts/ceo-command.mjs
