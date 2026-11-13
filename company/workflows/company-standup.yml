@@ -57,3 +57,9 @@ jobs:
             --max-turns 40
             --allowedTools "Read,Glob,Grep,Task,Bash(ls:*),Bash(cat:*),Bash(date:*),Bash(TZ=Asia/Kolkata date:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh run list:*),Bash(gh run view:*),Bash(gh label list:*),Bash(node company/scripts/hq.mjs:*),Write"
             --disallowedTools "WebFetch,WebSearch"
+      - name: Show Claude error (failure only)
+        if: failure()
+        run: |
+          f="$RUNNER_TEMP/claude-execution-output.json"
+          [ -f "$f" ] || { echo "no Claude output file"; exit 0; }
+          jq -r '[.. | objects | select(.type=="result")] | last | "subtype=\(.subtype) is_error=\(.is_error)\nresult=\((.result // "none") | tostring | .[0:500])"' "$f" || true
