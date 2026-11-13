@@ -39,6 +39,7 @@ describe("company workflows", () => {
       });
       test(`${f}/${name}: job declares its own minimal permissions`, () => assert.match(job, /\n    permissions:\n/));
       test(`${f}/${name}: respects COMPANY_MODE`, () => {
+        if (f === "company-pr-tests.yml") return assert.ok(!/COMPANY_MODE/.test(job), "company-tests must run in every mode: a skipped required check counts as passed");
         if (f === "company-ceo-commands.yml") return assert.ok(!/COMPANY_MODE/.test(job.split("steps:")[0]), "CEO commands must work in every mode");
         if (f === "company-standup.yml") {
           assert.match(job, /vars\.COMPANY_MODE == 'on' \|\| vars\.COMPANY_MODE == 'pause'/);

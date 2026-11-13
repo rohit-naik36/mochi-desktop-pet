@@ -15,7 +15,7 @@ concurrency:
 jobs:
   tests:
     name: company-tests
-    if: vars.COMPANY_MODE == 'on'
+    # Always runs: tests need no secrets, and a skipped required check counts as passed.
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
