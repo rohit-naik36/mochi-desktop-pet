@@ -57,4 +57,3 @@ Mochi does not knowingly collect any information from anyone, including children
 ## Changes and contact
 
 If this policy changes, the new version will be published here with a new date. For questions, open an issue at https://github.com/rohit-naik36/mochi-desktop-pet/issues.
-
