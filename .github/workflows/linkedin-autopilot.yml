@@ -1,0 +1,99 @@
+name: LinkedIn autopilot
+
+# Tue and Thu at 09:07 IST, plus right after a GitHub Release is published.
+# Posts only when something clears the quality bar; most runs may end in "no post".
+on:
+  schedule:
+    - cron: "37 3 * * 2,4"
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "dry-run or live"
+        default: "dry-run"
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: linkedin-autopilot
+  cancel-in-progress: false
+
+jobs:
+  post:
+    # Respects the company switch: pause/off stop public posting too.
+    if: vars.AUTOPILOT_MODE != 'off' && vars.COMPANY_MODE == 'on'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+
+      # The ledger lives on its own branch so bot commits never touch main.
+      - name: Install Claude Code CLI (uses your subscription)
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Load ledger
+        run: |
+          if git fetch origin growth-ledger 2>/dev/null; then
+            git show origin/growth-ledger:ledger.json > /tmp/ledger.json || echo '{"lastScan":null,"posts":[],"skips":[]}' > /tmp/ledger.json
+          else
+            echo '{"lastScan":null,"posts":[],"skips":[]}' > /tmp/ledger.json
+          fi
+
+      - name: Run autopilot
+        id: run
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_PERSON_URN: ${{ secrets.LINKEDIN_PERSON_URN }}
+          LINKEDIN_TOKEN_ISSUED: ${{ vars.LINKEDIN_TOKEN_ISSUED }}
+          AUTOPILOT_MODE: ${{ github.event.inputs.mode || vars.AUTOPILOT_MODE }}
+          FORCE_RELEASE: ${{ github.event.release.tag_name }}
+          LEDGER_PATH: /tmp/ledger.json
+          GH_TOKEN: ${{ github.token }}
+        run: node growth/linkedin/autopilot.mjs
+
+      - name: Save ledger
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp /tmp/ledger.json /tmp/ledger.keep.json
+          git worktree add -f /tmp/ledger-branch origin/growth-ledger 2>/dev/null \
+            || (git worktree add --detach /tmp/ledger-branch && cd /tmp/ledger-branch && git checkout --orphan growth-ledger && git rm -rfq .)
+          cd /tmp/ledger-branch
+          cp /tmp/ledger.keep.json ledger.json
+          git add ledger.json
+          git commit -qm "ledger: ${{ steps.run.outputs.status || 'run' }} $(date -u +%F)" || exit 0
+          git push origin HEAD:growth-ledger
+
+      # Tells you only when you need to act: token renewal or a failed publish.
+      - name: Token renewal reminder
+        if: steps.run.outputs.token_age >= 50
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh issue list --label linkedin-token --state open --json number -q '.[0].number' | grep -q .; then
+            gh label create linkedin-token --color FBCA04 2>/dev/null || true
+            gh issue create --label linkedin-token \
+              --title "Renew the LinkedIn token (about 2 minutes)" \
+              --body "The autopilot's LinkedIn token is ${{ steps.run.outputs.token_age }} days old and stops working at 60. From the repo root run: \`node growth/linkedin/auth.mjs\`. Close this issue afterwards."
+          fi
+
+      - name: Report a failed publish
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create linkedin-autopilot --color D93F0B 2>/dev/null || true
+          gh issue create --label linkedin-autopilot \
+            --title "LinkedIn autopilot failed $(date -u +%F)" \
+            --body "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

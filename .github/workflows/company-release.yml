@@ -1,0 +1,97 @@
+name: "Company · Weekly release"
+# Third-party actions are referenced by tag until you run company/scripts/pin-actions.sh,
+# which pins each one to the commit SHA the tag points at (review the diff before committing).
+on:
+  schedule:
+    - cron: "17 6 * * 4"   # Thursday 11:47 IST
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: company
+  cancel-in-progress: false
+jobs:
+  release:
+    if: vars.COMPANY_MODE == 'on'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write   # required by claude-code-action
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with: { fetch-depth: 0, ref: develop }
+      - name: Trusted scripts (the branch this workflow runs from)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with: { ref: "${{ github.sha }}", path: .trusted, persist-credentials: false }
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci --ignore-scripts
+      - name: Agent git identity
+        run: |
+          git config --global user.name "Little Smoke Studio Bot"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - uses: anthropics/claude-code-action@8a29bc6f0ae11a363721054b6739feba6adabe57 # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are the Release Manager of Little Smoke Studio. Your role: company/agents/release-manager.md (read it first), and company/CHARTER.md.
+            Run company/playbooks/release.md now. Repository: ${{ github.repository }}. Push only a branch named release/vX.Y.Z.
+          claude_args: >-
+            --model ${{ vars.COMPANY_MODEL || 'sonnet' }}
+            --max-turns 80
+            --allowedTools "Read,Glob,Grep,Task,Bash(ls:*),Bash(cat:*),Bash(date:*),Bash(TZ=Asia/Kolkata date:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh run list:*),Bash(gh run view:*),Bash(gh label list:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git fetch:*),Bash(git branch:*),Bash(git rev-parse:*),Bash(git merge-base:*),Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin release/:*),Bash(git push -u origin release/:*),Bash(gh pr create:*),Bash(npm test),Edit,Write"
+            --disallowedTools "WebFetch,WebSearch"
+      - name: Fresh trusted scripts
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with: { ref: "${{ github.sha }}", path: .trusted-final, persist-credentials: false }
+      - name: Validate the release decision and PR
+        id: rel
+        env:
+          GH_TOKEN: ${{ secrets.COMPANY_GH_TOKEN }}
+          CODE_REPO: ${{ github.repository }}
+        run: node .trusted-final/company/scripts/release-check.mjs .company/release.json
+      - name: Release guard and tests on the exact release commit
+        if: steps.rel.outputs.release == 'true'
+        env:
+          HEAD_SHA: ${{ steps.rel.outputs.head_sha }}
+          BRANCH: ${{ steps.rel.outputs.branch }}
+        run: |
+          git fetch origin "refs/heads/$BRANCH" develop
+          git checkout --detach "$HEAD_SHA"
+          node .trusted-final/company/scripts/guard.mjs --release origin/develop
+          npm ci --ignore-scripts
+          npm test
+      - name: Wait for company-tests on the release PR (required by the main ruleset)
+        if: steps.rel.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.COMPANY_GH_TOKEN }}
+          CODE_REPO: ${{ github.repository }}
+          PR: ${{ steps.rel.outputs.pr }}
+          HEAD_SHA: ${{ steps.rel.outputs.head_sha }}
+        run: node .trusted-final/company/scripts/release-check.mjs --wait-tests "$PR" "$HEAD_SHA"
+      - name: Merge the release PR into main
+        if: steps.rel.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.COMPANY_GH_TOKEN }}
+          PR: ${{ steps.rel.outputs.pr }}
+          HEAD_SHA: ${{ steps.rel.outputs.head_sha }}
+          REPO: ${{ github.repository }}
+        run: gh pr merge "$PR" --repo "$REPO" --merge --delete-branch --match-head-commit "$HEAD_SHA"
+      # develop accepts changes only through PRs (ruleset, no bypass). Instead of pushing to develop,
+      # open a sync PR from a sync/ branch that points at the new tip of main. It is tested and
+      # reviewed like any PR, and because it changes the protected version it waits for /approve.
+      - name: Open the main -> develop sync PR
+        if: steps.rel.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.COMPANY_GH_TOKEN }}
+          REPO: ${{ github.repository }}
+          VERSION: ${{ steps.rel.outputs.version }}
+        run: |
+          git fetch origin main
+          MAIN_SHA=$(git rev-parse origin/main)
+          BRANCH="sync/v${VERSION}"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" "${MAIN_SHA}:refs/heads/${BRANCH}"
+          gh pr create --repo "$REPO" --base develop --head "$BRANCH" \
+            --title "sync: bring v${VERSION} back into develop" \
+            --body "Release v${VERSION} is on main. This PR brings the version bump and changelog back into develop. It changes the protected package.json version, so it needs your /approve once its checks are green."
