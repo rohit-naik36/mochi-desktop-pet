@@ -25,7 +25,7 @@ function jobs(text) {
 }
 
 describe("company workflows", () => {
-  test("there are seven company workflows", () => assert.equal(files.length, 7, files.join(", ")));
+  test("there are eight company workflows", () => assert.equal(files.length, 8, files.join(", ")));
   for (const f of files) {
     const text = read(f);
     test(`${f}: default permissions are empty`, () => assert.match(text, /^permissions: \{\}$/m));
@@ -167,6 +167,21 @@ describe("company workflows", () => {
   });
   test("CEO commands receive the company mode", () => {
     assert.match(read("company-ceo-commands.yml"), /COMPANY_MODE: \$\{\{ vars\.COMPANY_MODE \}\}/);
+  });
+  describe("executive tasks keep web access and HQ access apart", () => {
+    const j = jobs(read("company-exec.yml"));
+    test("four jobs: pick, research, write, release", () => assert.deepEqual(Object.keys(j), ["pick", "research", "write", "release"]));
+    test("research has web tools and no token reaches the AI step", () => {
+      assert.match(j.research, /WebSearch,WebFetch/);
+      const ai = j.research.slice(j.research.indexOf("anthropics/claude-code-action"));
+      assert.ok(!/HQ_GH_TOKEN|COMPANY_GH_TOKEN/.test(ai));
+      assert.ok(!/\n    env:\n/.test(j.research));
+    });
+    test("write has HQ access and no web", () => {
+      assert.ok(!/WebSearch|WebFetch/.test(j.write.match(/--allowedTools "([^"]+)"/)[1]));
+      assert.ok(!/COMPANY_GH_TOKEN/.test(j.write));
+    });
+    test("pick and release run no AI", () => { for (const k of ["pick", "release"]) assert.ok(!/claude-code-action/.test(j[k]), k); });
   });
   test("LinkedIn autopilot stops when the company is paused or off", () => {
     assert.match(fs.readFileSync(linkedin, "utf8"), /vars\.COMPANY_MODE == 'on'/);
