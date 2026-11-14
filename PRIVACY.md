@@ -1,6 +1,6 @@
 # Mochi privacy policy
 
-_Last updated: 28 October 2026_
+_Last updated: 11 November 2026_
 
 Mochi is a desktop pet that keeps you company while you work. This policy explains what it stores and what it doesn't.
 
@@ -19,6 +19,9 @@ To remember things between sessions, Mochi keeps one file on your own PC (in you
 - your sleep schedule choice and the start and end times of your last 14 long breaks (so Mochi can learn a night shifter's hours)
 - your daily mood check-ins (a number from 1 to 5 per day)
 - the "good things" you put in the gratitude jar
+- when you tend to act on each reminder: counts per hour of the week, and whether your keyboard and mouse went quiet after you tapped Done (this uses only the time since your last input, never what you type)
+
+**Learn my rhythm** is on by default. Mochi uses those counts to show reminders at times you are likely to act on them, and to ask about your mood more gently after a run of low days. The counts stay on your computer, are never sent anywhere, and are never added to a company's team totals. Turn it off, or clear it, from the tray menu under **Settings → Reminders**: **Learn my rhythm** and **Forget my rhythm**.
 
 Worries you type into **Feed me a worry** are never saved. Mochi reads them on your computer to write a reply, then forgets them.
 
