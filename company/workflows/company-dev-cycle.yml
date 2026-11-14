@@ -45,3 +45,9 @@ jobs:
             --max-turns 120
             --allowedTools "Read,Glob,Grep,Task,Bash(ls:*),Bash(cat:*),Bash(date:*),Bash(TZ=Asia/Kolkata date:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh run list:*),Bash(gh run view:*),Bash(gh label list:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git fetch:*),Bash(git branch:*),Bash(git rev-parse:*),Bash(git merge-base:*),Bash(git checkout:*),Bash(git switch:*),Bash(git add:*),Bash(git commit:*),Bash(git push origin agent/:*),Bash(git push -u origin agent/:*),Bash(gh pr create:*),Bash(gh pr comment:*),Bash(gh pr edit:*),Bash(npm test),Edit,Write,Bash(node company/scripts/hq.mjs:*)"
             --disallowedTools "WebFetch,WebSearch"
+      - name: Agent summary
+        if: always()
+        run: |
+          f="$RUNNER_TEMP/claude-execution-output.json"
+          [ -f "$f" ] || { echo "no Claude output file"; exit 0; }
+          jq -r '[.. | objects | select(.type=="result")] | last | "turns=\(.num_turns) is_error=\(.is_error) denials=\(.permission_denials_count)\n\((.result // "none") | tostring | .[0:1500])"' "$f" | tee -a "$GITHUB_STEP_SUMMARY" || true
