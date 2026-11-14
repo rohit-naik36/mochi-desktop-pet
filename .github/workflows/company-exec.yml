@@ -1,0 +1,128 @@
+name: "Company · Executive tasks"
+# Runs one CPO/COO/CFO/CMO task from the private HQ repo per run, in two separated stages:
+#   research: web access, no HQ token, sees only the task title and body
+#   write:    HQ access through hq.mjs, no web access
+# Third-party actions are referenced by tag until you run company/scripts/pin-actions.sh,
+# which pins each one to the commit SHA the tag points at (review the diff before committing).
+on:
+  schedule:
+    - cron: "17 3,9,15 * * *"   # 08:47, 14:47, 20:47 IST
+    - cron: "7 2 * * 1"         # Monday 07:37 IST: also opens this week's LinkedIn task
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: company
+  cancel-in-progress: false
+jobs:
+  pick:
+    if: vars.COMPANY_MODE == 'on'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      number: ${{ steps.pick.outputs.number }}
+      role: ${{ steps.pick.outputs.role }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - name: Pick the next task (no AI)
+        id: pick
+        env:
+          HQ_REPO: ${{ vars.HQ_REPO }}
+          HQ_GH_TOKEN: ${{ secrets.HQ_GH_TOKEN }}
+          CODE_REPO: ${{ github.repository }}
+          CEO_LOGIN: ${{ github.repository_owner }}
+          WEEKLY: ${{ github.event.schedule == '7 2 * * 1' && '--weekly-linkedin' || '' }}
+        run: node company/scripts/exec-pick.mjs $WEEKLY
+
+  research:
+    needs: pick
+    if: vars.COMPANY_MODE == 'on' && needs.pick.outputs.number != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write   # required by claude-code-action
+    outputs:
+      notes: ${{ steps.notes.outputs.notes }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - name: Fetch the task brief (no AI; the token stays in this step)
+        env:
+          HQ_REPO: ${{ vars.HQ_REPO }}
+          HQ_GH_TOKEN: ${{ secrets.HQ_GH_TOKEN }}
+          CODE_REPO: ${{ github.repository }}
+          CEO_LOGIN: ${{ github.repository_owner }}
+          NUMBER: ${{ needs.pick.outputs.number }}
+          ROLE: ${{ needs.pick.outputs.role }}
+        run: node company/scripts/exec-pick.mjs --brief "$NUMBER" "$ROLE"
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are the ${{ needs.pick.outputs.role }} of Little Smoke Studio. Read company/agents/${{ needs.pick.outputs.role }}.md and company/CHARTER.md first.
+            Do the RESEARCH stage of company/playbooks/exec-task.md for the task in .company/task.md. Write .company/research.md and stop.
+          claude_args: >-
+            --model ${{ vars.COMPANY_MODEL || 'sonnet' }}
+            --max-turns 60
+            --allowedTools "Read,Glob,Grep,Write,WebSearch,WebFetch,Bash(date:*),Bash(TZ=Asia/Kolkata date:*)"
+            --disallowedTools "Edit"
+      - name: Hand the notes to the write stage
+        id: notes
+        run: |
+          f=.company/research.md
+          [ -f "$f" ] || echo "No research notes were produced." > "$f"
+          echo "notes=$(head -c 200000 "$f" | base64 -w0)" >> "$GITHUB_OUTPUT"
+
+  write:
+    needs: [pick, research]
+    if: vars.COMPANY_MODE == 'on' && needs.pick.outputs.number != '' && needs.research.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      id-token: write   # required by claude-code-action
+    env:
+      HQ_REPO: ${{ vars.HQ_REPO }}
+      HQ_GH_TOKEN: ${{ secrets.HQ_GH_TOKEN }}   # HQ-only token; never the code-repo token
+      CODE_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false, fetch-depth: 100, ref: develop }
+      - name: Unpack research notes
+        env:
+          NOTES: ${{ needs.research.outputs.notes }}
+        run: mkdir -p .company && printf '%s' "$NOTES" | base64 -d > .company/research.md
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are the ${{ needs.pick.outputs.role }} of Little Smoke Studio. Read company/agents/${{ needs.pick.outputs.role }}.md and company/CHARTER.md first.
+            Do the WRITE stage of company/playbooks/exec-task.md for HQ issue #${{ needs.pick.outputs.number }}. Research notes are in .company/research.md.
+          claude_args: >-
+            --model ${{ vars.COMPANY_MODEL || 'sonnet' }}
+            --max-turns 80
+            --allowedTools "Read,Glob,Grep,Write,Task,Bash(date:*),Bash(TZ=Asia/Kolkata date:*),Bash(git log:*),Bash(git show:*),Bash(node company/scripts/hq.mjs:*)"
+            --disallowedTools "WebFetch,WebSearch,Edit"
+
+  release:
+    # No AI. If either stage failed, put the task back in the queue so it is never stuck "in progress".
+    needs: [pick, research, write]
+    if: always() && vars.COMPANY_MODE == 'on' && needs.pick.outputs.number != '' && (needs.research.result == 'failure' || needs.write.result == 'failure' || needs.research.result == 'cancelled' || needs.write.result == 'cancelled')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - name: Return the task to the queue
+        env:
+          HQ_REPO: ${{ vars.HQ_REPO }}
+          HQ_GH_TOKEN: ${{ secrets.HQ_GH_TOKEN }}
+          CODE_REPO: ${{ github.repository }}
+          CEO_LOGIN: ${{ github.repository_owner }}
+          NUMBER: ${{ needs.pick.outputs.number }}
+        run: node company/scripts/exec-pick.mjs --release "$NUMBER"
