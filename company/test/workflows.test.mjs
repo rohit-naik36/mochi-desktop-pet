@@ -67,6 +67,12 @@ describe("company workflows", () => {
     assert.ok(!/node pr\//.test(t), "never runs scripts from the PR checkout");
     assert.match(t, /cancel-in-progress: false/);
   });
+  test("PR review accepts PRs opened by the dev cycle (claude[bot]) and no other bots", () => {
+    const t = read("company-pr-review.yml");
+    assert.match(t, /\n\s+allowed_bots: "claude"/, "without it the action refuses claude[bot] PRs and no verdict is produced");
+    assert.ok(!/allowed_bots: "\*"/.test(t), "never allow every bot");
+    assert.ok(!/restrict_untrusted_prs: "?false/.test(t), "keep the untrusted-PR restriction on");
+  });
   describe("PR review: verdict and routing are separate jobs (no circular required check)", () => {
     const t = read("company-pr-review.yml");
     const j = jobs(t);
