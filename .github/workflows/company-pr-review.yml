@@ -71,6 +71,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ github.token }}   # skip the Claude App OIDC exchange, which fails on pull_request_target
+          allowed_bots: "claude"   # the dev cycle opens PRs as claude[bot]; fork PRs never reach this job
           prompt: |
             You are the QA Lead of Little Smoke Studio. Read trusted/company/agents/qa-lead.md and trusted/company/CHARTER.md first.
             Follow trusted/company/playbooks/pr-review.md for PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
