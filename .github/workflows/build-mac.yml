@@ -2,26 +2,31 @@ name: Build Mac
 
 # Builds Mochi for macOS on a real Mac (universal: Apple silicon and Intel).
 #
-# Without secrets it builds an unsigned DMG for testing. Add these repository
-# secrets once the Apple Developer account exists:
+# Two jobs, so the signing certificate never meets untrusted code:
 #
-# Direct download (signed + notarized DMG for mochicuddle.com):
-#   MAC_CERT_P12        base64 of a .p12 with the "Developer ID Application" cert
+# - build:  pull requests and manual runs from any branch except main. Always unsigned.
+#           Uses no secrets at all: a PR runs its own copy of this file, so anything it
+#           could reach, a PR could take.
+# - signed: release tags (v*), releases called from tag-versions.yml, and manual runs on
+#           main. Signs with the Developer ID certificate and notarizes. Its secrets live in
+#           the "mac-signing" environment, which GitHub releases only to main and v* tags,
+#           so a run from any other branch cannot read them even if this file is changed.
+#
+# Secrets in the mac-signing environment (not repository secrets):
+#   MAC_CERT_P12        base64 of a .p12 with the "Developer ID Application" cert and its key
 #   MAC_CERT_PASSWORD   password of that .p12
 #   APPLE_ID            Apple ID email used for notarization
 #   APPLE_APP_PASSWORD  app-specific password for that Apple ID
 #   APPLE_TEAM_ID       10-character team ID
-#
-# Mac App Store package (.pkg to upload with Transporter):
+# Mac App Store package (optional, skipped until set), same environment:
 #   MAS_CERT_P12        base64 of a .p12 with "Apple Distribution" and
 #                       "Mac Installer Distribution" certs
 #   MAS_CERT_PASSWORD   password of that .p12
 #   MAS_PROVISION       base64 of the Mac App Store provisioning profile
-#   APPLE_TEAM_ID       (same as above)
 on:
   push:
     tags: ['v*']
-  # Test builds for pull requests (never published).
+  # Test builds for pull requests (never published, never signed).
   pull_request:
   workflow_dispatch:
   workflow_call:
@@ -31,22 +36,69 @@ on:
         required: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main')
     runs-on: macos-latest
+    permissions:
+      contents: write   # only for the private draft test build on manual runs
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ inputs.tag || github.ref }}
-      - uses: actions/setup-node@v4
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
 
-      - name: Build DMG and zip
+      - name: Build an unsigned DMG and zip (test build)
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npx electron-builder --mac --publish never
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: mochi-mac-unsigned
+          path: |
+            dist/*.dmg
+            dist/*-mac.zip
+
+      # Manual runs from a branch keep the test build in a draft release, which
+      # only the repo owner can see, so it can be downloaded without Actions.
+      - name: Keep a private test build
+        if: github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
+        with:
+          tag_name: mac-test-${{ github.run_number }}
+          name: Mac test build ${{ github.run_number }} (unsigned)
+          target_commitish: ${{ github.sha }}
+          draft: true
+          prerelease: true
+          files: |
+            dist/*.dmg
+            dist/*-mac.zip
+
+  signed:
+    if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' || inputs.tag != '')
+    runs-on: macos-latest
+    environment: mac-signing
+    permissions:
+      contents: write   # publish to the GitHub Release
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Build, sign and notarize the DMG and zip
         env:
           CSC_LINK: ${{ secrets.MAC_CERT_P12 }}
           CSC_KEY_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
@@ -54,17 +106,21 @@ jobs:
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          if [ -z "$CSC_LINK" ]; then
-            echo "No signing secrets set, building an unsigned DMG for testing"
-            # An empty CSC_LINK makes electron-builder treat the repo folder as a certificate.
-            unset CSC_LINK CSC_KEY_PASSWORD
-            export CSC_IDENTITY_AUTO_DISCOVERY=false
-            npx electron-builder --mac --publish never
-          else
-            npx electron-builder --mac --publish never
-          fi
+          # A release must never ship unsigned: stop if any secret is missing.
+          for v in CSC_LINK CSC_KEY_PASSWORD APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID; do
+            if [ -z "${!v}" ]; then echo "::error::$v is empty: check the mac-signing environment"; exit 1; fi
+          done
+          npx electron-builder --mac --publish never
 
-      - name: Build Mac App Store package
+      - name: Verify the signature and notarization
+        run: |
+          app=$(ls -d dist/mac-universal/*.app | head -1)
+          codesign --verify --deep --strict --verbose=2 "$app"
+          codesign -dv "$app" 2>&1 | grep -q "Authority=Developer ID Application" || { echo "::error::not signed with Developer ID"; exit 1; }
+          xcrun stapler validate "$app"
+          spctl --assess --type execute --verbose=2 "$app"
+
+      - name: Build Mac App Store package (skipped until the MAS secrets are set)
         env:
           MAS_CERT_P12: ${{ secrets.MAS_CERT_P12 }}
           CSC_LINK: ${{ secrets.MAS_CERT_P12 }}
@@ -80,7 +136,7 @@ jobs:
           sed -i '' "s/TEAM_ID/$APPLE_TEAM_ID/" build/entitlements.mas.plist
           npx electron-builder --mac mas:universal --publish never
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: mochi-mac
           path: |
@@ -90,21 +146,20 @@ jobs:
 
       - name: Publish to the GitHub Release
         if: startsWith(github.ref, 'refs/tags/') || inputs.tag != ''
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           tag_name: ${{ inputs.tag || github.ref_name }}
           files: |
             dist/*.dmg
             dist/*-mac.zip
 
-      # Manual runs from a branch keep the test build in a draft release, which
-      # only the repo owner can see, so it can be downloaded without Actions.
-      - name: Keep a private test build
-        if: github.event_name == 'workflow_dispatch' && !startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+      # Manual runs on main keep a signed build in a draft release (owner-only).
+      - name: Keep a private signed build
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
-          tag_name: mac-test-${{ github.run_number }}
-          name: Mac test build ${{ github.run_number }} (unsigned)
+          tag_name: mac-signed-${{ github.run_number }}
+          name: Mac signed build ${{ github.run_number }}
           target_commitish: ${{ github.sha }}
           draft: true
           prerelease: true
