@@ -73,6 +73,15 @@ describe("company workflows", () => {
     assert.ok(!/allowed_bots: "\*"/.test(t), "never allow every bot");
     assert.ok(!/restrict_untrusted_prs: "?false/.test(t), "keep the untrusted-PR restriction on");
   });
+  test("PR review: the verdict folder exists before Claude starts, and only a safe summary is logged", () => {
+    const t = read("company-pr-review.yml");
+    const folder = t.indexOf("run: mkdir -p .company"), ai = t.indexOf("anthropics/claude-code-action@");
+    assert.ok(folder > 0 && folder < ai, "folder created before the review");
+    assert.ok(!/show_full_output: "?true/.test(t), "full output would publish tool results in a public repo");
+    const summary = t.slice(t.indexOf("name: Review summary"), t.indexOf("name: Fresh trusted scripts"));
+    assert.match(summary, /permission_denials/);
+    assert.ok(!/tool_result|\.content|\.message/.test(summary), "never prints tool results or messages");
+  });
   test("PR review: the workspace root is a credential-free checkout of the base commit, made first", () => {
     const t = read("company-pr-review.yml");
     const steps = t.slice(t.indexOf("    steps:")).split(/\n      - /).slice(1);
