@@ -67,6 +67,23 @@ describe("company workflows", () => {
     assert.ok(!/node pr\//.test(t), "never runs scripts from the PR checkout");
     assert.match(t, /cancel-in-progress: false/);
   });
+  test("PR review accepts PRs opened by the dev cycle (claude[bot]) and no other bots", () => {
+    const t = read("company-pr-review.yml");
+    assert.match(t, /\n\s+allowed_bots: "claude"/, "without it the action refuses claude[bot] PRs and no verdict is produced");
+    assert.ok(!/allowed_bots: "\*"/.test(t), "never allow every bot");
+    assert.ok(!/restrict_untrusted_prs: "?false/.test(t), "keep the untrusted-PR restriction on");
+  });
+  test("PR review: the workspace root is a credential-free checkout of the base commit, made first", () => {
+    const t = read("company-pr-review.yml");
+    const steps = t.slice(t.indexOf("    steps:")).split(/\n      - /).slice(1);
+    const first = steps[0];
+    assert.match(first, /uses: actions\/checkout@/, "first step checks out the workspace root");
+    assert.ok(!/\n\s+path:/.test(first), "at the workspace root (claude-code-action restores .claude/ there)");
+    assert.match(first, /ref: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/, "the base commit, never the PR head");
+    assert.match(first, /persist-credentials: false/);
+    const claudeStep = steps.findIndex((s) => /claude-code-action@/.test(s));
+    assert.ok(claudeStep > 0, "the root checkout runs before the review");
+  });
   describe("PR review: verdict and routing are separate jobs (no circular required check)", () => {
     const t = read("company-pr-review.yml");
     const j = jobs(t);
