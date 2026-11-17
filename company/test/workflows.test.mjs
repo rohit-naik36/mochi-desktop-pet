@@ -73,6 +73,12 @@ describe("company workflows", () => {
     assert.ok(!/allowed_bots: "\*"/.test(t), "never allow every bot");
     assert.ok(!/restrict_untrusted_prs: "?false/.test(t), "keep the untrusted-PR restriction on");
   });
+  test("PR review: sub-agents run in the foreground and a verdict is always written (PR #39, 17 Nov)", () => {
+    const t = read("company-pr-review.yml");
+    assert.match(t, /Run every sub-agent \(Task tool\) in the foreground and wait for its answer/);
+    assert.match(t, /Never stop before \.\/\.company\/verdict\.json is written/);
+    assert.match(t, /still write the verdict, with decision needs-ceo/);
+  });
   test("PR review: the verdict folder exists before Claude starts, and only a safe summary is logged", () => {
     const t = read("company-pr-review.yml");
     const folder = t.indexOf("run: mkdir -p .company"), ai = t.indexOf("anthropics/claude-code-action@");
