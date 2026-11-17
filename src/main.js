@@ -12,6 +12,8 @@ const Ai = require('./ai');
 const Apps = require('./apps');
 const Device = require('./device');
 const Idle = require('./idle');
+const Away = require('./away');
+const Predict = require('./predict');
 // The demo app only (see src/demo-flag.js): normal and Store builds leave
 // src/demo out of the package and never load it.
 const DEMO = require('./demo-flag').isDemo(require('../package.json'), app.isPackaged, process.env);
@@ -70,6 +72,7 @@ const defaults = {
   silent: { auto: true, until: 0 }, // quiet on calls; until = manual silent mode end (ms)
   apps: false, // notice which app is in front (name only) for playful lines; off by default
   ai: { on: true }, // Smarter replies: the small model that ships with Mochi
+  rhythm: null, // counts per hour of the week of when reminders get acted on, kept on this computer only (src/predict.js)
 };
 
 function loadState() {
@@ -81,6 +84,7 @@ function loadState() {
     state = { ...defaults };
   }
   state.stats = { ...Progress.fresh(), ...(state.stats || {}) };
+  state.rhythm = Predict.sanitize(state.rhythm);
 }
 
 function saveState() {
@@ -278,7 +282,7 @@ function aiChanged(s) {
 ipcMain.on('track', (_e, event, n = 1) => {
   if (typeof event !== 'string') return;
   n = Math.max(1, Math.min(100, Math.round(Number(n)) || 1));
-  if (Insights.NUDGES.includes(event)) { noteInsight('done', event); checkAway(event); }
+  if (Insights.NUDGES.includes(event)) { noteInsight('done', event); reminderLog.done(event); checkAway(event); }
   else noteInsight('feature', event);
   const unlocked = Progress.record(state.stats, event, n);
   saveState();
@@ -293,25 +297,53 @@ ipcMain.on('track', (_e, event, n = 1) => {
 // ---------- breaks, calls and silent mode ----------
 
 // "Done" is only a click. After it, see whether the keyboard and mouse really
-// go quiet for a moment within a few minutes. Only yes or no is kept.
-const AWAY_SEC = { eyes: 20, water: 45, stretch: 60 };
+// go quiet for a moment within a few minutes (src/away.js). This runs for
+// everyone; only yes or no is kept, and the playful nudge and the company
+// counts are for Mochi for Teams only.
 let lastSneaky = 0;
+
+// Learn my rhythm: counts only, never shown to Mochi for Teams. See src/predict.js.
+const rhythm = () => state.rhythm || (state.rhythm = Predict.fresh());
+function noteRhythm(nudge, outcome) {
+  if (!rhythm().on) return;
+  Predict.record(rhythm(), nudge, outcome, new Date());
+  saveState();
+}
+// One reminder, one outcome (see Predict.reminderLog): 'upset' = nobody answered, 'ignored' = snoozed.
+const reminderLog = Predict.reminderLog(noteRhythm);
+ipcMain.on('rhythm-note', (_e, key, outcome) => {
+  if (!Predict.NUDGES.includes(key)) return;
+  if (outcome === 'ignored') reminderLog.snoozed(key);
+  else if (outcome === 'upset') reminderLog.upset(key);
+});
+// The pet asks before showing a reminder: minutes to wait, 0 = show it now.
+const dueSince = {};
+ipcMain.handle('rhythm-wait', (_e, key, everyMin) => {
+  if (!rhythm().on || !Predict.NUDGES.includes(key)) return 0;
+  const max = Math.max(1, Math.min(240, Math.round(Number(everyMin)) || 60));
+  const now = new Date();
+  if (dueSince[key] == null) dueSince[key] = now.getTime();
+  const m = Math.ceil(Predict.wait(rhythm(), key, now, new Date(dueSince[key]), max));
+  if (m <= 0) delete dueSince[key];
+  return m;
+});
+
+// After a run of low days, the daily mood question opens more gently.
+ipcMain.handle('rhythm-soft', () => rhythm().on && Predict.softOpener(state.moods || {}, Progress.dayKey()));
+
 function checkAway(key) {
-  const need = AWAY_SEC[key];
-  if (!need || !teamsOn()) return;
-  const started = Date.now();
-  const timer = setInterval(() => {
-    const idle = Idle.get();
-    if (idle >= need) {
-      clearInterval(timer);
-      noteInsight('away', key);
+  Away.watch(key, {
+    onAway: () => {
+      noteRhythm(key, 'acted');
+      if (teamsOn()) noteInsight('away', key); // unchanged: company counts only while the company is active
       saveState();
-    } else if (Date.now() - started > 4 * MIN_MS) {
-      clearInterval(timer);
+    },
+    onNoBreak: () => {
+      noteRhythm(key, 'ignored');
       // A playful nudge, at most once every two hours, never on a call.
-      if (!quietNow() && Date.now() - lastSneaky > 120 * MIN_MS) { lastSneaky = Date.now(); send('action', 'sneaky-' + key); }
-    }
-  }, 2000);
+      if (teamsOn() && !quietNow() && Date.now() - lastSneaky > 120 * MIN_MS) { lastSneaky = Date.now(); send('action', 'sneaky-' + key); }
+    },
+  });
 }
 
 // On a call (mic or camera in use), or in manual silent mode, Mochi fades
@@ -357,6 +389,7 @@ function noteInsight(kind, value) {
 }
 ipcMain.on('insight', (_e, kind, value) => {
   if (!['mood', 'worry', 'shown', 'snoozed'].includes(kind)) return;
+  if (kind === 'shown' && Predict.NUDGES.includes(value)) reminderLog.shown(value); // settles an unanswered one from before
   noteInsight(kind, typeof value === 'number' ? value : String(value || '').slice(0, 20));
   saveState();
 });
@@ -795,6 +828,10 @@ function buildMenu() {
         toggle('water', M('water', state.waterEveryMin)),
         toggle('stretch', M('stretch', state.stretchEveryMin)),
         toggle('eyes', M('eyes', state.eyesEveryMin)),
+        { type: 'separator' },
+        { label: M('rhythm'), ...tip('rhythm'), type: 'checkbox', checked: rhythm().on,
+          click: (i) => { rhythm().on = i.checked; saveState(); } },
+        { label: M('rhythmForget'), click: () => { state.rhythm = { ...Predict.fresh(), on: rhythm().on }; saveState(); } },
       ] },
       // Store (MSIX) builds can't register to start with Windows this way.
       // On macOS (including the sandboxed App Store build) the app registers
@@ -817,7 +854,7 @@ function showHelp() {
   const M = (key) => I18N.t(state.lang, 'menu.' + key, { name: state.userName, pet: state.name, gender: state.petGender });
   const Tp = (key) => I18N.t(state.lang, 'tips.' + key, { pet: state.name });
   const rows = [['worry'], ['feed'], ['play'], ['nap'], ['focus'], ...(teamsOn() ? [['silent'], ['bigCall']] : []), ['mood'], ['gratitude'], ['board'],
-    ['settings', null], ...(Ai.status().state === 'missing' || !teamsOn() ? [] : [['smarter']]), ['noticeApps'], ['teams'], ['schedule'], ['buddy'], ['name'], ['gender'], ['language'], ['chatty'], ['wander'], ['reminders'], ...(process.windowsStore || DEMO ? [] : [[IS_MAC ? 'startupMac' : 'startup', 'startup']])];
+    ['settings', null], ...(Ai.status().state === 'missing' || !teamsOn() ? [] : [['smarter']]), ['noticeApps'], ['teams'], ['schedule'], ['buddy'], ['name'], ['gender'], ['language'], ['chatty'], ['wander'], ['reminders'], ['rhythm'], ...(process.windowsStore || DEMO ? [] : [[IS_MAC ? 'startupMac' : 'startup', 'startup']])];
   const detail = rows.map(([k, t]) => (t === null ? '\n' + M(k) : `• ${M(k).replace(/\s*\(.*\)$/, '')}: ${Tp(t || k)}`)).join('\n');
   dialog.showMessageBox({ type: 'info', title: 'Mochi', message: M('helpTitle'), detail, buttons: ['OK'] });
 }
