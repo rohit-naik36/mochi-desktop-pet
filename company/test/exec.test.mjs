@@ -99,6 +99,23 @@ describe("exec-pick CLI with mocked gh", () => {
     assert.throws(() => run("--brief", "9;rm", "cfo"));
     assert.throws(() => run("--brief", "9", "cto"));
   });
+  test("--settle requeues a task the AI left in progress (the #76 case)", () => {
+    gh = fakeGh([priv, { args: ["issue", "view", "9"], stdout: { labels: [{ name: "exec" }, { name: "status:in-progress" }], comments: [] } }]);
+    run("--settle", "9");
+    const edit = gh.calls().find((c) => c.args[1] === "edit");
+    assert.deepEqual(edit.args.slice(0, 7), ["issue", "edit", "9", "--add-label", "status:ready", "--remove-label", "status:in-progress"]);
+  });
+  test("--settle leaves a finished task alone", () => {
+    gh = fakeGh([priv, { args: ["issue", "view", "9"], stdout: { labels: [{ name: "status:review" }, { name: "ceo-approval" }], comments: [] } }]);
+    run("--settle", "9");
+    assert.equal(gh.mutations().length, 0);
+  });
+  test("--settle blocks after a previous failure and rejects bad input", () => {
+    gh = fakeGh([priv, { args: ["issue", "view", "9"], stdout: { labels: ["status:in-progress"], comments: [{ body: FAIL_MARK }] } }]);
+    run("--settle", "9");
+    assert.ok(gh.calls().find((c) => c.args[1] === "edit").args.includes("status:blocked"));
+    assert.throws(() => run("--settle", "9;rm"));
+  });
   test("--release blocks after a previous failure", () => {
     gh = fakeGh([priv, { args: ["issue", "view", "9"], stdout: { comments: [{ body: FAIL_MARK }] } }]);
     run("--release", "9");

@@ -2,8 +2,7 @@ name: "Company · Executive tasks"
 # Runs one CPO/COO/CFO/CMO task from the private HQ repo per run, in two separated stages:
 #   research: web access, no HQ token, sees only the task title and body
 #   write:    HQ access through hq.mjs, no web access
-# Third-party actions are referenced by tag until you run company/scripts/pin-actions.sh,
-# which pins each one to the commit SHA the tag points at (review the diff before committing).
+# Third-party actions are pinned to commit SHAs, like every other company workflow.
 on:
   schedule:
     - cron: "17 3,9,15 * * *"   # 08:47, 14:47, 20:47 IST
@@ -24,7 +23,7 @@ jobs:
       number: ${{ steps.pick.outputs.number }}
       role: ${{ steps.pick.outputs.role }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with: { persist-credentials: false }
       - name: Pick the next task (no AI)
         id: pick
@@ -47,7 +46,7 @@ jobs:
     outputs:
       notes: ${{ steps.notes.outputs.notes }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with: { persist-credentials: false }
       - name: Fetch the task brief (no AI; the token stays in this step)
         env:
@@ -58,9 +57,10 @@ jobs:
           NUMBER: ${{ needs.pick.outputs.number }}
           ROLE: ${{ needs.pick.outputs.role }}
         run: node company/scripts/exec-pick.mjs --brief "$NUMBER" "$ROLE"
-      - uses: anthropics/claude-code-action@v1
+      - uses: anthropics/claude-code-action@8a29bc6f0ae11a363721054b6739feba6adabe57 # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ github.token }}   # read-only workflow token; never the Claude App token (code-repo write)
           prompt: |
             You are the ${{ needs.pick.outputs.role }} of Little Smoke Studio. Read company/agents/${{ needs.pick.outputs.role }}.md and company/CHARTER.md first.
             Do the RESEARCH stage of company/playbooks/exec-task.md for the task in .company/task.md. Write .company/research.md and stop.
@@ -89,34 +89,48 @@ jobs:
       HQ_GH_TOKEN: ${{ secrets.HQ_GH_TOKEN }}   # HQ-only token; never the code-repo token
       CODE_REPO: ${{ github.repository }}
     steps:
-      - uses: actions/checkout@v4
-        with: { persist-credentials: false, fetch-depth: 100, ref: develop }
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with: { persist-credentials: false, fetch-depth: 100 }   # the commit this workflow runs from, not develop
+      - name: Recent progress on develop (history only, nothing from it runs)
+        run: git fetch --no-tags --depth=100 origin develop
+      - name: Install a read-only HQ helper outside the workspace
+        # Claude may write files in the workspace, so it must never run a script from there with the HQ token.
+        run: |
+          d="$RUNNER_TEMP/hqtool"
+          mkdir -p "$d/scripts"
+          cp company/scripts/hq.mjs company/scripts/lib.mjs "$d/scripts/"
+          cp company/config.json "$d/config.json"
+          chmod -R a-w "$d"
       - name: Unpack research notes
         env:
           NOTES: ${{ needs.research.outputs.notes }}
         run: mkdir -p .company && printf '%s' "$NOTES" | base64 -d > .company/research.md
-      - uses: anthropics/claude-code-action@v1
+      - uses: anthropics/claude-code-action@8a29bc6f0ae11a363721054b6739feba6adabe57 # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ github.token }}   # read-only workflow token; never the Claude App token (code-repo write)
           prompt: |
             You are the ${{ needs.pick.outputs.role }} of Little Smoke Studio. Read company/agents/${{ needs.pick.outputs.role }}.md and company/CHARTER.md first.
             Do the WRITE stage of company/playbooks/exec-task.md for HQ issue #${{ needs.pick.outputs.number }}. Research notes are in .company/research.md.
+            Run every HQ command as `node ${{ runner.temp }}/hqtool/scripts/hq.mjs <args>` (the playbook's `hq.mjs`). For recent progress, read `git log origin/develop`.
+            Write files only under .company/.
           claude_args: >-
             --model ${{ vars.COMPANY_MODEL || 'sonnet' }}
             --max-turns 80
-            --allowedTools "Read,Glob,Grep,Write,Task,Bash(date:*),Bash(TZ=Asia/Kolkata date:*),Bash(git log:*),Bash(git show:*),Bash(node company/scripts/hq.mjs:*)"
+            --allowedTools "Read,Glob,Grep,Write,Task,Bash(date:*),Bash(TZ=Asia/Kolkata date:*),Bash(git log:*),Bash(git show:*),Bash(node ${{ runner.temp }}/hqtool/scripts/hq.mjs:*)"
             --disallowedTools "WebFetch,WebSearch,Edit"
 
   release:
-    # No AI. If either stage failed, put the task back in the queue so it is never stuck "in progress".
+    # No AI. Always runs after a pick: if the task is still "in progress" (a stage failed, was cancelled
+    # or skipped, or Claude ended without posting), requeue it, or block it after repeated failures.
     needs: [pick, research, write]
-    if: always() && vars.COMPANY_MODE == 'on' && needs.pick.outputs.number != '' && (needs.research.result == 'failure' || needs.write.result == 'failure' || needs.research.result == 'cancelled' || needs.write.result == 'cancelled')
+    if: always() && vars.COMPANY_MODE == 'on' && needs.pick.outputs.number != ''
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with: { persist-credentials: false }
       - name: Return the task to the queue
         env:
@@ -125,4 +139,4 @@ jobs:
           CODE_REPO: ${{ github.repository }}
           CEO_LOGIN: ${{ github.repository_owner }}
           NUMBER: ${{ needs.pick.outputs.number }}
-        run: node company/scripts/exec-pick.mjs --release "$NUMBER"
+        run: node company/scripts/exec-pick.mjs --settle "$NUMBER"

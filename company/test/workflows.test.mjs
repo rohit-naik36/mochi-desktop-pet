@@ -200,13 +200,32 @@ describe("company workflows", () => {
       assert.ok(!/COMPANY_GH_TOKEN/.test(j.write));
     });
     test("pick and release run no AI", () => { for (const k of ["pick", "release"]) assert.ok(!/claude-code-action/.test(j[k]), k); });
+    test("write never runs a script Claude could have rewritten", () => {
+      const tools = j.write.match(/--allowedTools "([^"]+)"/)[1];
+      assert.ok(!/node company\//.test(tools), "no script from the workspace");
+      assert.match(tools, /Bash\(node \$\{\{ runner\.temp \}\}\/hqtool\/scripts\/hq\.mjs:\*\)/);
+      assert.match(j.write, /chmod -R a-w "\$d"/);
+      const install = j.write.indexOf("hqtool"), ai = j.write.indexOf("anthropics/claude-code-action");
+      assert.ok(install > 0 && install < ai, "the read-only copy is made before Claude starts");
+    });
+    test("write runs the workflow's own commit; develop is history only", () => {
+      assert.ok(!/ref: develop/.test(j.write));
+      assert.match(j.write, /git fetch --no-tags --depth=100 origin develop/);
+    });
+    test("AI steps get the read-only workflow token, not the Claude App token", () => {
+      for (const k of ["research", "write"]) assert.match(j[k], /github_token: \$\{\{ github\.token \}\}/, k);
+    });
+    test("release always settles a picked task, whatever happened to the stages", () => {
+      assert.match(j.release, /if: always\(\) && vars\.COMPANY_MODE == 'on' && needs\.pick\.outputs\.number != ''\n/);
+      assert.match(j.release, /exec-pick\.mjs --settle "\$NUMBER"/);
+    });
   });
   test("LinkedIn autopilot stops when the company is paused or off", () => {
     assert.match(fs.readFileSync(linkedin, "utf8"), /vars\.COMPANY_MODE == 'on'/);
   });
-  test("third-party actions pinned to commit SHAs", (t) => {
+  test("third-party actions pinned to commit SHAs", () => {
     const all = [...files.map(read), fs.readFileSync(linkedin, "utf8")].join("\n");
     const unpinned = [...new Set([...all.matchAll(/uses: ([\w.-]+\/[\w.-]+)@(?![0-9a-f]{40}\b)(\S+)/g)].map((m) => `${m[1]}@${m[2]}`))];
-    if (unpinned.length) t.todo(`unpinned until company/scripts/pin-actions.sh is run: ${unpinned.join(", ")}`);
+    assert.deepEqual(unpinned, [], "run company/scripts/pin-actions.sh and review the diff");
   });
 });
