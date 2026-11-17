@@ -1,0 +1,10 @@
+{
+  "lastScan": null,
+  "posts": [],
+  "skips": [
+    {
+      "date": "2026-11-17",
+      "reason": "Draft failed quality gates after a rewrite: No first-person voice at all — the voice guide requires Rohit to write as 'I', but the draft never uses 'I' and reads as third-person product copy.; 'Breathing exercises don't help when you're actually angry' is stated as general fact but isn't in the source material — it's an invented rationale, not a sourced claim.; 'The old Mochi would nudge you to breathe' implies breathing was Mochi's only/prior behavior before this feature — not stated anywhere in the source.; 'Mochi now has to tell the two apart' implies an automatic detection/classification capability distinguishing anger from stress — this mechanism is not in the source, which only describes a boxing-pad mode 'with a breathing cool-down.'; 'breathing stays the default for ordinary stress, because it still works there' is an unsupported claim about default behavior and effectiveness — not in the source.; The scenario details ('Something broke, a meeting ran over, a message set you off') are fabricated specifics presented as if factual use cases, beyond illustrative framing allowed by the shape guide."
+    }
+  ]
+}
