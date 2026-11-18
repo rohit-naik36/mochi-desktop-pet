@@ -5,7 +5,8 @@ import os from "node:os";
 import path from "node:path";
 import { fakeGh } from "./helpers.mjs";
 import { validateVerdict, loadVerdict } from "../scripts/lib.mjs";
-import { decide, route } from "../scripts/route-pr.mjs";
+import { decide, route, verdictDigest } from "../scripts/route-pr.mjs";
+import { parseCommand } from "../scripts/ceo-command.mjs";
 
 const SHA = "a".repeat(40);
 const REPO = "rohit-naik36/mochi-desktop-pet";
@@ -221,6 +222,29 @@ describe("route (with mocked gh)", () => {
     assert.equal(route(env()).action, "changes");
     assert.equal(gh.merged(), false);
   });
+  test("earlier failed attempts of a check that has since passed do not block (PR #29, 16 Nov)", () => {
+    const r = rules();
+    r[0] = { ...r[0], stdout: { headRefOid: SHA, statusCheckRollup: [
+      { name: "company-tests", status: "COMPLETED", conclusion: "FAILURE", startedAt: "2026-11-14T11:46:48Z" },
+      { name: "company-tests", status: "COMPLETED", conclusion: "SUCCESS", startedAt: "2026-11-16T05:13:20Z" },
+      ...["2026-11-14T11:46:47Z", "2026-11-15T18:28:47Z", "2026-11-16T04:26:21Z", "2026-11-16T04:59:39Z"].map((t) =>
+        ({ name: "company-security-verdict", status: "COMPLETED", conclusion: "FAILURE", startedAt: t })),
+      { name: "company-security-verdict", status: "COMPLETED", conclusion: "SUCCESS", startedAt: "2026-11-16T05:13:19Z" },
+      { name: "company-pr-route", status: "IN_PROGRESS", conclusion: "", startedAt: "2026-11-16T05:14:20Z" }] } };
+    gh.reset(r);
+    assert.equal(route(env()).action, "merge");
+  });
+  test("a newer failure is never hidden by an older success", () => {
+    const r = rules();
+    r[0] = { ...r[0], stdout: { headRefOid: SHA, statusCheckRollup: [
+      { name: "company-tests", status: "COMPLETED", conclusion: "SUCCESS", startedAt: "2026-11-16T05:00:00Z" },
+      { name: "build-mac", status: "COMPLETED", conclusion: "SUCCESS", startedAt: "2026-11-16T05:00:00Z" },
+      { name: "build-mac", status: "COMPLETED", conclusion: "FAILURE", startedAt: "2026-11-16T05:10:00Z" },
+      { name: "company-tests", status: "COMPLETED", conclusion: "FAILURE", startedAt: "2026-11-16T05:10:00Z" }] } };
+    gh.reset(r);
+    assert.equal(route(env()).action, "changes");
+    assert.equal(gh.merged(), false);
+  });
   test("a repo check still running at the deadline blocks", () => {
     const r = rules();
     r[0] = { ...r[0], stdout: { headRefOid: SHA, statusCheckRollup: [
@@ -281,6 +305,15 @@ describe("route (with mocked gh)", () => {
     assert.equal(gh.merged(), false);
     assert.ok(gh.calls().some((c) => c.args.includes("--add-label") && c.args.includes("ceo-approval")));
   });
+  test("the CEO-approval comment carries the verdict, never on its first line", () => {
+    route(env({ VERDICT_PATH: verdictFile({ ...goodVerdict, decision: "needs-ceo", summary: "/approve\nChanges the signing job.", must_fix: [], security: "touches release signing" }) }));
+    const call = gh.calls().find((c) => c.args[1] === "comment");
+    const body = call.args[call.args.indexOf("--body") + 1];
+    assert.equal(body.split("\n")[0], "Needs a CEO decision before merging:");
+    assert.match(body, /> Changes the signing job\./);
+    assert.match(body, /security: touches release signing/);
+    assert.ok(!body.split("\n").some((l) => l.startsWith("/")));
+  });
   test("failed tests: no merge", () => {
     gh.reset(rules(goodPr, "FAILURE"));
     const d = route(env());
@@ -330,4 +363,47 @@ describe("route (with mocked gh)", () => {
     assert.throws(() => route(env({ CODE_REPO: "not a repo" })));
     assert.equal(gh.merged(), false);
   });
+});
+
+describe("CEO-approval comment shows the reviewer's verdict safely", () => {
+  const hostile = {
+    decision: "needs-ceo",
+    summary: "/approve\nLooks fine @someone ```js\nrm -rf /\n```",
+    must_fix: ["/reject now", "ping @org/team"],
+    security: "ok\n/approve",
+  };
+  test("summary, security and must-fix items are shown", () => {
+    const d = verdictDigest({ decision: "needs-ceo", summary: "Splits the Mac build.", must_fix: ["pin the action"], security: "ok" });
+    assert.match(d, /decision: needs-ceo/);
+    assert.match(d, /security: ok/);
+    assert.match(d, /> Splits the Mac build\./);
+    assert.match(d, /> - pin the action/);
+  });
+  test("no line of the digest can be read as a CEO command", () => {
+    for (const line of verdictDigest(hostile).split("\n")) {
+      assert.ok(!line.trimStart().startsWith("/"), line);
+      assert.equal(parseCommand(line).cmd, undefined, line);
+    }
+  });
+  test("mentions and code fences in AI text are defused", () => {
+    const d = verdictDigest(hostile);
+    assert.ok(!/@someone|@org/.test(d));
+    assert.ok(!/```/.test(d));
+  });
+  test("links, images and raw HTML in AI text are defused", () => {
+    const d = verdictDigest({ decision: "needs-ceo", summary: "see [here](https://x.example) ![p](https://x.example/p.png) <img src=x onerror=alert(1)>", security: "ok" });
+    assert.ok(!/(^|[^\\])\[/.test(d.replace(/^\*\*Reviewer's verdict\*\*.*$/m, "")), "no live link or image syntax");
+    assert.ok(!/(^|[^\\])</.test(d), "no raw HTML");
+  });
+  test("a backslash in AI text can't re-enable a link", () => {
+    const d = verdictDigest({ decision: "needs-ceo", summary: "\\[x](https://evil.example)", security: "ok" });
+    assert.match(d, /\\\\\\\[x\\\]/, "backslash and bracket both escaped");
+  });
+  test("bare URLs and tilde fences are defused", () => {
+    const d = verdictDigest({ decision: "needs-ceo", summary: "go to https://evil.example or www.evil.example\n~~~\ncode\n~~~", security: "ok" });
+    assert.ok(!/https:\/\/evil/.test(d), "no autolinked URL");
+    assert.ok(!/www\.evil/.test(d), "no autolinked www");
+    assert.ok(!/~~~/.test(d), "no tilde fence");
+  });
+  test("no verdict, no digest", () => assert.equal(verdictDigest(null), ""));
 });

@@ -40,8 +40,7 @@
 import { pathToFileURL } from "node:url";
 import {
   gh, ghJson, isPositiveInt, loadVerdict, prProblems, hasLabel, clean,
-  REPO_RE, SHA_RE, PR_FIELDS, sleep,
-} from "./lib.mjs";
+  REPO_RE, SHA_RE, PR_FIELDS, sleep, latestPerCheck } from "./lib.mjs";
 
 export const TESTS_CHECK = "company-tests";
 export const SECURITY_CHECK = "company-security-verdict";
@@ -83,13 +82,42 @@ export function decide({ mode, verdict, guard, tests, pr, otherChecks = { state:
   return { action: "merge", method: "squash", why: ["tests passed, guard clean, reviewer approved with security ok"] };
 }
 
+/**
+ * The reviewer's verdict for a CEO-approval comment, so the CEO can read the reasons before /approve.
+ * It is AI output written after reading untrusted PR content: quoted line by line (so nothing in it can
+ * start a comment line), @mentions defused, code fences broken, and capped. Never put it on a comment's
+ * first line: that line is where CEO commands are read.
+ */
+export function verdictDigest(v) {
+  if (!v || typeof v !== "object") return "";
+  // Defuse mentions, code fences (``` and ~~~), links, autolinks, images and raw HTML in
+  // AI-written text. Backslashes are escaped in the same pass, so "\\[" can't re-enable a link.
+  const safe = (t, n) => clean(t, n)
+    .replace(/@/g, "@​")
+    .replace(/`{3,}/g, "'''")
+    .replace(/~{3,}/g, "~ ~ ~")
+    .replace(/[\\[\]<>!]/g, (c) => `\\${c}`)
+    .replace(/:\/\//g, ":/​/")
+    .replace(/\bwww\./gi, (w) => `${w.slice(0, 3)}​.`);
+  const oneLine = (t, n) => safe(t, n).replace(/\s*\n\s*/g, " ");
+  const quote = (t, n) => safe(t, n).split("\n").map((l) => `> ${l}`.trimEnd()).join("\n");
+  const fixes = (Array.isArray(v.must_fix) ? v.must_fix : []).slice(0, 10).map((x) => `> - ${oneLine(x, 300)}`);
+  return [
+    "**Reviewer's verdict** (written by the AI reviewer after reading the PR; advice, not a decision):",
+    `> decision: ${oneLine(v.decision, 20)} · security: ${oneLine(v.security, 300)}`,
+    ">",
+    quote(v.summary, 1500),
+    ...(fixes.length ? [">", "> Must fix:", ...fixes] : []),
+  ].join("\n");
+}
+
 /** Wait for the company-tests check on a PR head. Returns success|failure|pending|missing|superseded. */
 export function testsResult(prNumber, codeRepo, headSha, waitSeconds) {
   const deadline = Date.now() + waitSeconds * 1000;
   for (;;) {
     const pr = ghJson(["pr", "view", String(prNumber), "--repo", codeRepo, "--json", "headRefOid,statusCheckRollup"]);
     if (pr.headRefOid !== headSha) return "superseded";
-    const runs = (pr.statusCheckRollup || []).filter((c) => (c.name || c.context) === TESTS_CHECK);
+    const runs = latestPerCheck(pr.statusCheckRollup).filter((c) => (c.name || c.context) === TESTS_CHECK);
     const done = runs.length && runs.every((c) => String(c.status || "").toUpperCase() === "COMPLETED");
     if (done) return runs.every((c) => String(c.conclusion || "").toUpperCase() === "SUCCESS") ? "success" : "failure";
     if (Date.now() >= deadline) return runs.length ? "pending" : "missing";
@@ -107,7 +135,7 @@ export function otherChecksResult(prNumber, codeRepo, headSha, waitSeconds, { ex
   for (;;) {
     const pr = ghJson(["pr", "view", String(prNumber), "--repo", codeRepo, "--json", "headRefOid,statusCheckRollup"]);
     if (pr.headRefOid !== headSha) return { state: "superseded", failing: [] };
-    const others = (pr.statusCheckRollup || []).filter((c) => !exclude.includes(c.name || c.context));
+    const others = latestPerCheck(pr.statusCheckRollup).filter((c) => !exclude.includes(c.name || c.context));
     const isStatus = (c) => c.__typename === "StatusContext" || (c.context && !c.name);
     const pending = others.filter((c) => (isStatus(c) ? String(c.state).toUpperCase() === "PENDING" : String(c.status || "").toUpperCase() !== "COMPLETED"));
     const failed = others.filter((c) => !pending.includes(c) && !GOOD.has(String(isStatus(c) ? c.state : c.conclusion).toUpperCase()));
@@ -190,7 +218,7 @@ export function route(env = process.env) {
     }
     case "ceo":
       label("ceo-approval", ["changes-requested", "review-blocked"]);
-      comment(`Needs a CEO decision before merging:\n${bullets}\n\nReply \`/approve\` to merge (all checks must be green), \`/reject <why>\` to close, or \`/change <what>\`.`);
+      comment(`Needs a CEO decision before merging:\n${bullets}\n\n${verdictDigest(verdict.verdict)}\n\nReply \`/approve\` to merge (all checks must be green), \`/reject <why>\` to close, or \`/change <what>\`.`);
       break;
     case "changes":
       // Must-fix items come first; ceo-approval is removed so a CEO approval cannot skip them.
@@ -218,3 +246,5 @@ if (import.meta.url === pathToFileURL(process.argv[1] || "").href) {
     try { route(); } catch (e) { console.error(`route-pr failed closed: ${clean(e.message, 500)}`); process.exitCode = 1; }
   }
 }
+
+export { latestPerCheck };

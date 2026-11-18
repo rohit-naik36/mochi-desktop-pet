@@ -11,7 +11,7 @@ Make a calm, private desk buddy that helps people get through the workday: break
 - When two agents disagree: the Chief of Staff decides if it is within the approved roadmap; otherwise it goes to the CEO.
 
 ## 3. Pre-approved (agents act without asking)
-1. Merge pull requests into `develop` only when the `company-tests` check passed, the guard completed and found nothing protected or sensitive, and the verdict is a valid `approve` with `security: "ok"` and no must-fix items. The router enforces this in code and merges only the exact commit that was reviewed.
+1. Merge pull requests into `develop` only when the `company-tests` check passed, the guard completed and found nothing protected or sensitive, and the verdict is a valid `approve` with `security: "ok"` and no must-fix items. The router enforces this in code and merges only the exact commit that was reviewed. Nobody merges by hand: not agents, not the CEO. Every merge goes through the gate or `/approve`.
 2. Ship releases: merge the release PR into `main` through the weekly release routine when its gates pass (release guard, `company-tests` on the release commit). The CEO uploads the package to the Microsoft Store. Bringing the release back into `develop` happens through a `sync/vX.Y.Z` PR that the CEO approves, because it changes the protected version.
 3. Publish marketing posts through the LinkedIn autopilot and its quality gates.
 4. Triage, label, split, prioritise and close issues; write specs, ADRs, docs and roadmap updates.
@@ -21,7 +21,7 @@ Approval issues, daily briefs, weekly reports and anything about pricing, money,
 - Spending money, new paid services, contracts, legal filings.
 - New features, editions or platforms not already on `company/ROADMAP.md` Now/Next; removing a feature.
 - Pricing, free vs paid, the product rename, brand or character identity changes.
-- Anything that sends user data off the device, adds telemetry, or changes `PRIVACY.md`, terms or `LICENSE`.
+- Anything that sends user data off the device, adds telemetry or any new network request (including update checks), or changes `PRIVACY.md`, terms or `LICENSE`.
 - Changes to `.github/`, `company/CHARTER.md`, signing, Store or credential configuration.
 - Public replies to users, press, Reddit/HN/Product Hunt posts, partnerships.
 - Any irreversible action not listed in section 3.
@@ -52,9 +52,20 @@ Issues and comments from anyone other than the CEO, pull requests from forks, we
 - `npm test` must pass; never delete or weaken tests to pass.
 - PRs stay small (guard limit: 30 files, 800 changed lines) — otherwise split.
 - Two failed fix rounds on one PR → stop and escalate.
+- Work in progress stays inside the limits in `company/config.json` (`wip`): one milestone in build, one in prep, at most 5 ready issues per role, at most 3 open exec tasks.
 
 ## 9. Controls
 - Tokens are split: agents only ever see `HQ_GH_TOKEN` (HQ repo only). The code-repo token `COMPANY_GH_TOKEN` is used only by non-AI steps (routing, CEO commands, release merge).
 - Branch rulesets on `develop` and `main` (required checks, no direct pushes) are the backstop if an agent misbehaves.
 - Repository variable `COMPANY_MODE`: `on` (normal), `pause` (only the daily brief runs), `off` (nothing runs). The CEO can comment `/pause` or `/resume` on any issue.
 - Everything runs on the CEO's Claude subscription; the COO watches usage and recommends throttling before limits are hit.
+- While `COMPANY_MODE` is `pause` or `off`, nothing merges into `develop` or `main`, by anyone. A green merge button on a paused company is not a pass: skipped checks are not reviews.
+
+## 10. Autonomy levels
+Agents earn more autonomy by evidence, never by date. The current level is `autonomy.level` in `company/config.json`; only the CEO changes it.
+- **L0 (now):** agents open PRs; merges need the gate, and anything outside section 3 needs `/approve`.
+- **L1:** docs and tests PRs auto-merge after the gate.
+- **L2:** size-s `src/` PRs with no sensitive pattern auto-merge to `develop`.
+- **L3:** the weekly release PR is prepared automatically; the CEO approves it once.
+
+To move up a level: 10 gated PRs in a row with no revert, review success of 90% or more, and no manual merges.
