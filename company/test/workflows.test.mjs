@@ -39,7 +39,13 @@ describe("company workflows", () => {
       });
       test(`${f}/${name}: job declares its own minimal permissions`, () => assert.match(job, /\n    permissions:\n/));
       test(`${f}/${name}: respects COMPANY_MODE`, () => {
-        if (f === "company-pr-tests.yml") return assert.ok(!/COMPANY_MODE/.test(job), "company-tests must run in every mode: a skipped required check counts as passed");
+        if (f === "company-pr-tests.yml") {
+          const head = job.split("steps:")[0];
+          assert.ok(!/COMPANY_MODE/.test(head), "company-tests must run in every mode: a skipped required check counts as passed");
+          assert.match(job, /MODE: \$\{\{ vars\.COMPANY_MODE \}\}/, "company-tests reads COMPANY_MODE in a step");
+          assert.match(job, /if \[ "\$MODE" != "on" \]; then[\s\S]*?exit 1/, "company-tests fails while paused or off, so nothing merges");
+          return;
+        }
         if (f === "company-ceo-commands.yml") return assert.ok(!/COMPANY_MODE/.test(job.split("steps:")[0]), "CEO commands must work in every mode");
         if (f === "company-standup.yml") {
           assert.match(job, /vars\.COMPANY_MODE == 'on' \|\| vars\.COMPANY_MODE == 'pause'/);
@@ -73,6 +79,22 @@ describe("company workflows", () => {
     assert.match(t, /\n\s+allowed_bots: "claude"/, "without it the action refuses claude[bot] PRs and no verdict is produced");
     assert.ok(!/allowed_bots: "\*"/.test(t), "never allow every bot");
     assert.ok(!/restrict_untrusted_prs: "?false/.test(t), "keep the untrusted-PR restriction on");
+  });
+  test("PR review: sub-agents run in the foreground and a verdict is always written (PR #39, 17 Nov)", () => {
+    const t = read("company-pr-review.yml");
+    assert.match(t, /Run every sub-agent \(Task tool\) in the foreground and wait for its answer/);
+    assert.match(t, /Never stop before \.\/\.company\/verdict\.json is written/);
+    assert.match(t, /still write the verdict, with decision needs-ceo/);
+  });
+  test("PR review: the verdict folder exists before Claude starts, and only a safe summary is logged", () => {
+    const t = read("company-pr-review.yml");
+    const folder = t.indexOf("run: mkdir -p .company"), ai = t.indexOf("anthropics/claude-code-action@");
+    assert.ok(folder > 0 && folder < ai, "folder created before the review");
+    assert.ok(!/show_full_output: "?true/.test(t), "full output would publish tool results in a public repo");
+    const summary = t.slice(t.indexOf("name: Review summary"), t.indexOf("name: Fresh trusted scripts"));
+    assert.match(summary, /permission_denials/);
+    assert.ok(!/tool_result|\.content|\.message|\.result|tool_input/.test(summary), "never prints tool inputs, results or messages");
+    assert.match(summary, /tool_name \| tostring \| gsub\("\[\^A-Za-z0-9_:\.-\]"; "_"\)/, "denied tool names are sanitised");
   });
   test("PR review: the workspace root is a credential-free checkout of the base commit, made first", () => {
     const t = read("company-pr-review.yml");

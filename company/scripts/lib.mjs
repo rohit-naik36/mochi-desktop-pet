@@ -123,9 +123,29 @@ const GOOD = new Set(["SUCCESS", "SKIPPED", "NEUTRAL"]);
  * and SUCCESS; any check anywhere that failed, errored, was cancelled or is
  * still running blocks.
  */
+/**
+ * The latest run of each check. A commit keeps every earlier attempt of a check (re-runs, reopened PRs),
+ * and only the newest one counts: an old failure must not block a check that has since passed, and an
+ * old success never hides a newer failure. Keyed by workflow and check name, ordered by start time.
+ */
+export function latestPerCheck(items) {
+  // A run with no timestamp (queued, just re-run) counts as the newest, so it can never be
+  // hidden by an older success. On a tie, the less successful run wins. Fail closed.
+  const at = (c) => Date.parse(c.startedAt || c.createdAt || c.completedAt || "") || Infinity;
+  const ok = (c) => /^(SUCCESS|NEUTRAL|SKIPPED)$/.test(String(c.conclusion || c.state || "").toUpperCase())
+    && (c.__typename === "StatusContext" || (c.context && !c.name) || String(c.status || "").toUpperCase() === "COMPLETED");
+  const latest = new Map();
+  for (const c of items || []) {
+    const key = `${c.workflowName || ""}/${c.name || c.context || ""}`;
+    const prev = latest.get(key);
+    if (!prev || at(c) > at(prev) || (at(c) === at(prev) && !ok(c))) latest.set(key, c);
+  }
+  return [...latest.values()];
+}
+
 export function checkProblems(rollup, required = []) {
   const p = [];
-  const items = Array.isArray(rollup) ? rollup : [];
+  const items = latestPerCheck(Array.isArray(rollup) ? rollup : []);
   const result = (c) => {
     if (c.__typename === "StatusContext" || (c.context && !c.name)) return String(c.state || "").toUpperCase();
     if (String(c.status || "").toUpperCase() !== "COMPLETED") return "PENDING";
