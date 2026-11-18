@@ -175,3 +175,47 @@ describe("other commands (mocked gh)", () => {
     assert.equal(gh.calls().length, 0);
   });
 });
+
+describe("/approve reads only the latest run of each check", () => {
+  test("an old failed attempt of a check that has since passed is not a problem", async () => {
+    const { checkProblems } = await import("../scripts/lib.mjs");
+    const rollup = [
+      { name: "company-security-verdict", status: "COMPLETED", conclusion: "FAILURE", startedAt: "2026-11-14T11:46:47Z" },
+      { name: "company-security-verdict", status: "COMPLETED", conclusion: "SUCCESS", startedAt: "2026-11-16T05:13:19Z" },
+      { name: "company-tests", status: "COMPLETED", conclusion: "SUCCESS", startedAt: "2026-11-16T05:13:20Z" },
+    ];
+    assert.deepEqual(checkProblems(rollup, ["company-tests", "company-security-verdict"]), []);
+  });
+  test("a newer failure still blocks", async () => {
+    const { checkProblems } = await import("../scripts/lib.mjs");
+    const rollup = [
+      { name: "company-tests", status: "COMPLETED", conclusion: "SUCCESS", startedAt: "2026-11-16T05:00:00Z" },
+      { name: "company-tests", status: "COMPLETED", conclusion: "FAILURE", startedAt: "2026-11-16T05:10:00Z" },
+    ];
+    assert.equal(checkProblems(rollup, ["company-tests"]).length, 1);
+  });
+  test("a queued re-run with no timestamp is never hidden by an older success", async () => {
+    const { checkProblems } = await import("../scripts/lib.mjs");
+    const rollup = [
+      { name: "company-tests", status: "COMPLETED", conclusion: "SUCCESS", startedAt: "2026-11-16T05:00:00Z" },
+      { name: "company-tests", status: "QUEUED", conclusion: "" },
+    ];
+    assert.equal(checkProblems(rollup, ["company-tests"]).length, 1);
+  });
+  test("a required check that is now skipped still blocks: required checks must succeed", async () => {
+    const { checkProblems } = await import("../scripts/lib.mjs");
+    const rollup = [
+      { name: "company-security-verdict", status: "COMPLETED", conclusion: "FAILURE", startedAt: "2026-11-16T05:00:00Z" },
+      { name: "company-security-verdict", status: "COMPLETED", conclusion: "SKIPPED", startedAt: "2026-11-16T05:10:00Z" },
+    ];
+    assert.equal(checkProblems(rollup, ["company-security-verdict"]).length, 1);
+  });
+  test("on a timestamp tie the failing run wins, whatever the order", async () => {
+    const { checkProblems } = await import("../scripts/lib.mjs");
+    const t = "2026-11-16T05:00:00Z";
+    const ok = { name: "company-tests", status: "COMPLETED", conclusion: "SUCCESS", startedAt: t };
+    const bad = { name: "company-tests", status: "COMPLETED", conclusion: "FAILURE", startedAt: t };
+    assert.equal(checkProblems([ok, bad], ["company-tests"]).length, 1);
+    assert.equal(checkProblems([bad, ok], ["company-tests"]).length, 1);
+  });
+});
