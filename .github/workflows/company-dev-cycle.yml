@@ -3,7 +3,7 @@ name: "Company · Dev cycle"
 # which pins each one to the commit SHA the tag points at (review the diff before committing).
 on:
   schedule:
-    - cron: "47 4,8,12,16,20 * * *"   # 10:17, 14:17, 18:17, 22:17, 02:17 IST
+    - cron: "47 4,12 * * *"   # 10:17 and 18:17 IST (2 a day until autonomy L1, offsite 18 Nov 2026)
   workflow_dispatch:
 permissions: {}
 concurrency:

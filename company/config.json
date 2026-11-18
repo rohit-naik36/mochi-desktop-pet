@@ -9,8 +9,24 @@
   },
   "devCycle": {
     "maxIssuesPerCycle": 1,
-    "maxFixRounds": 2
+    "maxFixRounds": 2,
+    "runsPerDay": 2,
+    "_comment": "Runs per day is set by the cron in the dev-cycle workflow; keep them in step. Raised only when merges keep pace (autonomy L1+)."
   },
+  "wip": {
+    "_comment": "Work-in-progress limits from the 18 Nov 2026 offsite.",
+    "milestonesInBuild": 1,
+    "milestonesInPrep": 1,
+    "readyPerRole": 5,
+    "openExecTasks": 3
+  },
+  "autonomy": {
+    "_comment": "L0: agents open PRs, the CEO approves. L1: docs and tests PRs auto-merge. L2: size-s src PRs with no sensitive pattern auto-merge to develop. L3: the weekly release PR is prepared automatically. Each step needs 10 gated PRs in a row with no revert, review success of 90% or more, and no manual merges. Only the CEO changes the level.",
+    "level": "L0"
+  },
+  "languages": [
+    "en"
+  ],
   "guard": {
     "maxFiles": 30,
     "maxChangedLines": 800,
