@@ -42,15 +42,42 @@ The certificate and Apple credentials stay with the CEO and the existing signing
 ## Settings off-switch
 
 - Name: "Check for updates automatically" (Settings, General).
-- Default: on, for direct-download Mac builds only. (Open question 1.)
+- Default: on, for direct-download Mac builds only. Decided by the CEO and CTO.
 - Persistence: a boolean in the existing local settings store, e.g. `autoUpdate.enabled`. Read at start-up; changing it takes effect immediately.
 - The control is hidden, not just disabled, where the updater does not exist (see Disabled builds).
+
+## First-run notice
+
+Decided: on the first run of a direct-download Mac build, show a one-time notice with this exact wording:
+
+> Mochi checks GitHub once a day for a signed update. You can turn this off any time in Settings.
+
+- The notice links to the "Check for updates automatically" setting.
+- Shown once. A local flag (e.g. `autoUpdate.noticeShown`) is persisted when it is shown, and it is never shown again.
+- Direct-download Mac builds only. It is not shown on Mac App Store, Microsoft Store, Windows or Linux builds, where no check exists.
+- No check is made before the notice has been shown.
 
 ## Check frequency and what is sent
 
 - At most one check per 24 hours. The last check time is stored locally (`autoUpdate.lastCheck`) and compared at start-up and on a long timer. Restarting the app does not cause extra checks.
-- The only thing sent is the HTTPS request itself to GitHub Releases for `latest-mac.yml` (and, if a newer version exists, the zip). GitHub sees the usual request metadata such as the IP address, as with any download. We add no identifiers, no device or user ID, no custom headers beyond the library default, and no telemetry. Nothing is reported back to us.
+- The check is an HTTPS request to GitHub Releases for `latest-mac.yml` (and, if a newer version exists, the zip). It shares two things with GitHub: the user's IP address (inherent to any web request) and the app version. Nothing else is shared. We add no device or user ID, no settings, no usage data and no telemetry. Nothing is reported back to us.
+- Accuracy note on the app version: it travels in the request's user-agent. Electron's default user-agent also carries the OS and Electron/Chromium versions, which would be more than "IP and app version". So the build must set an explicit minimal user-agent (for example `Mochi/<app version>`) on the updater's requests and must not rely on the library default. The unit test asserts the configured headers. If this cannot be done, the privacy wording must be widened to say so before release.
 - No analytics on update success or failure.
+
+## Every automatic connection, per edition
+
+The updater is not the only thing that talks to a server by itself. This list is the complete set, checked against `src/company.js` and `src/main.js` (see the verification note below). "Automatic" means without the user pressing something at that moment.
+
+Personal edition:
+- Windows, Linux, Mac App Store, Microsoft Store (MSIX): none.
+- Direct-download Mac: the update check. Sends the IP address and app version to GitHub, nothing else.
+
+Teams edition (in addition to the above for its platform):
+- (a) Daily licence check to the Teams server (Supabase, Mumbai). Sends the company join code, a one-way hash of the computer id, the app version and, on Windows, the Microsoft Entra tenant and domain. The server returns company contacts, team list, welcome note, campaigns and the weekly question. At most once every 20 hours (`src/main.js`).
+- (b) Weekly team totals, only if the user turned them on. One finished week of counts, with no name, email or computer id, sent at a random time (up to about 36 hours after the week is ready).
+- (c) The update check, on direct-download Mac builds only. Same as above: IP address and app version to GitHub.
+
+Verification note: the only network calls in `src/` are `fetch` in `src/company.js` (`checkin`, `sendTotals`), used from `src/main.js`. No other automatic network use was found in `src/main.js`. Related, not automatic: joining a company with a code is a user action that uses the same check-in call; Feed me a worry runs the AI model on the device (the model is bundled, `tools/fetch-model.mjs` runs at build time only); the demo app turns the server off. The existing `PRIVACY.md` bullet "No internet connection (apart from Mochi for Teams, below...)" conflicts with a Mac update check and needs the matching approved edit below.
 
 ## Install rules
 
@@ -79,9 +106,11 @@ Microsoft Store (Windows), Windows direct builds and Linux never load it. Guard 
 
 Proposed, needs CEO approval before PRIVACY.md changes. The same text, in page style, goes to `docs/privacy.html`.
 
-> **Update checks (Mac, downloaded from our website only).** The Mac app checks for a new version about once a day by asking GitHub whether a newer release exists. This is the only network request the app makes by itself. It sends nothing about you, your settings or how you use Mochi, and we receive no information from it. GitHub may see your IP address in the normal way for any download from its servers. Updates are installed only if they are signed and notarized by us. You can turn this off in Settings. Versions from the Mac App Store or Microsoft Store are updated by those stores and do not make this request.
+> **Update checks (Mac, downloaded from our website only).** The Mac app checks GitHub about once a day to see whether a newer release exists. This check shares your IP address and the app version with GitHub, and nothing else. It sends nothing about you, your settings or how you use Mochi, and we receive no information from it. Updates are installed only if they are signed and notarized by us. The first time you run Mochi it tells you about this, and you can turn it off any time in Settings. Versions from the Mac App Store or Microsoft Store are updated by those stores and do not make this request.
 
-(If review finds that the existing "no network" wording elsewhere in `PRIVACY.md` conflicts, those lines need a matching edit in the same approved change.)
+The "No internet connection" bullet in `PRIVACY.md` ("No internet connection (apart from Mochi for Teams, below, if your employer uses it)") conflicts with this and needs a matching edit in the same approved change. Proposed replacement: "No accounts, analytics, tracking, advertising or cloud sync. Mochi makes no automatic internet connection, except the update check on the Mac version downloaded from our website (below) and, if your employer uses Mochi for Teams, the connections described under Mochi for Teams." The Mochi for Teams section should also list the Mac update check as an automatic connection when it applies.
+
+(If review finds other "no network" wording in `PRIVACY.md` or `docs/privacy.html`, those lines need a matching edit in the same approved change.)
 
 ## Protected files the build will touch
 
@@ -104,7 +133,8 @@ Unit tests (run in `npm test`, no network):
 - Settings: default value, persistence, off means no check.
 - Failure paths (offline, rate limit, bad signature) produce no UI call and schedule the next try for the next day.
 - Updater is not imported or started in non-Mac and MAS paths.
-- Request contains no extra headers or identifiers (assert the configured options).
+- Request carries only the explicit minimal user-agent (app name and version) and no other identifiers (assert the configured options).
+- First-run notice: shown once, flag persisted, not shown on non-Mac or store builds, no check before it is shown.
 
 Manual, on a signed pre-release (CEO machine or CI Mac runner): update from N to N+1; tampered zip is rejected; unsigned zip is rejected; offline run is silent; switch off stops checks.
 
@@ -112,12 +142,12 @@ Windows path: existing tests must pass unchanged.
 
 ## Open questions
 
-1. Default on or off? Proposal is on, with clear disclosure in `PRIVACY.md` and a Settings switch.
-2. Should the first run show a one-line notice about update checks?
-3. Is "install on next quit" acceptable, or should we offer a "restart to update" prompt?
-4. Does Security & Privacy want a pinned Developer ID team check in addition to the library's verification?
-5. Does the first signed release need a manual test update path, since no earlier signed version exists to update from?
+Answered and now part of the design: default on, and the one-time first-run notice.
+
+1. Is "install on next quit" acceptable, or should we offer a "restart to update" prompt?
+2. Does Security & Privacy want a pinned Developer ID team check in addition to the library's verification?
+3. Does the first signed release need a manual test update path, since no earlier signed version exists to update from?
 
 ## Consequences
 
-Users on direct Mac builds get fixes without action. We add one dependency and one outbound request to GitHub, which must be disclosed. Release workflow becomes the single point that must keep producing signed, notarized artifacts.
+Users on direct Mac builds get fixes without action. We add one dependency and one outbound request to GitHub (IP address and app version), which must be disclosed, along with the full list of automatic connections. Release workflow becomes the single point that must keep producing signed, notarized artifacts.
