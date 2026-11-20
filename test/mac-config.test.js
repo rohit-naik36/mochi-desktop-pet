@@ -48,3 +48,29 @@ test('package.json has a dist:mac script', () => {
   assert.ok(pkg.scripts && pkg.scripts['dist:mac'], 'dist:mac script must exist');
   assert.match(pkg.scripts['dist:mac'], /electron-builder.*--mac/);
 });
+
+function entitlementIsTrue(file, key) {
+  const xml = fs.readFileSync(path.join(buildDir, file), 'utf8');
+  const escaped = key.replace(/\./g, '\\.');
+  return new RegExp(`<key>${escaped}</key>\\s*<true\\s*/>`).test(xml);
+}
+
+test('mac entitlements allow microphone input for push-to-talk', () => {
+  assert.ok(
+    entitlementIsTrue('entitlements.mac.plist', 'com.apple.security.device.audio-input'),
+    'entitlements.mac.plist must set com.apple.security.device.audio-input to true'
+  );
+});
+
+test('MAS entitlements allow microphone input for push-to-talk', () => {
+  assert.ok(
+    entitlementIsTrue('entitlements.mas.plist', 'com.apple.security.device.audio-input'),
+    'entitlements.mas.plist must set com.apple.security.device.audio-input to true'
+  );
+});
+
+test('build.mac.extendInfo has a non-empty NSMicrophoneUsageDescription', () => {
+  const desc = mac.extendInfo && mac.extendInfo.NSMicrophoneUsageDescription;
+  assert.strictEqual(typeof desc, 'string', 'NSMicrophoneUsageDescription must be a string');
+  assert.ok(desc.trim().length > 0, 'NSMicrophoneUsageDescription must not be empty');
+});
