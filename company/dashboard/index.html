@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Little Smoke Studio · Live</title>
+<style>
+  :root { --bg:#0f1115; --panel:#171a21; --line:#262a33; --text:#e6e8ec; --mute:#8b919c;
+          --ok:#3fb950; --warn:#d29922; --bad:#f85149; --run:#58a6ff; --info:#a371f7; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#f6f7f9; --panel:#fff; --line:#e3e6ea; --text:#1d2128; --mute:#69707c; }
+  }
+  * { box-sizing:border-box }
+  body { margin:0; font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif; background:var(--bg); color:var(--text) }
+  header { display:flex; align-items:center; gap:12px; padding:14px 20px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--bg); z-index:2; flex-wrap:wrap }
+  h1 { font-size:16px; margin:0; font-weight:650 }
+  h2 { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--mute); margin:0 0 10px; font-weight:600 }
+  .badge { padding:3px 10px; border-radius:999px; font-weight:600; font-size:12px; border:1px solid currentColor }
+  .on { color:var(--ok) } .pause { color:var(--warn) } .off,.unknown { color:var(--bad) }
+  .spacer { flex:1 }
+  .muted { color:var(--mute) } .small { font-size:12px }
+  button { font:inherit; padding:6px 12px; border-radius:8px; border:1px solid var(--line); background:var(--panel); color:var(--text); cursor:pointer }
+  button:hover { border-color:var(--mute) }
+  main { padding:16px 20px; display:grid; gap:16px; grid-template-columns: repeat(12, 1fr) }
+  section { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; min-width:0 }
+  .w12{grid-column:span 12}.w8{grid-column:span 8}.w6{grid-column:span 6}.w4{grid-column:span 4}
+  @media (max-width: 1000px){ .w8,.w6,.w4{grid-column:span 12} }
+  .tiles { display:grid; grid-template-columns:repeat(6,1fr); gap:10px }
+  @media (max-width: 800px){ .tiles{grid-template-columns:repeat(3,1fr)} }
+  .tile { border:1px solid var(--line); border-radius:10px; padding:10px 12px }
+  .tile b { display:block; font-size:24px; font-variant-numeric:tabular-nums }
+  .alert { display:flex; gap:8px; padding:7px 0; border-top:1px solid var(--line) } .alert:first-of-type{border-top:0}
+  .dot { width:8px; height:8px; border-radius:50%; margin-top:6px; flex:none }
+  .critical{background:var(--bad)} .warn{background:var(--warn)} .info{background:var(--info)}
+  .run { border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:10px }
+  .steps { margin:8px 0 0; padding:0; list-style:none; font-size:13px }
+  .steps li { display:flex; gap:8px; padding:2px 0 }
+  .s-ico { width:16px; text-align:center }
+  .s-in_progress { color:var(--run) } .s-success { color:var(--ok) } .s-failure { color:var(--bad) } .s-skipped,.s-queued,.s-pending { color:var(--mute) }
+  table { width:100%; border-collapse:collapse; font-size:13px }
+  td,th { text-align:left; padding:6px 6px; border-top:1px solid var(--line); vertical-align:top }
+  th { color:var(--mute); font-weight:600; border-top:0 }
+  tr.click { cursor:pointer } tr.click:hover { background:rgba(127,127,127,.08) }
+  a { color:var(--run); text-decoration:none } a:hover { text-decoration:underline }
+  .board { display:grid; grid-template-columns:repeat(4,1fr); gap:10px }
+  @media (max-width: 800px){ .board{grid-template-columns:1fr 1fr} }
+  .col { border:1px solid var(--line); border-radius:10px; padding:8px; min-height:60px }
+  .card { padding:6px 8px; border-radius:8px; background:rgba(127,127,127,.07); margin-top:6px; font-size:13px }
+  .chip { display:inline-block; font-size:11px; padding:1px 6px; border-radius:6px; border:1px solid var(--line); color:var(--mute); margin:2px 4px 0 0 }
+  pre { background:#0b0d10; color:#cfd3da; padding:12px; border-radius:10px; max-height:420px; overflow:auto; font-size:12px; white-space:pre-wrap; word-break:break-word }
+  .pulse { animation:p 1.4s ease-in-out infinite } @keyframes p { 50% { opacity:.35 } }
+  .empty { color:var(--mute); font-size:13px; padding:6px 0 }
+</style>
+</head>
+<body>
+<header>
+  <h1>Little Smoke Studio · Live</h1>
+  <span id="mode" class="badge unknown">…</span>
+  <span id="updated" class="muted small">connecting…</span>
+  <span class="spacer"></span>
+  <button data-act="run-dev" data-ask="Start a dev cycle now?">Run dev cycle</button>
+  <button data-act="run-standup" data-ask="Run the daily standup now?">Run standup</button>
+  <button data-act="pause" data-ask="Pause the company? Only the daily brief will run.">Pause</button>
+  <button data-act="resume" data-ask="Resume the company? Agents will start working and merging to develop.">Resume</button>
+</header>
+<main>
+  <section class="w12"><div class="tiles" id="tiles"></div></section>
+  <section class="w4"><h2>Alerts</h2><div id="alerts"></div></section>
+  <section class="w8"><h2>Live now</h2><div id="live"></div></section>
+  <section class="w12"><h2>Work board</h2><div class="board" id="board"></div></section>
+  <section class="w6"><h2>Open pull requests</h2><div id="prs"></div></section>
+  <section class="w6"><h2>HQ: briefs and approvals</h2><div id="hq"></div></section>
+  <section class="w12"><h2>Recent runs <span class="muted small">(click a row for its log)</span></h2><div id="runs"></div></section>
+  <section class="w12" id="logbox" hidden><h2 id="logtitle">Log</h2><pre id="log"></pre></section>
+</main>
+<script>
+const SESSION = "__SESSION__";
+let snap = null;
+const $ = (id) => document.getElementById(id);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) { if (k === "class") n.className = v; else if (k.startsWith("on")) n[k] = v; else n.setAttribute(k, v); }
+  for (const k of kids.flat()) if (k != null) n.append(k.nodeType ? k : document.createTextNode(String(k)));
+  return n;
+};
+const link = (url, text) => url && /^https:\/\/github\.com\//.test(url) ? el("a", { href: url, target: "_blank", rel: "noopener" }, text) : document.createTextNode(text);
+const ago = (iso) => { if (!iso) return ""; const s = Math.max(0, (Date.now() - Date.parse(iso)) / 1000);
+  return s < 60 ? `${Math.round(s)}s` : s < 3600 ? `${Math.floor(s / 60)}m ${Math.round(s % 60)}s` : s < 86400 ? `${Math.floor(s / 3600)}h ${Math.floor(s % 3600 / 60)}m` : `${Math.floor(s / 86400)}d`; };
+const icon = (st, concl) => st === "completed" ? (concl === "success" ? "✓" : concl === "skipped" ? "–" : concl === "cancelled" ? "⦸" : "✗") : st === "in_progress" ? "●" : "○";
+const cls = (st, concl) => "s-" + (st === "completed" ? concl : st);
+const labels = (x) => (x.labels || []).map((l) => l.name ?? l);
+const replace = (id, ...kids) => { const n = $(id); n.replaceChildren(...kids.flat()); };
+
+function render() {
+  if (!snap) return;
+  const m = snap.mode || "unknown";
+  $("mode").className = "badge " + (["on", "pause", "off"].includes(m) ? m : "unknown");
+  $("mode").textContent = m === "on" ? "ON" : m === "pause" ? "PAUSED" : m === "off" ? "OFF" : "UNKNOWN";
+  $("updated").textContent = `updated ${ago(snap.at)} ago · refresh ${snap.pollMs / 1000}s`;
+
+  const s = snap.summary || {};
+  replace("tiles", [["Running", s.running], ["Failed (recent)", s.failed24h], ["Ready", s.ready], ["In progress", s.inProgress], ["In review", s.inReview], ["Open PRs", s.openPrs]]
+    .map(([k, v]) => el("div", { class: "tile" }, el("span", { class: "muted small" }, k), el("b", {}, v ?? "–"))));
+
+  replace("alerts", snap.alerts.length ? snap.alerts.map((a) => el("div", { class: "alert" }, el("span", { class: "dot " + a.level }), el("div", {}, a.url ? link(a.url, a.text) : a.text)))
+    : el("div", { class: "empty" }, "All clear."));
+
+  const live = snap.runs.filter((r) => r.status !== "completed");
+  replace("live", live.length ? live.map((r) => {
+    const jobs = snap.jobs[r.databaseId] || [];
+    return el("div", { class: "run" },
+      el("div", {}, el("b", { class: "pulse s-in_progress" }, "● "), link(r.url, r.workflowName), el("span", { class: "muted small" }, ` · ${r.displayTitle} · ${r.event} · running `, el("span", { "data-since": r.createdAt }, ago(r.createdAt)))),
+      jobs.map((j) => el("div", {},
+        el("div", { class: "small", style: "margin-top:6px" }, el("b", { class: cls(j.status, j.conclusion) }, icon(j.status, j.conclusion) + " "), j.name),
+        el("ul", { class: "steps" }, (j.steps || []).map((st) => el("li", { class: cls(st.status, st.conclusion) },
+          el("span", { class: "s-ico" + (st.status === "in_progress" ? " pulse" : "") }, icon(st.status, st.conclusion)),
+          el("span", {}, st.name),
+          st.status === "in_progress" && st.startedAt ? el("span", { class: "muted", "data-since": st.startedAt }, ago(st.startedAt)) : null))))));
+  }) : el("div", { class: "empty" }, "Nothing running. Next scheduled dev cycles: 10:17, 14:17, 18:17, 22:17, 02:17 IST."));
+
+  const cols = [["status:ready", "Ready"], ["status:in-progress", "In progress"], ["status:review", "In review"], ["status:blocked", "Blocked"]];
+  replace("board", cols.map(([lab, title]) => {
+    const items = snap.issues.filter((i) => labels(i).includes(lab));
+    return el("div", { class: "col" }, el("div", { class: "small muted" }, `${title} (${items.length})`),
+      items.map((i) => el("div", { class: "card" }, link(i.url, `#${i.number} ${i.title}`), el("div", {},
+        labels(i).filter((l) => !l.startsWith("status:")).map((l) => el("span", { class: "chip" }, l)),
+        el("span", { class: "chip" }, "updated " + ago(i.updatedAt) + " ago")))));
+  }));
+
+  replace("prs", snap.prs.length ? el("table", {}, el("tr", {}, el("th", {}, "PR"), el("th", {}, "Into"), el("th", {}, "Checks"), el("th", {}, "Updated")),
+    snap.prs.map((p) => {
+      const checks = (p.statusCheckRollup || []).map((c) => el("span", { class: "chip " + cls(c.status === "COMPLETED" ? "completed" : "in_progress", (c.conclusion || "").toLowerCase()), title: c.name || c.context || "" },
+        icon(c.status === "COMPLETED" ? "completed" : c.status === undefined ? "completed" : "in_progress", (c.conclusion || c.state || "").toLowerCase()) + " " + (c.name || c.context || "")));
+      return el("tr", {}, el("td", {}, link(p.url, `#${p.number} ${p.title}`), el("div", {}, labels(p).map((l) => el("span", { class: "chip" }, l)))),
+        el("td", { class: "small" }, p.baseRefName), el("td", {}, checks), el("td", { class: "small muted" }, ago(p.updatedAt)));
+    })) : el("div", { class: "empty" }, "No open PRs."));
+
+  replace("hq", snap.hqIssues.length ? el("table", {}, snap.hqIssues.map((i) => el("tr", {},
+    el("td", {}, link(i.url, `#${i.number} ${i.title}`), el("div", {}, labels(i).map((l) => el("span", { class: "chip" }, l)))),
+    el("td", { class: "small muted" }, ago(i.updatedAt))))) : el("div", { class: "empty" }, "Nothing open in HQ."));
+
+  replace("runs", el("table", {}, el("tr", {}, el("th", {}, ""), el("th", {}, "Workflow"), el("th", {}, "What"), el("th", {}, "Event"), el("th", {}, "Started"), el("th", {}, "Took")),
+    snap.runs.map((r) => el("tr", { class: "click", onclick: () => openLog(r) },
+      el("td", { class: cls(r.status, r.conclusion) }, icon(r.status, r.conclusion)),
+      el("td", {}, r.workflowName), el("td", { class: "small" }, r.displayTitle), el("td", { class: "small muted" }, r.event),
+      el("td", { class: "small muted" }, ago(r.createdAt) + " ago"),
+      el("td", { class: "small muted" }, r.status === "completed" ? ago(new Date(Date.now() - (Date.parse(r.updatedAt) - Date.parse(r.createdAt))).toISOString()) : "running")))));
+}
+
+async function openLog(r) {
+  $("logbox").hidden = false;
+  $("logtitle").textContent = `Log · ${r.workflowName} · ${r.displayTitle}`;
+  $("log").textContent = "Loading…";
+  $("logbox").scrollIntoView({ behavior: "smooth" });
+  const res = await fetch(`/api/run/${r.databaseId}/log`);
+  const j = await res.json();
+  $("log").textContent = (j.lines || []).join("\n");
+  $("log").scrollTop = $("log").scrollHeight;
+}
+
+for (const b of document.querySelectorAll("button[data-act]")) {
+  b.onclick = async () => {
+    if (!confirm(b.dataset.ask)) return;
+    b.disabled = true;
+    try {
+      const res = await fetch("/api/action", { method: "POST", headers: { "content-type": "application/json", "x-session": SESSION }, body: JSON.stringify({ action: b.dataset.act }) });
+      const j = await res.json();
+      if (!res.ok) alert("Failed: " + (j.error || res.status));
+    } finally { b.disabled = false; }
+  };
+}
+
+const es = new EventSource("/events");
+es.onmessage = (e) => { snap = JSON.parse(e.data); render(); };
+es.onerror = () => { $("updated").textContent = "connection lost, retrying…"; };
+setInterval(() => {
+  for (const n of document.querySelectorAll("[data-since]")) n.textContent = ago(n.dataset.since);
+  if (snap) $("updated").textContent = `updated ${ago(snap.at)} ago · refresh ${snap.pollMs / 1000}s`;
+}, 1000);
+</script>
+</body>
+</html>
