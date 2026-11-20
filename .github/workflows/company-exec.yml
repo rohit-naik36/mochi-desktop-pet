@@ -60,6 +60,7 @@ jobs:
       - uses: anthropics/claude-code-action@8a29bc6f0ae11a363721054b6739feba6adabe57 # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          settings: '{"includeCoAuthoredBy": false, "attribution": {"commit": "", "pr": ""}}'
           github_token: ${{ github.token }}   # read-only workflow token; never the Claude App token (code-repo write)
           prompt: |
             You are the ${{ needs.pick.outputs.role }} of Little Smoke Studio. Read company/agents/${{ needs.pick.outputs.role }}.md and company/CHARTER.md first.
@@ -108,6 +109,7 @@ jobs:
       - uses: anthropics/claude-code-action@8a29bc6f0ae11a363721054b6739feba6adabe57 # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          settings: '{"includeCoAuthoredBy": false, "attribution": {"commit": "", "pr": ""}}'
           github_token: ${{ github.token }}   # read-only workflow token; never the Claude App token (code-repo write)
           prompt: |
             You are the ${{ needs.pick.outputs.role }} of Little Smoke Studio. Read company/agents/${{ needs.pick.outputs.role }}.md and company/CHARTER.md first.
