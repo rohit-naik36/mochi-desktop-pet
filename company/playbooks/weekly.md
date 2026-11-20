@@ -1,5 +1,7 @@
 # Playbook: weekly exec meeting (Chief of Staff chairs; CPO, CTO, CMO, COO attend)
 
+> **Sub-agents:** run every sub-agent (Task tool) in the foreground and wait for its answer. Never end your run while a sub-agent is still working. If a sub-agent fails or times out, say so in a comment on the PR or issue you were working on, then stop.
+
 1. Gather last week's facts with `gh`: merged PRs, releases, open bugs by priority, issues opened by users, failed runs, and `growth/linkedin` ledger posts if available on the `growth-ledger` branch.
 2. Ask each executive (Task tool) for a 5-line report from their role: what moved, what's stuck, one risk, one proposal.
 3. CPO updates `company/ROADMAP.md` (Now/Next/Later) — changes to Now/Next that add scope become `ceo-approval` issues instead of edits.

@@ -1,5 +1,7 @@
 # Playbook: daily standup (Chief of Staff)
 
+> **Sub-agents:** run every sub-agent (Task tool) in the foreground and wait for its answer. Never end your run while a sub-agent is still working. If a sub-agent fails or times out, say so in a comment on the PR or issue you were working on, then stop.
+
 Today is given in the prompt. Work through these steps, then stop. **If the company is paused, do only steps 1 and 6.**
 
 1. **Read state.** `company/CHARTER.md`, `company/config.json`, `company/ROADMAP.md`. Use `gh` to list: issues opened or updated in the last 24h, open PRs, PRs merged in the last 24h, failed workflow runs in the last 24h (`gh run list --status failure --limit 20`), and from the HQ repo (`node company/scripts/hq.mjs issue list --state all --limit 50 --json number,title,labels,state,updatedAt`): open `ceo-approval` issues, and issues labelled `approved`, `rejected` or `ceo-changes` since the last brief, and the open `ops-watch` issue (`hq.mjs issue list --label ops-watch --state open --json number,title,body,labels`). The ops-watch job updates it every morning before the standup.
