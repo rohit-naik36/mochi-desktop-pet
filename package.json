@@ -98,6 +98,12 @@
     "dmg": {
       "title": "Mochi"
     },
+    "publish": {
+      "provider": "github",
+      "owner": "rohit-naik36",
+      "repo": "mochi-desktop-pet",
+      "releaseType": "release"
+    },
     "linux": {
       "icon": "build/icon.png"
     },
@@ -122,6 +128,7 @@
     ]
   },
   "dependencies": {
+    "electron-updater": "6.8.11",
     "node-llama-cpp": "3.22.2"
   },
   "overrides": {
