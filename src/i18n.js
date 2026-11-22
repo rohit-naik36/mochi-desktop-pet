@@ -102,7 +102,7 @@
       explicit1: "Whoa, no 🙈 Sweet talk is lovely, but that kind of talk isn't something I do. Let's keep it wholesome, okay?",
       explicit2: 'I mean it{n}. No sexual talk, please. One more time and I\'ll go hide for a bit.',
       // menu
-      menu: { feed: 'Feed', play: 'Play', playTime: 'Play time', breathe: 'Breathe with me', bubbles: 'Bubble pop', chase: 'Chase the light', worry: '🍃 Feed me a worry', nap: 'Nap time', buddy: 'Choose your buddy', name: 'Tell me your name', changeName: 'Change my name ({you})', wander: 'Let it wander', moveToApps: 'Move Mochi to your Applications folder?', moveToAppsDetail: 'Right now Mochi is running from the download. Moving it installs it properly, so it stays after a restart and can open at login.', moveYes: 'Move to Applications', moveNo: 'Not now', chatty: 'How chatty', chatty_quiet: 'Quiet', chatty_normal: 'Normal', chatty_chatty: 'Chatty', reminders: 'Reminders', water: 'Drink water (every {count} min)', stretch: 'Stretch break (every {count} min)', eyes: '20-20-20 eye rest (every {count} min)', startup: 'Start with Windows', startupMac: 'Open at login', language: 'Language', bringBack: 'Bring pet back', settings: '⚙️ Settings', smarter: '✨ Smarter replies (beta)', smarterFailed: "couldn't start", quit: 'Quit', hidingNow: '{pet} is hiding... back soon', gender: '{pet} is a...' },
+      menu: { feed: 'Feed', play: 'Play', playTime: 'Play time', breathe: 'Breathe with me', bubbles: 'Bubble pop', chase: 'Chase the light', worry: '🍃 Feed me a worry', nap: 'Nap time', buddy: 'Choose your buddy', name: 'Tell me your name', changeName: 'Change my name ({you})', wander: 'Let it wander', moveToApps: 'Move Mochi to your Applications folder?', moveToAppsDetail: 'Right now Mochi is running from the download. Moving it installs it properly, so it stays after a restart and can open at login.', moveYes: 'Move to Applications', moveNo: 'Not now', chatty: 'How chatty', chatty_quiet: 'Quiet', chatty_normal: 'Normal', chatty_chatty: 'Chatty', reminders: 'Reminders', rhythm: 'Learn my rhythm', rhythmForget: 'Forget my rhythm', water: 'Drink water (every {count} min)', stretch: 'Stretch break (every {count} min)', eyes: '20-20-20 eye rest (every {count} min)', startup: 'Start with Windows', startupMac: 'Open at login', language: 'Language', bringBack: 'Bring pet back', settings: '⚙️ Settings', smarter: '✨ Smarter replies (beta)', smarterFailed: "couldn't start", quit: 'Quit', hidingNow: '{pet} is hiding... back soon', gender: '{pet} is a...' },
     },
 
     hi: {
@@ -198,7 +198,7 @@
       explicitSoft: 'हम्म, ये मेरे लिए थोड़ा ज़्यादा बड़ों वाला है 🙈 अगर इससे जुड़ी कोई चिंता है, तो डॉक्टर या काउंसलर इसके लिए सबसे अच्छे हैं।',
       explicit1: 'अरे नहीं 🙈 प्यारी बातें अच्छी लगती हैं, पर ऐसी बातें मैं नहीं {g:करता|करती}। साफ़-सुथरी बातें करें, ठीक है?',
       explicit2: 'सच में{n}। प्लीज़ ऐसी बातें नहीं। एक बार और, और मैं थोड़ी देर के लिए छुप {g:जाऊँगा|जाऊँगी}।',
-      menu: { feed: 'खिलाओ', play: 'खेलो', playTime: 'खेलने का समय', breathe: 'मेरे साथ साँस लो', bubbles: 'बुलबुले फोड़ो', chase: 'रोशनी पकड़ो', worry: '🍃 मुझे चिंता खिलाओ', nap: 'सोने का समय', buddy: 'अपना दोस्त चुनो', name: 'अपना नाम बताओ', changeName: 'नाम बदलो ({you})', wander: 'घूमने दो', moveToApps: 'Mochi को Applications फ़ोल्डर में रखें?', moveToAppsDetail: 'अभी Mochi डाउनलोड से चल रहा है। Applications में रखने से ये ठीक से इंस्टॉल हो जाएगा, रीस्टार्ट के बाद भी रहेगा और लॉगिन पर खुल सकेगा।', moveYes: 'Applications में रखो', moveNo: 'अभी नहीं', chatty: 'कितनी बातें करे', chatty_quiet: 'कम', chatty_normal: 'सामान्य', chatty_chatty: 'ज़्यादा', reminders: 'रिमाइंडर', water: 'पानी पियो (हर {count} मिनट)', stretch: 'स्ट्रेच ब्रेक (हर {count} मिनट)', eyes: 'आँखों का आराम (हर {count} मिनट)', startup: 'Windows के साथ शुरू करो', startupMac: 'लॉगिन पर खोलो', language: 'भाषा', bringBack: 'वापस लाओ', settings: '⚙️ सेटिंग्स', quit: 'बंद करो', hidingNow: '{pet} {g:छुपा हुआ|छुपी हुई} है... जल्दी {g:लौटेगा|लौटेगी}', gender: '{pet} है...' },
+      menu: { feed: 'खिलाओ', play: 'खेलो', playTime: 'खेलने का समय', breathe: 'मेरे साथ साँस लो', bubbles: 'बुलबुले फोड़ो', chase: 'रोशनी पकड़ो', worry: '🍃 मुझे चिंता खिलाओ', nap: 'सोने का समय', buddy: 'अपना दोस्त चुनो', name: 'अपना नाम बताओ', changeName: 'नाम बदलो ({you})', wander: 'घूमने दो', moveToApps: 'Mochi को Applications फ़ोल्डर में रखें?', moveToAppsDetail: 'अभी Mochi डाउनलोड से चल रहा है। Applications में रखने से ये ठीक से इंस्टॉल हो जाएगा, रीस्टार्ट के बाद भी रहेगा और लॉगिन पर खुल सकेगा।', moveYes: 'Applications में रखो', moveNo: 'अभी नहीं', chatty: 'कितनी बातें करे', chatty_quiet: 'कम', chatty_normal: 'सामान्य', chatty_chatty: 'ज़्यादा', reminders: 'रिमाइंडर', rhythm: 'मेरी दिनचर्या सीखो', rhythmForget: 'मेरी दिनचर्या भूल जाओ', water: 'पानी पियो (हर {count} मिनट)', stretch: 'स्ट्रेच ब्रेक (हर {count} मिनट)', eyes: 'आँखों का आराम (हर {count} मिनट)', startup: 'Windows के साथ शुरू करो', startupMac: 'लॉगिन पर खोलो', language: 'भाषा', bringBack: 'वापस लाओ', settings: '⚙️ सेटिंग्स', quit: 'बंद करो', hidingNow: '{pet} {g:छुपा हुआ|छुपी हुई} है... जल्दी {g:लौटेगा|लौटेगी}', gender: '{pet} है...' },
     },
 
     hinglish: {
@@ -294,7 +294,7 @@
       explicitSoft: 'Hmm, ye mere liye thoda zyada adult wala hai 🙈 Agar isse judi koi tension hai, toh doctor ya counsellor iske liye best hain.',
       explicit1: 'Arre nahi 🙈 Sweet baatein acchi lagti hain, par aisi baatein main nahi {g:karta|karti}. Saaf-suthri baatein karein, okay?',
       explicit2: 'Sach mein{n}. Please aisi baatein nahi. Ek baar aur, aur main thodi der ke liye chhup {g:jaunga|jaungi}.',
-      menu: { feed: 'Khilao', play: 'Khelo', playTime: 'Khelne ka time', breathe: 'Mere saath saans lo', bubbles: 'Bubble pop', chase: 'Light pakdo', worry: '🍃 Mujhe tension khilao', nap: 'Sone ka time', buddy: 'Apna buddy chuno', name: 'Apna naam batao', changeName: 'Naam badlo ({you})', wander: 'Ghoomne do', moveToApps: 'Mochi ko Applications folder mein rakhein?', moveToAppsDetail: 'Abhi Mochi download se chal raha hai. Applications mein rakhne se ye theek se install ho jayega, restart ke baad bhi rahega aur login pe khul sakega.', moveYes: 'Applications mein rakho', moveNo: 'Abhi nahi', chatty: 'Kitni baatein kare', chatty_quiet: 'Kam', chatty_normal: 'Normal', chatty_chatty: 'Zyada', reminders: 'Reminders', water: 'Paani piyo (har {count} min)', stretch: 'Stretch break (har {count} min)', eyes: 'Aankhon ka rest (har {count} min)', startup: 'Windows ke saath start karo', startupMac: 'Login pe kholo', language: 'Language / भाषा', bringBack: 'Wapas lao', settings: '⚙️ Settings', quit: 'Band karo', hidingNow: '{pet} {g:chhupa hua|chhupi hui} hai... jaldi {g:aayega|aayegi}', gender: '{pet} hai...' },
+      menu: { feed: 'Khilao', play: 'Khelo', playTime: 'Khelne ka time', breathe: 'Mere saath saans lo', bubbles: 'Bubble pop', chase: 'Light pakdo', worry: '🍃 Mujhe tension khilao', nap: 'Sone ka time', buddy: 'Apna buddy chuno', name: 'Apna naam batao', changeName: 'Naam badlo ({you})', wander: 'Ghoomne do', moveToApps: 'Mochi ko Applications folder mein rakhein?', moveToAppsDetail: 'Abhi Mochi download se chal raha hai. Applications mein rakhne se ye theek se install ho jayega, restart ke baad bhi rahega aur login pe khul sakega.', moveYes: 'Applications mein rakho', moveNo: 'Abhi nahi', chatty: 'Kitni baatein kare', chatty_quiet: 'Kam', chatty_normal: 'Normal', chatty_chatty: 'Zyada', reminders: 'Reminders', rhythm: 'Meri routine seekho', rhythmForget: 'Meri routine bhool jao', water: 'Paani piyo (har {count} min)', stretch: 'Stretch break (har {count} min)', eyes: 'Aankhon ka rest (har {count} min)', startup: 'Windows ke saath start karo', startupMac: 'Login pe kholo', language: 'Language / भाषा', bringBack: 'Wapas lao', settings: '⚙️ Settings', quit: 'Band karo', hidingNow: '{pet} {g:chhupa hua|chhupi hui} hai... jaldi {g:aayega|aayegi}', gender: '{pet} hai...' },
     },
   };
 
@@ -694,6 +694,7 @@
       breakStart: ['Break time! Stand up, stretch, sip water. I\'ll call you back ☕', 'Five minutes off the clock. Look out a window ☕'],
       breakOver: ['Break\'s over{n}! Ready for another round?', 'Recharged? Let\'s do one more focus round together.'],
       moodAsk: ['How are you feeling today{n}?', 'Quick check-in: how\'s your heart today?', 'Weather report for your mood, please? ☁️'],
+      moodAskSoft: ['No pressure{n}, just checking in. How are you today?', 'No pressure{n}. How is your heart today? Any answer is okay. 🤍'],
       moodReply: {
         1: ["I'm really sorry it's a rough one{n}. I'm right here. Want to tell me about it?", "Oh no. Come here, cloud hug 🤗 Want to talk or breathe for a bit?"],
         2: ["Meh days are allowed. Want to feed me whatever's bugging you?", "Not great, huh? Let's make the rest of today a little softer."],
@@ -753,6 +754,7 @@
       breakStart: ['ब्रेक टाइम! उठो, स्ट्रेच करो, पानी पियो। मैं वापस बुला {g:लूँगा|लूँगी} ☕'],
       breakOver: ['ब्रेक ख़त्म{n}! एक और राउंड?', 'रीचार्ज हो गए? चलो एक और फ़ोकस राउंड साथ में।'],
       moodAsk: ['आज कैसा महसूस कर रहे हो{n}?', 'छोटा सा चेक-इन: आज दिल का मौसम कैसा है? ☁️'],
+      moodAskSoft: ['कोई दबाव नहीं{n}। आज दिल कैसा है? जो भी जवाब हो, ठीक है। 🤍'],
       moodReply: {
         1: ['मुझे बहुत अफ़सोस है कि आज का दिन भारी है{n}। मैं यहीं हूँ। बताना चाहोगे?', 'अरे। इधर आओ, बादल वाली झप्पी 🤗 बात करें या थोड़ा साँस लें?'],
         2: ['फीके दिन भी चलते हैं। जो परेशान कर रहा है, मुझे खिला दो?', 'ज़्यादा अच्छा नहीं, हम्म? बाक़ी दिन थोड़ा नरम बनाते हैं।'],
@@ -799,6 +801,7 @@
       breakStart: ['Break time! Utho, stretch karo, paani piyo. Main wapas bula {g:lunga|lungi} ☕'],
       breakOver: ['Break khatam{n}! Ek aur round?', 'Recharge ho gaye? Chalo ek aur focus round saath mein.'],
       moodAsk: ['Aaj kaisa feel kar rahe ho{n}?', 'Chhota sa check-in: aaj dil ka mausam kaisa hai? ☁️'],
+      moodAskSoft: ['Koi pressure nahi{n}. Aaj dil kaisa hai? Jo bhi jawab ho, theek hai. 🤍'],
       moodReply: {
         1: ['Mujhe bahut afsos hai ki aaj ka din heavy hai{n}. Main yahin hoon. Batana chahoge?', 'Arre. Idhar aao, cloud wali jhappi 🤗 Baat karein ya thoda saans lein?'],
         2: ['Meh din bhi chalte hain. Jo pareshaan kar raha hai, mujhe khila do?', 'Zyada accha nahi, hmm? Baaki din thoda soft banate hain.'],
@@ -1170,6 +1173,7 @@
         chatty: 'How often Mochi talks on its own.',
         wander: 'Lets Mochi stroll along the bottom of your screen.',
         reminders: 'Water, stretch and 20-20-20 eye rest reminders.',
+        rhythm: 'Mochi learns, on this computer only, when you tend to take breaks, so reminders come at better times. Nothing is sent anywhere.',
         startup: 'Open Mochi automatically when your computer starts.',
       },
     },
@@ -1197,6 +1201,7 @@
         chatty: 'Mochi अपने आप कितना बोले।',
         wander: 'Mochi स्क्रीन के नीचे घूमता रहे।',
         reminders: 'पानी, स्ट्रेच और 20-20-20 आँखों के आराम के रिमाइंडर।',
+        rhythm: 'Mochi इसी कंप्यूटर पर सीखता है कि तुम कब ब्रेक लेते हो, ताकि रिमाइंडर सही समय पर आएँ। कुछ भी कहीं नहीं भेजा जाता।',
         startup: 'कंप्यूटर चालू होते ही Mochi अपने आप खुले।',
       },
     },
@@ -1224,6 +1229,7 @@
         chatty: 'Mochi apne aap kitna bole.',
         wander: 'Mochi screen ke neeche ghoomta rahe.',
         reminders: 'Paani, stretch aur 20-20-20 aankhon ke rest ke reminders.',
+        rhythm: 'Mochi isi computer pe seekhta hai ki tum kab break lete ho, taaki reminders sahi time pe aayein. Kuch bhi kahin nahi bheja jaata.',
         startup: 'Computer start hote hi Mochi apne aap khule.',
       },
     },

@@ -23,3 +23,5 @@ A first pass of the five quality scores was written for the model already in the
 A second Puff is now the candidate under the current model. It starts from a small pretrained model, not the lab weights. The first reviewed replies and the schedule are in the private repo. Nothing here changes what the app ships. The aim is a scored run by the middle of December.
 
 The first large set of practice replies for the new small model is written. They passed the same safety check the app uses. A person still needs to read a sample before any training run. The app is unchanged.
+
+On 11 Nov 2026 an on-device rhythm predictor was built on a branch: counts per hour of the week decide when a reminder shows, and a small mood model softens the daily check-in. It is not in the installer. The idea of using Puff's own reply confidence to choose between model and written reply waits for the scored run in December.
