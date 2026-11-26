@@ -40,15 +40,21 @@ function userAgent(version) {
   return `Mochi/${String(version)}`;
 }
 
-// Options applied to the updater. Tested as data.
-function updaterOptions(version) {
+// Test-only route: an empty file with this name in the user data folder turns
+// pre-releases on for that machine only. Nothing ships it, nothing creates it,
+// there is no setting or UI for it, and it adds no network request.
+const PRERELEASE_OPT_IN_FILE = 'allow-prerelease';
+
+// Options applied to the updater. Tested as data. allowPrerelease is false
+// unless the local opt-in file was found (second argument).
+function updaterOptions(version, prereleaseOptIn = false) {
   return {
     autoDownload: true,
     autoInstallOnAppQuit: true,
-    allowPrerelease: false,
+    allowPrerelease: prereleaseOptIn === true,
     allowDowngrade: false,
     requestHeaders: { 'User-Agent': userAgent(version) },
   };
 }
 
-module.exports = { DAY_MS, canAutoUpdate, defaultSettings, normalize, shouldCheck, userAgent, updaterOptions };
+module.exports = { PRERELEASE_OPT_IN_FILE, DAY_MS, canAutoUpdate, defaultSettings, normalize, shouldCheck, userAgent, updaterOptions };

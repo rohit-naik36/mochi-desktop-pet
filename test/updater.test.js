@@ -59,6 +59,24 @@ test('updater options: install on quit, no pre-releases, no downgrades', () => {
   assert.strictEqual(o.allowDowngrade, false);
 });
 
+test('pre-releases are off by default and on only with the local opt-in file', () => {
+  const fs = require('fs');
+  const os = require('os');
+  const path = require('path');
+  assert.strictEqual(R.updaterOptions('1.0.0').allowPrerelease, false);
+  assert.strictEqual(R.updaterOptions('1.0.0', false).allowPrerelease, false);
+  assert.strictEqual(R.updaterOptions('1.0.0', 'yes').allowPrerelease, false);
+  assert.strictEqual(R.updaterOptions('1.0.0', true).allowPrerelease, true);
+  assert.strictEqual(R.updaterOptions('1.0.0', true).allowDowngrade, false);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mochi-prerelease-'));
+  try {
+    assert.strictEqual(Updater.prereleaseOptedIn(dir), false);
+    assert.strictEqual(Updater.prereleaseOptedIn(path.join(dir, 'missing')), false);
+    fs.writeFileSync(path.join(dir, R.PRERELEASE_OPT_IN_FILE), '');
+    assert.strictEqual(Updater.prereleaseOptedIn(dir), true);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
 test('Updater.start does nothing outside the direct-download Mac build', () => {
   for (const c of [
     { platform: 'win32', mas: false, packaged: true },

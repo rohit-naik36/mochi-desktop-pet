@@ -1,6 +1,8 @@
 // Mac auto-updater (ADR 0001). Direct-download signed Mac build only.
 // electron-updater is required lazily, inside start(), so no other build
 // ever loads it or has a code path that makes the request.
+const fs = require('fs');
+const path = require('path');
 const Rules = require('./updater-rules');
 
 const TICK_MS = 60 * 60 * 1000; // look at the clock hourly; the 24h rule decides
@@ -19,6 +21,11 @@ function settings(ctx) {
   const st = ctx.getState();
   st.autoUpdate = Rules.normalize(st.autoUpdate);
   return st.autoUpdate;
+}
+
+// Test-only: true only when the opt-in file exists in the user data folder.
+function prereleaseOptedIn(userDataDir) {
+  try { return fs.existsSync(path.join(userDataDir, Rules.PRERELEASE_OPT_IN_FILE)); } catch { return false; }
 }
 
 function start(ctx) {
@@ -48,7 +55,7 @@ function check(ctx) {
   ctx.saveState();
   try {
     const { autoUpdater } = require('electron-updater');
-    Object.assign(autoUpdater, Rules.updaterOptions(ctx.app.getVersion()));
+    Object.assign(autoUpdater, Rules.updaterOptions(ctx.app.getVersion(), prereleaseOptedIn(ctx.app.getPath('userData'))));
     autoUpdater.logger = null; // silent: no dialogs, no badges, no notifications
     if (!wired) { wired = true; autoUpdater.on('error', (e) => console.error('[updater]', e && e.message)); }
     autoUpdater.checkForUpdates().catch((e) => console.error('[updater]', e && e.message));
@@ -57,4 +64,4 @@ function check(ctx) {
   }
 }
 
-module.exports = { start, available };
+module.exports = { start, available, prereleaseOptedIn };

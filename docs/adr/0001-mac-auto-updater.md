@@ -85,7 +85,7 @@ Verification note: the only network calls in `src/` are `fetch` in `src/company.
 - Verify the sha512 from `latest-mac.yml`, then verify the macOS code signature (Developer ID, our team) before installing. Gatekeeper/notarization must pass.
 - Any failure at any step (bad hash, bad or missing signature, wrong team, not notarized): do nothing, keep the current version, discard the download.
 - Install when the app next quits or restarts (`autoInstallOnAppQuit`). No forced restart, no interrupting a break or focus session.
-- No downgrades and no pre-releases (`allowPrerelease` and `allowDowngrade` off).
+- No downgrades. Pre-releases are off in every shipped build (`allowPrerelease` and `allowDowngrade` off). The only exception is the test-only opt-in described under First-release test path: an empty file named `allow-prerelease` in the user data folder, read locally, which enables pre-releases on that one machine. It adds no network request and no UI, and nothing creates the file.
 
 ## Failure behaviour
 
@@ -136,8 +136,9 @@ Unprotected work: `src/` updater module, Settings UI, settings defaults, tests.
 The first signed release has nothing to update from. Before the updater is on for anyone else:
 
 1. Ship a signed, notarized pre-release (planned before 18 December) from the CEO's machine or CI Mac runner, not marked as the latest release for users.
-2. On the CEO's Mac, test update N to N+1, a tampered zip (must be rejected), an unsigned zip (must be rejected), an offline run (silent) and the Settings off-switch (no checks).
-3. Only then publish a release with `latest-mac.yml` to everyone, at 20% staging.
+2. On the CEO's Mac only, create an empty file named `allow-prerelease` in Mochi's user data folder (`~/Library/Application Support/Mochi/`). Without it `allowPrerelease` is false and a pre-release N+1 is never offered. Delete the file when testing is done. Other users never have it, so the shipped behaviour is unchanged.
+3. On the CEO's Mac, test update N to N+1, a tampered zip (must be rejected), an unsigned zip (must be rejected), an offline run (silent) and the Settings off-switch (no checks).
+4. Only then publish a release with `latest-mac.yml` to everyone, at 20% staging.
 
 Install on quit is decided for v1: no restart prompt.
 
