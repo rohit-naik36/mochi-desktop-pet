@@ -1143,6 +1143,14 @@
   };
   for (const lang of Object.keys(VAPPS)) merge(STRINGS[lang], VAPPS[lang]);
 
+  // Mac updater (English only for now; other languages fall back to English).
+  merge(STRINGS.en, { menu: {
+    autoUpdate: 'Check for updates automatically',
+    autoUpdateNotice: 'Mochi checks GitHub once a day for a signed update. You can turn this off any time in Settings.',
+    autoUpdateOk: 'OK',
+    autoUpdateOff: 'Turn off',
+  } });
+
   // One-line explanations for the tray menu: tooltips on Mac, and the
   // "What does everything do?" list on every system.
   const VTIPS = {

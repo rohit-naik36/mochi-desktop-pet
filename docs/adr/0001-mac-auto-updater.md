@@ -1,6 +1,6 @@
 # ADR 0001: Mac auto-updater
 
-Status: Proposed — pending Security & Privacy review
+Status: Accepted. Built in issue #51 (CEO and CTO review requirements folded in below)
 Issue: #50
 Scope of this document: docs only. It changes no code and no protected file. It describes what the later build will touch.
 
@@ -60,7 +60,7 @@ Decided: on the first run of a direct-download Mac build, show a one-time notice
 ## Check frequency and what is sent
 
 - At most one check per 24 hours. The last check time is stored locally (`autoUpdate.lastCheck`) and compared at start-up and on a long timer. Restarting the app does not cause extra checks.
-- The check is an HTTPS request to GitHub Releases for `latest-mac.yml` (and, if a newer version exists, the zip). It shares two things with GitHub: the user's IP address (inherent to any web request) and the app version. Nothing else is shared. We add no device or user ID, no settings, no usage data and no telemetry. Nothing is reported back to us.
+- The check is an HTTPS request to GitHub Releases for `latest-mac.yml` (and, if a newer version exists, the zip). The GitHub provider in `electron-updater` also reads the repository's `releases.atom` feed to find the newest release. Both are plain GitHub requests with the same minimal user-agent, so the privacy promise is unchanged: IP address and app version, GitHub only. It shares two things with GitHub: the user's IP address (inherent to any web request) and the app version. Nothing else is shared. We add no device or user ID, no settings, no usage data and no telemetry. Nothing is reported back to us.
 - Accuracy note on the app version: it travels in the request's user-agent. Electron's default user-agent also carries the OS and Electron/Chromium versions, which would be more than "IP and app version". So the build must set an explicit minimal user-agent (for example `Mochi/<app version>`) on the updater's requests and must not rely on the library default. The unit test asserts the configured headers. If this cannot be done, the privacy wording must be widened to say so before release.
 - No analytics on update success or failure.
 
@@ -85,7 +85,7 @@ Verification note: the only network calls in `src/` are `fetch` in `src/company.
 - Verify the sha512 from `latest-mac.yml`, then verify the macOS code signature (Developer ID, our team) before installing. Gatekeeper/notarization must pass.
 - Any failure at any step (bad hash, bad or missing signature, wrong team, not notarized): do nothing, keep the current version, discard the download.
 - Install when the app next quits or restarts (`autoInstallOnAppQuit`). No forced restart, no interrupting a break or focus session.
-- No downgrades and no pre-releases (`allowPrerelease` and `allowDowngrade` off).
+- No downgrades. Pre-releases are off in every shipped build (`allowPrerelease` and `allowDowngrade` off). The only exception is the test-only opt-in described under First-release test path: an empty file named `allow-prerelease` in the user data folder, read locally, which enables pre-releases on that one machine. It adds no network request and no UI, and nothing creates the file.
 
 ## Failure behaviour
 
@@ -124,6 +124,23 @@ Each needs CEO approval before the build PR can merge:
 - `build/` config (entitlements, notarize settings) if the updater needs changes there.
 
 Unprotected work: `src/` updater module, Settings UI, settings defaults, tests.
+
+## Staged rollout and kill switch
+
+- Publish `latest-mac.yml` with `stagingPercentage: 20`. Raise it to `100` after 48 hours with no reported issues. `electron-updater` honours the percentage per install, so only that share of users is offered the update.
+- Kill switch: delete `latest-mac.yml` from the GitHub Release (or the whole release). With no `latest-mac.yml` the updater finds nothing and installs nothing; clients already on the new version are unaffected. Users who already downloaded the update install it at next quit, so pull the file early.
+- The release workflow change that writes `stagingPercentage` and uploads `latest-mac.yml` is under `.github/` and needs a separate CEO-approved change.
+
+## First-release test path
+
+The first signed release has nothing to update from. Before the updater is on for anyone else:
+
+1. Ship a signed, notarized pre-release (planned before 18 December) from the CEO's machine or CI Mac runner, not marked as the latest release for users.
+2. On the CEO's Mac only, create an empty file named `allow-prerelease` in Mochi's user data folder (`~/Library/Application Support/Mochi/`). Without it `allowPrerelease` is false and a pre-release N+1 is never offered. Delete the file when testing is done. Other users never have it, so the shipped behaviour is unchanged.
+3. On the CEO's Mac, test update N to N+1, a tampered zip (must be rejected), an unsigned zip (must be rejected), an offline run (silent) and the Settings off-switch (no checks).
+4. Only then publish a release with `latest-mac.yml` to everyone, at 20% staging.
+
+Install on quit is decided for v1: no restart prompt.
 
 ## Test plan
 
