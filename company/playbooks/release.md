@@ -3,7 +3,7 @@
 > **Sub-agents:** run every sub-agent (Task tool) in the foreground and wait for its answer. Never end your run while a sub-agent is still working. If a sub-agent fails or times out, say so in a comment on the PR or issue you were working on, then stop.
 
 1. `git fetch origin` and list commits on `origin/develop` not on `origin/main`. If none are user-facing `feat`/`fix`, write "No release this week" to `.company/release.json` as `{"release": false, "reason": "..."}` and stop.
-2. Gates: latest CI on develop green; no open issues labelled `priority:p0`; all merged PRs since the last release had QA `approve` verdicts. If a gate fails, write `{"release": false, "reason": "..."}` and stop.
+2. Gates: latest CI on develop green; no open issues labelled `release-blocker` (priority labels order the work queue; they do not block releases); all merged PRs since the last release had QA `approve` verdicts. If a gate fails, write `{"release": false, "reason": "..."}` and stop.
 3. Ask the CTO (Task tool) for go/no-go in one line.
 4. Create branch `release/vX.Y.Z` from `origin/develop`. Bump `version` in `package.json` (minor if any feat, else patch). Add a changelog entry at the top of `docs/changelog.html` matching the existing markup, written for users by the Content & Community Writer (Task tool).
 5. Commit `release: vX.Y.Z`, push, and open a PR `release/vX.Y.Z` → `main` with release notes.
