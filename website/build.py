@@ -125,6 +125,7 @@ def page(path, title, desc, body, current=None, og_image='assets/img/og-image.pn
   </div>
 </footer>
 <script src="assets/js/site.js" defer></script>
+<script src="assets/js/festive.js" defer></script>
 </body>
 </html>
 '''

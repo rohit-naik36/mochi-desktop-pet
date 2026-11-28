@@ -318,3 +318,16 @@ form.enquiry { display: grid; gap: 16px; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0s !important; animation-iteration-count: 1 !important; transition: none !important; }
 }
+
+/* Winter pack: only when festive.js adds html.festive (20 Dec to 2 Jan, or ?festive=1). */
+html.festive { --sky: #e8f3f1; --sky-deep: #cfe6e1; --ember: #f26b5b; --ember-ink: #a8231f; --ember-soft: #ffe0dc; }
+.festive-banner {
+  background: #a8231f; color: #fff; text-align: center; padding: 8px 16px;
+  font: 600 var(--step-0)/1.4 var(--font-body);
+  background-image: radial-gradient(circle, rgba(255,255,255,.55) 1.5px, transparent 2px);
+  background-size: 28px 28px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .festive-banner { animation: festive-snow 12s linear infinite; }
+  @keyframes festive-snow { to { background-position: 28px 28px; } }
+}
