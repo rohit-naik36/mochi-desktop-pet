@@ -82,6 +82,7 @@ jobs:
         uses: anthropics/claude-code-action@8a29bc6f0ae11a363721054b6739feba6adabe57 # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          settings: '{"includeCoAuthoredBy": false, "attribution": {"commit": "", "pr": ""}}'
           github_token: ${{ github.token }}   # skip the Claude App OIDC exchange, which fails on pull_request_target
           allowed_bots: "claude"   # the dev cycle opens PRs as claude[bot]; fork PRs never reach this job
           prompt: |
@@ -98,16 +99,16 @@ jobs:
             --max-turns 60
             --allowedTools "Read,Glob,Grep,Task,Write,Bash(ls:*),Bash(cat:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(git -C pr diff:*),Bash(git -C pr log:*),Bash(git -C pr show:*)"
             --disallowedTools "WebFetch,WebSearch"
-      - name: Review summary (denied tool calls and closing message only)
-        # Only what Claude tried and its final message; never tool results, which could hold secrets.
+      - name: Review summary (counts and denied tool names only)
+        # Public repo: only counts and the names of denied tools. Never tool inputs, results or
+        # the AI's messages, which could hold content from the PR or secrets.
         if: always() && steps.review.outputs.execution_file != ''
         env:
           LOG: ${{ steps.review.outputs.execution_file }}
         run: |
           jq -r '[.. | objects | select(.type=="result")] | last
             | "turns=\(.num_turns) is_error=\(.is_error) denials=\(.permission_denials_count)",
-              (.permission_denials // [] | .[] | "denied: \(.tool_name) \(.tool_input | tostring | .[0:300])"),
-              "final: \((.result // "none") | tostring | .[0:1500])"' "$LOG" | tee -a "$GITHUB_STEP_SUMMARY" || true
+              (.permission_denials // [] | .[] | "denied: \(.tool_name | tostring | gsub("[^A-Za-z0-9_:.-]"; "_") | .[0:60])")' "$LOG" | tee -a "$GITHUB_STEP_SUMMARY" || true
       - name: Fresh trusted scripts (cannot have been altered by the AI step)
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:

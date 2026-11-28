@@ -12,6 +12,8 @@ const Ai = require('./ai');
 const Apps = require('./apps');
 const Device = require('./device');
 const Idle = require('./idle');
+const Updater = require('./updater');
+const UpdaterRules = require('./updater-rules');
 // The demo app only (see src/demo-flag.js): normal and Store builds leave
 // src/demo out of the package and never load it.
 const DEMO = require('./demo-flag').isDemo(require('../package.json'), app.isPackaged, process.env);
@@ -70,6 +72,7 @@ const defaults = {
   silent: { auto: true, until: 0 }, // quiet on calls; until = manual silent mode end (ms)
   apps: false, // notice which app is in front (name only) for playful lines; off by default
   ai: { on: true }, // Smarter replies: the small model that ships with Mochi
+  autoUpdate: { enabled: true, noticeShown: false, lastCheck: 0 }, // Mac direct-download updater (src/updater.js)
 };
 
 function loadState() {
@@ -77,6 +80,7 @@ function loadState() {
     state = { ...defaults, ...JSON.parse(fs.readFileSync(statePath(), 'utf8')) };
     state.nudges = { ...defaults.nudges, ...state.nudges };
     state.silent = { ...defaults.silent, ...state.silent };
+    state.autoUpdate = UpdaterRules.normalize(state.autoUpdate);
   } catch {
     state = { ...defaults };
   }
@@ -238,6 +242,25 @@ function appsItem(M) {
         cancelId: 1,
       });
       setApps(response === 0);
+      refreshTrayMenu();
+    },
+  };
+}
+
+// Settings checkbox for the Mac updater. Hidden (not disabled) in every
+// build where the updater does not exist.
+function updaterCtx() {
+  return { app, platform: process.platform, mas: !!process.mas, demo: DEMO, getState: () => state, saveState };
+}
+function updateItem(M) {
+  if (!Updater.available(updaterCtx())) return null;
+  return {
+    label: M('autoUpdate'),
+    type: 'checkbox',
+    checked: UpdaterRules.normalize(state.autoUpdate).enabled,
+    click: (i) => {
+      state.autoUpdate = { ...UpdaterRules.normalize(state.autoUpdate), enabled: i.checked };
+      saveState();
       refreshTrayMenu();
     },
   };
@@ -741,7 +764,7 @@ function buildMenu() {
     { label: M('board'), ...tip('board'), click: openBoard },
     { type: 'separator' },
     { label: M('settings'), submenu: [
-      ...[aiItem(M)].filter(Boolean),
+      ...[aiItem(M), updateItem(M)].filter(Boolean),
       ...(Apps.supported() ? [appsItem(M)] : []),
       { label: state.teams ? '🏢 ' + state.teams.name : M('teams'), ...tip('teams'), click: openTeams },
       { type: 'separator' },
@@ -1026,6 +1049,11 @@ if (!gotLock) {
     offerMoveToApplications();
     createWindow();
     buildTray();
+    Updater.start({ ...updaterCtx(), showNotice: (done) => {
+      const M = (key) => I18N.t(state.lang, 'menu.' + key);
+      dialog.showMessageBox({ type: 'info', title: 'Mochi', message: M('autoUpdateNotice'), buttons: [M('autoUpdateOk'), M('autoUpdateOff')], defaultId: 0, cancelId: 0 })
+        .then((r) => { done(r.response === 1); refreshTrayMenu(); }, () => done(false));
+    } });
     if (Demo) Demo.init({
       app, BrowserWindow, screen, ipcMain, Company, Insights, Calls, Idle,
       getState: () => state, statePath, send, saveState, refreshTrayMenu, teamsChanged,

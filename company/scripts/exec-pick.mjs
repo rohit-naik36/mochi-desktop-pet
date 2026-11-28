@@ -46,6 +46,15 @@ export function releaseAction(comments) {
   return { label: "status:ready", message: `${FAIL_MARK}\nThe runner stopped before finishing this task (failure ${failures} of ${MAX_FAILURES}). It is back in the queue for the next run.` };
 }
 
+/**
+ * After every run: a task still labelled in progress was not finished (a stage failed, was cancelled or
+ * skipped, or the AI ended without posting). Requeue or block it. Finished tasks are left alone.
+ */
+export function settleAction(labels, comments) {
+  const l = (labels || []).map((x) => (typeof x === "string" ? x : x.name));
+  return l.includes("status:in-progress") ? releaseAction(comments) : null;
+}
+
 /** Monday of the given date's week, as YYYY-MM-DD (IST). */
 export function weekOf(date = new Date()) {
   const ist = new Date(date.getTime() + 330 * 60000);
@@ -71,6 +80,19 @@ function main(argv, env) {
     const issue = JSON.parse(call(["issue", "view", n, "--json", "title,body"]));
     fs.mkdirSync(".company", { recursive: true });
     fs.writeFileSync(".company/task.md", researchBrief({ ...issue, role }));
+    return;
+  }
+  const si = argv.indexOf("--settle");
+  if (si >= 0) {
+    // Always runs after a pick (no AI): un-stick a task that was not finished, whatever the reason.
+    const n = argv[si + 1];
+    if (!/^[1-9][0-9]{0,9}$/.test(n || "")) throw new Error("usage: --settle <number>");
+    const { labels = [], comments = [] } = JSON.parse(call(["issue", "view", n, "--json", "labels,comments"]));
+    const action = settleAction(labels, comments);
+    if (!action) { console.log(`HQ #${n} was finished; nothing to settle.`); return; }
+    call(["issue", "comment", n, "--body", action.message]);
+    call(["issue", "edit", n, "--add-label", action.label, "--remove-label", "status:in-progress"]);
+    console.log(action.message);
     return;
   }
   const ri = argv.indexOf("--release");

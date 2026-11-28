@@ -3,7 +3,7 @@ name: "Company · Dev cycle"
 # which pins each one to the commit SHA the tag points at (review the diff before committing).
 on:
   schedule:
-    - cron: "47 4,8,12,16,20 * * *"   # 10:17, 14:17, 18:17, 22:17, 02:17 IST
+    - cron: "47 4,12 * * *"   # 10:17 and 18:17 IST (2 a day until autonomy L1, offsite 18 Nov 2026)
   workflow_dispatch:
 permissions: {}
 concurrency:
@@ -36,6 +36,7 @@ jobs:
       - uses: anthropics/claude-code-action@8a29bc6f0ae11a363721054b6739feba6adabe57 # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          settings: '{"includeCoAuthoredBy": false, "attribution": {"commit": "", "pr": ""}}'
           prompt: |
             You are the Engineering Manager of Little Smoke Studio. Your role: company/agents/engineering-manager.md (read it first), and company/CHARTER.md.
             Run company/playbooks/dev-cycle.md now. Delegate implementation to the engineer subagents in .claude/agents/.

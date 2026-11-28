@@ -39,6 +39,13 @@ describe("company workflows", () => {
       });
       test(`${f}/${name}: job declares its own minimal permissions`, () => assert.match(job, /\n    permissions:\n/));
       test(`${f}/${name}: respects COMPANY_MODE`, () => {
+        if (f === "company-pr-tests.yml") {
+          const head = job.split("steps:")[0];
+          assert.ok(!/COMPANY_MODE/.test(head), "company-tests must run in every mode: a skipped required check counts as passed");
+          assert.match(job, /MODE: \$\{\{ vars\.COMPANY_MODE \}\}/, "company-tests reads COMPANY_MODE in a step");
+          assert.match(job, /if \[ "\$MODE" != "on" \]; then[\s\S]*?exit 1/, "company-tests fails while paused or off, so nothing merges");
+          return;
+        }
         if (f === "company-ceo-commands.yml") return assert.ok(!/COMPANY_MODE/.test(job.split("steps:")[0]), "CEO commands must work in every mode");
         if (f === "company-standup.yml") {
           assert.match(job, /vars\.COMPANY_MODE == 'on' \|\| vars\.COMPANY_MODE == 'pause'/);
@@ -86,7 +93,8 @@ describe("company workflows", () => {
     assert.ok(!/show_full_output: "?true/.test(t), "full output would publish tool results in a public repo");
     const summary = t.slice(t.indexOf("name: Review summary"), t.indexOf("name: Fresh trusted scripts"));
     assert.match(summary, /permission_denials/);
-    assert.ok(!/tool_result|\.content|\.message/.test(summary), "never prints tool results or messages");
+    assert.ok(!/tool_result|\.content|\.message|\.result|tool_input/.test(summary), "never prints tool inputs, results or messages");
+    assert.match(summary, /tool_name \| tostring \| gsub\("\[\^A-Za-z0-9_:\.-\]"; "_"\)/, "denied tool names are sanitised");
   });
   test("PR review: the workspace root is a credential-free checkout of the base commit, made first", () => {
     const t = read("company-pr-review.yml");
@@ -214,13 +222,32 @@ describe("company workflows", () => {
       assert.ok(!/COMPANY_GH_TOKEN/.test(j.write));
     });
     test("pick and release run no AI", () => { for (const k of ["pick", "release"]) assert.ok(!/claude-code-action/.test(j[k]), k); });
+    test("write never runs a script Claude could have rewritten", () => {
+      const tools = j.write.match(/--allowedTools "([^"]+)"/)[1];
+      assert.ok(!/node company\//.test(tools), "no script from the workspace");
+      assert.match(tools, /Bash\(node \$\{\{ runner\.temp \}\}\/hqtool\/scripts\/hq\.mjs:\*\)/);
+      assert.match(j.write, /chmod -R a-w "\$d"/);
+      const install = j.write.indexOf("hqtool"), ai = j.write.indexOf("anthropics/claude-code-action");
+      assert.ok(install > 0 && install < ai, "the read-only copy is made before Claude starts");
+    });
+    test("write runs the workflow's own commit; develop is history only", () => {
+      assert.ok(!/ref: develop/.test(j.write));
+      assert.match(j.write, /git fetch --no-tags --depth=100 origin develop/);
+    });
+    test("AI steps get the read-only workflow token, not the Claude App token", () => {
+      for (const k of ["research", "write"]) assert.match(j[k], /github_token: \$\{\{ github\.token \}\}/, k);
+    });
+    test("release always settles a picked task, whatever happened to the stages", () => {
+      assert.match(j.release, /if: always\(\) && vars\.COMPANY_MODE == 'on' && needs\.pick\.outputs\.number != ''\n/);
+      assert.match(j.release, /exec-pick\.mjs --settle "\$NUMBER"/);
+    });
   });
   test("LinkedIn autopilot stops when the company is paused or off", () => {
     assert.match(fs.readFileSync(linkedin, "utf8"), /vars\.COMPANY_MODE == 'on'/);
   });
-  test("third-party actions pinned to commit SHAs", (t) => {
+  test("third-party actions pinned to commit SHAs", () => {
     const all = [...files.map(read), fs.readFileSync(linkedin, "utf8")].join("\n");
     const unpinned = [...new Set([...all.matchAll(/uses: ([\w.-]+\/[\w.-]+)@(?![0-9a-f]{40}\b)(\S+)/g)].map((m) => `${m[1]}@${m[2]}`))];
-    if (unpinned.length) t.todo(`unpinned until company/scripts/pin-actions.sh is run: ${unpinned.join(", ")}`);
+    assert.deepEqual(unpinned, [], "run company/scripts/pin-actions.sh and review the diff");
   });
 });

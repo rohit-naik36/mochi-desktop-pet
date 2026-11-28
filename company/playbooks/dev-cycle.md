@@ -1,5 +1,7 @@
 # Playbook: dev cycle (Engineering Manager)
 
+> **Sub-agents:** run every sub-agent (Task tool) in the foreground and wait for its answer. Never end your run while a sub-agent is still working. If a sub-agent fails or times out, say so in a comment on the PR or issue you were working on, then stop.
+
 Exactly one unit of work per run.
 
 1. Check `gh pr list --label changes-requested --base develop`. If any, take the oldest: read the review, check out its branch, delegate the fixes to the original engineer agent, run `npm test`, push, remove `changes-requested`. Count rounds in a PR comment ("Fix round N"). If this would be round 3, do not code: label the PR `ceo-approval`, comment a short summary of what keeps failing and the options, and stop. Then stop.

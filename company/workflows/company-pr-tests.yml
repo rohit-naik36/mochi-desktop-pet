@@ -15,12 +15,22 @@ concurrency:
 jobs:
   tests:
     name: company-tests
-    if: vars.COMPANY_MODE == 'on'
+    # Always runs: tests need no secrets, and a skipped required check counts as passed.
+    # While the company is paused or off it fails on purpose, so nothing can merge
+    # (the review check is skipped then, and a skipped check would count as passed).
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: read
     steps:
+      - name: Company must be on to merge
+        env:
+          MODE: ${{ vars.COMPANY_MODE }}
+        run: |
+          if [ "$MODE" != "on" ]; then
+            echo "::error::COMPANY_MODE is '${MODE:-unset}'. Nothing merges while the company is paused or off (CHARTER section 9). Re-run this check after /resume."
+            exit 1
+          fi
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with: { persist-credentials: false }
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
